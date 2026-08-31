@@ -1,6 +1,6 @@
 # White Raven
 
-White Raven is a torrent player application for Samsung Smart TV E, F, H series. This repository contains the Smart TV Widget part of the application. For it to work, the [Raven Server](https://github.com/nyakaspeter/Raven-Torrent) application must also be running on the TV (which is only possible if it's rooted), or on the local network. I recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server too, to get the most out of the application. This repo is a fork of [White Raven](https://github.com/silentmurdock/whiteraven).
+White Raven is a torrent player application for Samsung Smart TV E, F, H series. This repository contains the Smart TV Widget part of the application. For it to work, the [White Raven Server](https://github.com/nyakaspeter/White-Raven-Server) application must also be running on the TV (which is only possible if it's rooted), or on the local network. I recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server too, to get the most out of the application. This repo is a fork of [White Raven](https://github.com/silentmurdock/whiteraven).
 
 ## Features
 
@@ -17,11 +17,11 @@ White Raven is a torrent player application for Samsung Smart TV E, F, H series.
 
 ### Rootless version
 
-If you don't have root on your television or just don't want to run the server on the TV, you can also run it from another device on your local network. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the rootless version of White Raven and run [Raven Server](https://github.com/nyakaspeter/Raven-Torrent/releases) separately. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Instructions for running Raven Server and Jackett on various devices can be found [here](https://github.com/nyakaspeter/Raven-Torrent#how-to-use).
+If you don't have root on your television or just don't want to run the server on the TV, you can also run it from another device on your local network. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the rootless version of White Raven and run the [White Raven Server](https://github.com/nyakaspeter/White-Raven-Server/releases) separately. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Instructions for running White Raven Server and Jackett on various devices can be found [here](https://github.com/nyakaspeter/White-Raven-Server#how-to-use).
 
 #### Running the widget from USB on Samsung Smart TV E, F, H series
 
-0. Ensure that Raven Server is running on the local network.
+0. Ensure that White Raven Server is running on the local network.
 1. Grab a FAT32 formatted USB stick and create a folder named as `WhiteRaven` in it's root.
 2. Extract the contents of the downloaded White Raven rootless zip file to this directory.
 3. Plug the pendrive into your television.
@@ -29,7 +29,7 @@ If you don't have root on your television or just don't want to run the server o
 
 #### Installing the widget on rooted Samsung Smart TV E, F, H series</summary>
 
-0. Ensure that Raven Server is running on the local network.
+0. Ensure that White Raven Server is running on the local network.
 1. Connect to your television over FTP/SFTP.
 2. Create a folder named as `WhiteRaven` inside the `/mtd_rwcommon/widgets/user` directory.
 3. Extract the contents of the downloaded zip file to this directory.
