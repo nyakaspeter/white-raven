@@ -17,6 +17,26 @@ if (TVIP != "") {
 
 var widgetAPI = new Common.API.Widget();
 
+// Old Samsung browser engines accepted unitless numeric DOM style dimensions.
+// Standards-based browsers require a length unit, while values that already
+// carry a unit must pass through unchanged.
+function CSSPixels(value) {
+    if (typeof value == "number" || /^-?(?:\d+|\d*\.\d+)$/.test(value)) {
+        return value + "px";
+    }
+    return value;
+}
+
+function TorrentStatsURL(fileURL) {
+    var current = /^(https?:\/\/[^/]+)\/file\/([^/]+)\//.exec(fileURL);
+    return current ? current[1] + "/api/v0/stats/" + current[2] : "";
+}
+
+function TorrentSubtitlesURL(fileURL) {
+    var current = /^(https?:\/\/[^/]+)\/file\/([^/]+)\/(.+)$/.exec(fileURL);
+    return current ? current[1] + "/api/v0/subtitlesbyfile/" + current[2] + "/" + current[3] : "";
+}
+
 // Need for root detect
 var isRooted = false;
 var isSupported = false;
@@ -222,6 +242,10 @@ if (!Function.prototype.bind) {
 
 // Override date function to get current tv time
 (function (OldDate) {
+    if (window.WHITE_RAVEN_BROWSER) {
+        return;
+    }
+
     // Get a reference to Samsung's TIME API
     var time = document.createElement('object');
     time.setAttribute('classid', 'clsid:SAMSUNG-INFOLINK-TIME');
@@ -492,8 +516,19 @@ function FindLocalServer(fn) {
 // Start or stop White Raven server
 function StartStopWRServer(command) {
     SERVER_OK = false;
-    document.getElementById("playbutton").style.width = 210;
+    document.getElementById("playbutton").style.width = CSSPixels(210);
     widgetAPI.putInnerHTML(document.getElementById("playbutton"), noServerButtonText[lang]);
+
+    // A browser cannot start the TV-local server. The compatibility harness
+    // connects directly to the configured White Raven server address instead.
+    if (window.WHITE_RAVEN_BROWSER) {
+        if (command == "start") {
+            serverIP = new URL(window.WHITE_RAVEN_SERVER_URL).hostname;
+            StartOrStopWithLogo("start");
+            setTimeout(function(){ IsTheServerStarted(); }, 0);
+        }
+        return;
+    }
 
     var reqSuccess = false;
 
@@ -599,7 +634,7 @@ function IsTheServerStarted() {
                 // Try to update favourites
                 CheckFavouritesData();
 
-                if (isRooted == true && isSupported == true) {
+                if (window.WHITE_RAVEN_BROWSER || (isRooted == true && isSupported == true)) {
                     GetMovieInfo(querytype,"first", page, "");
                 } else {
                     RestartServer("silent");
@@ -1729,8 +1764,8 @@ function ShowMoviesMenu(gen, sort) {
     GetMovieInfo(querytype,"first", page, "");
 
     document.getElementById('OverlayVideoMenu').style.visibility = "hidden";
-    document.getElementById('OverlayVideoMenu').style.top = 0;
-    document.getElementById('OverlayVideoMenu').style.height = 0;
+    document.getElementById('OverlayVideoMenu').style.top = CSSPixels(0);
+    document.getElementById('OverlayVideoMenu').style.height = CSSPixels(0);
     if (document.getElementsByClassName('active')[0]) {
         document.getElementsByClassName('active')[0].className = "";
     }       
@@ -1761,8 +1796,8 @@ function ShowShowsMenu(gen, sort) {
     GetMovieInfo(querytype,"first", page, "");
 
     document.getElementById('OverlayVideoMenu').style.visibility = "hidden";
-    document.getElementById('OverlayVideoMenu').style.top = 0;
-    document.getElementById('OverlayVideoMenu').style.height = 0;    
+    document.getElementById('OverlayVideoMenu').style.top = CSSPixels(0);
+    document.getElementById('OverlayVideoMenu').style.height = CSSPixels(0);    
     if (document.getElementsByClassName('active')[0]) {
         document.getElementsByClassName('active')[0].className = "";
     }
@@ -1803,8 +1838,8 @@ function ShowFavouritesMenu() {
     GeFavouritesInfo();
 
     document.getElementById('OverlayVideoMenu').style.visibility = "hidden";
-    document.getElementById('OverlayVideoMenu').style.top = 0;
-    document.getElementById('OverlayVideoMenu').style.height = 0;
+    document.getElementById('OverlayVideoMenu').style.top = CSSPixels(0);
+    document.getElementById('OverlayVideoMenu').style.height = CSSPixels(0);
     if (document.getElementsByClassName('active')[0]) {
         document.getElementsByClassName('active')[0].className = "";
     }
@@ -1844,8 +1879,8 @@ function ShowSearchMenu(typedtext) {
     GetMovieInfo(querytype,"first", page, typedtext.replace(/ /g, "+"));
 
     document.getElementById('OverlayVideoMenu').style.visibility = "hidden";
-    document.getElementById('OverlayVideoMenu').style.top = 0;
-    document.getElementById('OverlayVideoMenu').style.height = 0;
+    document.getElementById('OverlayVideoMenu').style.top = CSSPixels(0);
+    document.getElementById('OverlayVideoMenu').style.height = CSSPixels(0);
     if (document.getElementsByClassName('active')[0]) {
         document.getElementsByClassName('active')[0].className = "";
     }    
@@ -1854,8 +1889,8 @@ function ShowSearchMenu(typedtext) {
 function ShowSettingsPage() {
     settingspage = true;
     document.getElementById('OverlayVideoMenu').style.visibility = "hidden";
-    document.getElementById('OverlayVideoMenu').style.top = 0;
-    document.getElementById('OverlayVideoMenu').style.height = 0;
+    document.getElementById('OverlayVideoMenu').style.top = CSSPixels(0);
+    document.getElementById('OverlayVideoMenu').style.height = CSSPixels(0);
     /*document.getElementsByClassName('active')[0].className = "";*/
     document.getElementsByClassName('keybuttonset')[25].className = "keybuttonset activekey";
     document.getElementById('OverlaySettingsPage').style.visibility = "visible";    
@@ -1896,6 +1931,10 @@ SceneMain.prototype.handleShow = function(){
 }
 
 SceneMain.prototype.handleHide = function(){
+    if (window.WHITE_RAVEN_BROWSER) {
+        return;
+    }
+
     // SMART HUB, SOURCE or EXIT key pressed so need to stop the server.    
     alert("[White Raven] SMART HUB, SOURCE or EXIT key pressed and stopped the application.");
     var imgStop = document.createElement("img");

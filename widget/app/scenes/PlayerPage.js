@@ -714,6 +714,17 @@ ScenePlayerPage.prototype.initialize = function () {
     Player.setCurTime = function(time)
     {
         this.resumetime = time.millisecond;
+
+        // Some players only know the duration after playback has begun. The
+        // initial buffering callback can therefore report zero; update the UI
+        // as soon as AVPlay exposes the real duration.
+        if (this.totalTime == 0) {
+            var duration = Player.AVPlayer.getDuration();
+            if (duration > 0) {
+                this.totalTime = duration;
+                Display.setTotalTime(duration);
+            }
+        }
                 
         if (resume['time'] != 0 && time.millisecond > 1000) {
             Player.skipForwardVideo(Math.floor(resume['time'] / 1000));
@@ -991,7 +1002,7 @@ ScenePlayerPage.prototype.initialize = function () {
         this.isVisible = 0;
         document.getElementById("mediaheader").style.display = 'none';
         document.getElementById("mediabar").style.display = 'none';
-        document.getElementById("subcontainer").style.height = saveSettings['subtitleposition'];
+        document.getElementById("subcontainer").style.height = CSSPixels(saveSettings['subtitleposition']);
     }
 
     /*************** Audio.js *******************/
@@ -1060,8 +1071,8 @@ ScenePlayerPage.prototype.initialize = function () {
     this.subtext = document.getElementById('subtext');
     this.subcontainer = document.getElementById('subcontainer');
     
-    this.subtext.style.fontSize = saveSettings['subtitlesize'];
-    this.subcontainer.style.height = saveSettings['subtitleposition'];
+    this.subtext.style.fontSize = CSSPixels(saveSettings['subtitlesize']);
+    this.subcontainer.style.height = CSSPixels(saveSettings['subtitleposition']);
     this.subtext.style.color = saveSettings['subtitlecolor'];
     this.subtext.style.backgroundColor = ColorToRGBA(saveSettings['subtitlebgcolor'], saveSettings['subtitleopacity']);
 }
@@ -1621,7 +1632,7 @@ ScenePlayerPage.prototype.CheckDownload = function() {
         	widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), downloadSpeedText[lang] + "0 B/s" + downloadBufferText[lang] + "0 B ( 0% )" + downloadPeersText[lang] + "0/0");
         }
         document.getElementById('poster').className = "posterDownload";
-        document.getElementById("ProgressPercent").style.width = 0;
+        document.getElementById("ProgressPercent").style.width = CSSPixels(0);
         document.getElementById("ProgressBar").style.visibility = 'visible';
     }
 

@@ -36,11 +36,11 @@ SceneResumeMenu.prototype.handleShow = function (resumedata) {
 
     if (resumeMenuText['name'].length > 0) {
         if (resumeMenuText['name'].length < 8) {
-            document.getElementById('OverlayResumeMenu').style.height = ((resumeMenuText['name'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((resumeMenuText['name'].length - 1) * 46) + 80;
+            document.getElementById('OverlayResumeMenu').style.height = CSSPixels(((resumeMenuText['name'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((resumeMenuText['name'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlayResumeMenu').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top =  ((8 - 1) * 46) + 80;
+            document.getElementById('OverlayResumeMenu').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top =  CSSPixels(((8 - 1) * 46) + 80);
         }
         document.getElementById('OverlayResumeMenu').style.visibility = "visible";
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -59,7 +59,7 @@ SceneResumeMenu.prototype.handleHide = function () {
 
         document.getElementById('poster').className = "posterBasic";
         document.getElementById('OverlayHostsMenu').style.visibility = "visible";
-        document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+        document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
         widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
         sf.scene.focus('HostsMenu');
     } else if (this.resumedata.caller == "ReceiverPage") {
@@ -70,7 +70,7 @@ SceneResumeMenu.prototype.handleHide = function () {
         sf.scene.focus('ReceiverPage');
     } else if (this.resumedata.caller == "MultiVideo") {
         document.getElementById('OverlayMultiVideo').style.visibility = "visible";
-        document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+        document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
         widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
         sf.scene.focus('MultiVideo');
     }
@@ -100,7 +100,7 @@ SceneResumeMenu.prototype.handleKeyDown = function (keyCode) {
 
                 document.getElementById('OverlayResumeMenu').style.visibility = "hidden";
                 document.getElementById('OverlayMenuInfo').style.visibility = "hidden";
-                document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+                document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
                 widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
 
                 document.getElementById("loaDing").className = "loaderon";
@@ -138,7 +138,7 @@ SceneResumeMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var nameul = document.getElementById('resumelist');
-                            nameul.style.top = nameul.offsetTop + 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                             i--;
                         }
                     }
@@ -158,7 +158,7 @@ SceneResumeMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i < resumelist.length - 1) {
                             var nameul = document.getElementById('resumelist');
-                            nameul.style.top = nameul.offsetTop - 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                             i++;
                         }
                     }

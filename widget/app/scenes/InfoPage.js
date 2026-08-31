@@ -33,10 +33,10 @@ SceneInfoPage.prototype.handleShow = function (mediatype) {
     }
     
     if (SERVER_OK == true) {
-        document.getElementById("playbutton").style.width = 170;
+        document.getElementById("playbutton").style.width = CSSPixels(170);
         widgetAPI.putInnerHTML(document.getElementById("playbutton"), playButtonText[lang]);
     } else {
-        document.getElementById("playbutton").style.width = 210;
+        document.getElementById("playbutton").style.width = CSSPixels(210);
         widgetAPI.putInnerHTML(document.getElementById("playbutton"), noServerButtonText[lang]);
     }
 };
@@ -226,7 +226,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                 //console.log((i * 26) + ebox.offsetLeft - (19 * 26));
                                 if ((i + 1) >= this.maxee && (((i + 1) * this.episodescroll) + ebox.offsetLeft == this.maxee * this.episodescroll)) {
                                     if ((i + 1) < (eb.length - 1)) {
-                                        ebox.style.left = ebox.offsetLeft - this.episodescroll;
+                                        ebox.style.left = CSSPixels(ebox.offsetLeft - this.episodescroll);
                                         widgetAPI.putInnerHTML(eb[i + 1], this.episodesave[i + 2]);
                                         widgetAPI.putInnerHTML(eb[i + 2 - this.maxee], "&#xF81C;");
                                         widgetAPI.putInnerHTML(eb[i + 1 - this.maxee], this.episodesave[i + 2 - this.maxee]);
@@ -245,7 +245,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                         widgetAPI.putInnerHTML(eb[eb.length - 1 - this.maxee], this.episodesave[eb.length - this.maxee]);
                                         widgetAPI.putInnerHTML(eb[this.maxee], "&#xF81E;");
                                     }
-                                    document.getElementById('episodecontent').style.left = 0;
+                                    document.getElementById('episodecontent').style.left = CSSPixels(0);
                                     eb[0].className = "episodeboxes activebox";
                                 }
                                 break;
@@ -262,7 +262,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
 
                                     if ((i + 1) >= this.maxse && (((i + 1) * this.seasonscroll) + sbox.offsetLeft == this.maxse * this.seasonscroll)) {
                                         if ((i + 1) < (sb.length - 1)) {
-                                            sbox.style.left = sbox.offsetLeft - this.seasonscroll;
+                                            sbox.style.left = CSSPixels(sbox.offsetLeft - this.seasonscroll);
                                             widgetAPI.putInnerHTML(sb[i + 1], this.seasonsave[i + 2]);
                                             widgetAPI.putInnerHTML(sb[i + 2 - this.maxse], "&#xF81C;");
                                             widgetAPI.putInnerHTML(sb[i + 1 - this.maxse], this.seasonsave[i + 2 - this.maxse]);
@@ -282,7 +282,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                             widgetAPI.putInnerHTML(sb[sb.length - 1 - this.maxse], this.seasonsave[sb.length - this.maxse]);
                                             widgetAPI.putInnerHTML(sb[this.maxse], "&#xF81E;");
                                         }
-                                        document.getElementById('seasoncontent').style.left = 0;
+                                        document.getElementById('seasoncontent').style.left = CSSPixels(0);
                                         sb[0].className = "seasonboxes activebox";
                                         var seasoncount = sb[0].innerHTML;
                                     }
@@ -290,7 +290,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     // Insert season episode boxes
                                     var episodecontent = document.getElementById('episodecontent');
                                     widgetAPI.putInnerHTML(episodecontent, "");
-                                    episodecontent.style.left = 0;
+                                    episodecontent.style.left = CSSPixels(0);
                                     
                                     var saveindex = 1;
                                     this.episodesave = [];
@@ -300,7 +300,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                                 var episodeboxes = document.createElement('div');
                                                 episodeboxes.className = 'episodeboxes';
                                                 episodeboxes.id = 'e' + j;
-                                                episodeboxes.style.width = this.episodeboxsize;
+                                                episodeboxes.style.width = CSSPixels(this.episodeboxsize);
                                                 widgetAPI.putInnerHTML(episodeboxes, episodeobject[j].number);
                                                 episodecontent.appendChild(episodeboxes);
                                                 this.episodesave[saveindex] = episodeobject[j].number;
@@ -314,7 +314,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     
                                     if (ebindex > this.maxee) {
                                         var ebox = document.getElementById('episodecontent');
-                                        ebox.style.left = ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll);
+                                        ebox.style.left = CSSPixels(ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll));
 
                                         widgetAPI.putInnerHTML(eb[ebindex - this.maxee], "&#xF81C;");
                                     }
@@ -347,12 +347,12 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     widgetAPI.putInnerHTML(eb[i], this.episodesave[i + 1]);
                                     widgetAPI.putInnerHTML(eb[i - 1], this.episodesave[i]);
                                     if (i - 2 > 0) {
-                                        ebox.style.left = ebox.offsetLeft + this.episodescroll;
+                                        ebox.style.left = CSSPixels(ebox.offsetLeft + this.episodescroll);
                                         widgetAPI.putInnerHTML(eb[i - 2], "&#xF81C;");
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 2], "&#xF81E;");
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.episodesave[i + this.maxee]);
                                     } else if (i - 2 == 0) {
-                                        ebox.style.left = ebox.offsetLeft + this.episodescroll;
+                                        ebox.style.left = CSSPixels(ebox.offsetLeft + this.episodescroll);
                                         widgetAPI.putInnerHTML(eb[i - 2], this.episodesave[i - 1]);
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 2], "&#xF81E;");
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.episodesave[i + this.maxee]);
@@ -361,7 +361,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                 eb[i-1].className = "episodeboxes activebox";
                             } else {
                                 if (eb.length > (this.maxee + 1)) {
-                                    ebox.style.left = ebox.offsetLeft - ((eb.length - (this.maxee + 1)) * this.episodescroll);
+                                    ebox.style.left = CSSPixels(ebox.offsetLeft - ((eb.length - (this.maxee + 1)) * this.episodescroll));
                                     widgetAPI.putInnerHTML(eb[this.maxee], this.episodesave[this.maxee + 1]);
                                     widgetAPI.putInnerHTML(eb[eb.length - 1 - this.maxee], "&#xF81C;");
                                 }
@@ -384,12 +384,12 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                         widgetAPI.putInnerHTML(sb[i], this.seasonsave[i + 1]);
                                         widgetAPI.putInnerHTML(sb[i - 1], this.seasonsave[i]);
                                         if (i - 2 > 0) {
-                                            sbox.style.left = sbox.offsetLeft + this.seasonscroll;
+                                            sbox.style.left = CSSPixels(sbox.offsetLeft + this.seasonscroll);
                                             widgetAPI.putInnerHTML(sb[i - 2], "&#xF81C;");
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 2], "&#xF81E;");
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.seasonsave[i + this.maxse]);
                                         } else if (i - 2 == 0) {
-                                            sbox.style.left = sbox.offsetLeft + this.seasonscroll;
+                                            sbox.style.left = CSSPixels(sbox.offsetLeft + this.seasonscroll);
                                             widgetAPI.putInnerHTML(sb[i - 2], this.seasonsave[i - 1]);
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 2], "&#xF81E;");
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.seasonsave[i + this.maxse]);
@@ -399,7 +399,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     var seasoncount = sb[i-1].innerHTML;
                                 } else {
                                     if (sb.length > (this.maxse + 1)) {
-                                        sbox.style.left = sbox.offsetLeft - ((sb.length - (this.maxse + 1)) * this.seasonscroll);
+                                        sbox.style.left = CSSPixels(sbox.offsetLeft - ((sb.length - (this.maxse + 1)) * this.seasonscroll));
                                         widgetAPI.putInnerHTML(sb[this.maxse], this.seasonsave[this.maxse + 1]);
                                         widgetAPI.putInnerHTML(sb[sb.length - 1 - this.maxse], "&#xF81C;");
                                     }
@@ -410,7 +410,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                 // Insert season episode boxes
                                 var episodecontent = document.getElementById('episodecontent');
                                 widgetAPI.putInnerHTML(episodecontent, "");
-                                episodecontent.style.left = 0;
+                                episodecontent.style.left = CSSPixels(0);
 
                                 var saveindex = 1;
                                 this.episodesave = [];
@@ -420,7 +420,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                             var episodeboxes = document.createElement('div');
                                             episodeboxes.className = 'episodeboxes';
                                             episodeboxes.id = 'e' + j;
-                                            episodeboxes.style.width = this.episodeboxsize;
+                                            episodeboxes.style.width = CSSPixels(this.episodeboxsize);
                                             widgetAPI.putInnerHTML(episodeboxes, episodeobject[j].number);
                                             episodecontent.appendChild(episodeboxes);
                                             this.episodesave[saveindex] = episodeobject[j].number;
@@ -434,7 +434,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                 
                                 if (ebindex > this.maxee) {
                                     var ebox = document.getElementById('episodecontent');
-                                    ebox.style.left = ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll);
+                                    ebox.style.left = CSSPixels(ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll));
 
                                     widgetAPI.putInnerHTML(eb[ebindex - this.maxee], "&#xF81C;");
                                 }
@@ -849,7 +849,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                 break;
         }
 
-        seasonlist.style.width = (this.maxse + 1) * this.seasonscroll;
+        seasonlist.style.width = CSSPixels((this.maxse + 1) * this.seasonscroll);
 
         var saveindex = 1;
         this.seasonsave = [];
@@ -861,7 +861,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                     var seasonboxes = document.createElement('div');
                     seasonboxes.className = 'seasonboxes';
                     seasonboxes.id = 's' + seasoncount;
-                    seasonboxes.style.width = this.seasonboxsize;
+                    seasonboxes.style.width = CSSPixels(this.seasonboxsize);
                     widgetAPI.putInnerHTML(seasonboxes, dataobject[i].season);
                     seasoncontent.appendChild(seasonboxes);
                     this.seasonsave[saveindex] = dataobject[i].season;
@@ -881,7 +881,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
 
         if (sbindex > this.maxse) {
             var sbox = document.getElementById('seasoncontent');
-            sbox.style.left = sbox.offsetLeft - ((sbindex - this.maxse) * this.seasonscroll);
+            sbox.style.left = CSSPixels(sbox.offsetLeft - ((sbindex - this.maxse) * this.seasonscroll));
 
             widgetAPI.putInnerHTML(sb[sbindex - this.maxse], "&#xF81C;");
         }
@@ -921,7 +921,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                 break;
         }
 
-        episodelist.style.width = (this.maxee + 1) * this.episodescroll;
+        episodelist.style.width = CSSPixels((this.maxee + 1) * this.episodescroll);
 
         var saveindex = 1;
         this.episodesave = [];
@@ -931,7 +931,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                     var episodeboxes = document.createElement('div');
                     episodeboxes.className = 'episodeboxes';
                     episodeboxes.id = 'e' + i;
-                    episodeboxes.style.width = this.episodeboxsize;
+                    episodeboxes.style.width = CSSPixels(this.episodeboxsize);
                     widgetAPI.putInnerHTML(episodeboxes, dataobject[i].number);
                     episodecontent.appendChild(episodeboxes);
                     this.episodesave[saveindex] = dataobject[i].number;
@@ -948,7 +948,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
         
         if (ebindex > this.maxee) {
             var ebox = document.getElementById('episodecontent');
-            ebox.style.left = ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll);
+            ebox.style.left = CSSPixels(ebox.offsetLeft - ((ebindex - this.maxee) * this.episodescroll));
 
             widgetAPI.putInnerHTML(eb[ebindex - this.maxee], "&#xF81C;");
         }

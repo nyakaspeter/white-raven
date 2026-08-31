@@ -42,7 +42,7 @@ SceneReceiverPage.prototype.handleHide = function () {
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
         document.getElementById('OverlayVideoMenu').style.visibility = "visible";
         
-        document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+        document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
         widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
         document.getElementById('OverlayMenuInfo').style.visibility = "visible";
         sf.scene.focus('MainMenu');
@@ -275,9 +275,7 @@ SceneReceiverPage.prototype.StartPlayback = function(url, titletext, langpos, fi
     resume['season'] = s;
     resume['episode'] = e;
 
-    infoHash = this.playurl.replace("get", "stats");
-    n = infoHash.lastIndexOf("/");
-    infoHash = infoHash.substr(0, n);
+    infoHash = TorrentStatsURL(this.playurl);
     
     issubtitle = false;
     if (saveSettings['issubtitleenabled'] == "true") {
@@ -339,7 +337,7 @@ SceneReceiverPage.prototype.GetResumeTime = function(type) {
 SceneReceiverPage.prototype.SearchSubtitlesByText = function(title, filetitle, language, season, episode) {
     //alert("ERROR: " + title + " " + filetitle + " " + language + " " + season + " " + episode);
     document.getElementById('poster').className = "posterDownload";
-    document.getElementById("ProgressPercent").style.width = 0;
+    document.getElementById("ProgressPercent").style.width = CSSPixels(0);
     widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), subtitleSearchText[lang][0]);
     document.getElementById("ProgressBar").style.visibility = 'visible';
 

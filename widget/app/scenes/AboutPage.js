@@ -10,7 +10,7 @@ SceneAboutPage.prototype.handleShow = function () {
     var heightcount = document.getElementById('abouttitle').offsetHeight;
     heightcount += document.getElementById('aboutlogo').offsetHeight;
     heightcount += document.getElementById('aboutinfo').offsetHeight;
-    document.getElementById('OverlayAboutPage').style.height = heightcount - 10;
+    document.getElementById('OverlayAboutPage').style.height = CSSPixels(heightcount - 10);
 
     document.getElementById('OverlayAboutPage').style.visibility = "visible";
     

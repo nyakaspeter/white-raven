@@ -42,11 +42,11 @@ SceneLoadSubtitle.prototype.handleShow = function (data) {
 
         if (subtitleslist.length > 0) {
             if (subtitleslist.length < 5) {
-                document.getElementById('OverlayLoadSubtitleMenu').style.height = ((subtitleslist.length - 1) * 46) + 46;
-                document.getElementById('OverlayPlayerMenuInfo').style.top = ((subtitleslist.length - 1) * 46) - 54;
+                document.getElementById('OverlayLoadSubtitleMenu').style.height = CSSPixels(((subtitleslist.length - 1) * 46) + 46);
+                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((subtitleslist.length - 1) * 46) - 54);
             } else {
-                document.getElementById('OverlayLoadSubtitleMenu').style.height = ((5 - 1) * 46) + 46;
-                document.getElementById('OverlayPlayerMenuInfo').style.top = ((5 - 1) * 46) - 54;
+                document.getElementById('OverlayLoadSubtitleMenu').style.height = CSSPixels(((5 - 1) * 46) + 46);
+                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((5 - 1) * 46) - 54);
             }
             document.getElementById('OverlayLoadSubtitleMenu').style.visibility = "visible";
             widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), "1 / " + subtitleslist.length);
@@ -57,7 +57,7 @@ SceneLoadSubtitle.prototype.handleShow = function (data) {
 
 SceneLoadSubtitle.prototype.handleHide = function (data) {
     document.getElementById('OverlayLoadSubtitleMenu').style.visibility = "hidden";
-    document.getElementById('OverlayPlayerMenuInfo').style.top = this.prevtop;
+    document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(this.prevtop);
     widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), this.prevdata);
       
     if (data.caller == "SubtitleMenu") {
@@ -134,7 +134,7 @@ SceneLoadSubtitle.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i > 0) {
                                 var nameul = document.getElementById('filelist');
-                                nameul.style.top = nameul.offsetTop + 46;
+                                nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                                 i--;
                             }
                         }
@@ -154,7 +154,7 @@ SceneLoadSubtitle.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < filelist.length - 1) {
                                 var nameul = document.getElementById('filelist');
-                                nameul.style.top = nameul.offsetTop - 46;
+                                nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                                 i++;
                             }
                         }

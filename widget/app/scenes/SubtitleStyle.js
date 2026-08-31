@@ -120,7 +120,7 @@ SceneSubtitleStyle.prototype.initialize = function () {
 
     this.row = 0;
 
-    document.getElementById('OverlaySubtitleStyle').style.height = document.getElementById('subtitlestyle').offsetHeight;
+    document.getElementById('OverlaySubtitleStyle').style.height = CSSPixels(document.getElementById('subtitlestyle').offsetHeight);
 }
 
 SceneSubtitleStyle.prototype.handleShow = function () {
@@ -187,11 +187,11 @@ SceneSubtitleStyle.prototype.handleKeyDown = function (keyCode) {
                     if (p > 0) {
                         this.titlelist[p-1].className = "colorboxes atbox";
                         this.titletext.children[0].innerText = p - 1;
-                        this.subtext.style.fontSize = p - 1 + 19;
+                        this.subtext.style.fontSize = CSSPixels(p - 1 + 19);
                     } else {
                         this.titlelist[this.titlelist.length-1].className = "colorboxes atbox";
                         this.titletext.children[0].innerText = this.titlelist.length - 1;
-                        this.subtext.style.fontSize = this.titlelist.length - 1 + 19;
+                        this.subtext.style.fontSize = CSSPixels(this.titlelist.length - 1 + 19);
                     }
                     break;
                 case 1:
@@ -200,11 +200,11 @@ SceneSubtitleStyle.prototype.handleKeyDown = function (keyCode) {
                     if (p > 0) {
                         this.poslist[p-1].className = "colorboxes atbox";
                         this.postext.children[0].innerText = p - 1;
-                        this.subcontainer.style.height = this.positions[p-1];
+                        this.subcontainer.style.height = CSSPixels(this.positions[p-1]);
                     } else {
                         this.poslist[this.poslist.length-1].className = "colorboxes atbox";
                         this.postext.children[0].innerText = this.poslist.length - 1;
-                        this.subcontainer.style.height = this.positions[this.poslist.length - 1];
+                        this.subcontainer.style.height = CSSPixels(this.positions[this.poslist.length - 1]);
                     }
                     break;
                 case 2:
@@ -284,11 +284,11 @@ SceneSubtitleStyle.prototype.handleKeyDown = function (keyCode) {
                     if (p < (this.titlelist.length - 1)) {
                         this.titlelist[p+1].className = "colorboxes atbox";
                         this.titletext.children[0].innerText = p + 1;
-                        this.subtext.style.fontSize = p + 1 + 19;                        
+                        this.subtext.style.fontSize = CSSPixels(p + 1 + 19);                        
                     } else {
                         this.titlelist[0].className = "colorboxes atbox";
                         this.titletext.children[0].innerText = 0;
-                        this.subtext.style.fontSize = 19;
+                        this.subtext.style.fontSize = CSSPixels(19);
                     }
                     break;
                 case 1:
@@ -297,11 +297,11 @@ SceneSubtitleStyle.prototype.handleKeyDown = function (keyCode) {
                     if (p < (this.poslist.length - 1)) {
                         this.poslist[p+1].className = "colorboxes atbox";
                         this.postext.children[0].innerText = p + 1;
-                        this.subcontainer.style.height = this.positions[p+1];                       
+                        this.subcontainer.style.height = CSSPixels(this.positions[p+1]);                       
                     } else {
                         this.poslist[0].className = "colorboxes atbox";
                         this.postext.children[0].innerText = 0;
-                        this.subcontainer.style.height = this.positions[0];  
+                        this.subcontainer.style.height = CSSPixels(this.positions[0]);  
                     }
                     break;
                 case 2:

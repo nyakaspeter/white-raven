@@ -18,7 +18,7 @@ SceneMediaPage.prototype.handleShow = function (arguments) {
 
     widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), data);
 
-    document.getElementById('OverlayMediaPage').style.height = document.getElementById('mediapageinfo').offsetHeight;
+    document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
     document.getElementById('OverlayMediaPage').style.visibility = "visible";    
 };
 

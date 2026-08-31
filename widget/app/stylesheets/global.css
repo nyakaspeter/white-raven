@@ -336,8 +336,8 @@ img {
   position: absolute;
   top: 44px;
   left: 390px;
-  height: 306;
-  width: 544;
+  height: 306px;
+  width: 544px;
   /*text-align: center;
   text-shadow: 2px 2px 8px #FF0000;*/
 }
@@ -358,7 +358,7 @@ img {
   font-family: 'Oswald', sans-serif;
   font-size: 16px;
   color: #ddd;
-  width: 544;
+  width: 544px;
 }
 
 #synopsis {
@@ -368,7 +368,7 @@ img {
   font-family: 'Oswald', sans-serif;
   font-size: 16px;
   color: #ddd;
-  width: 544;
+  width: 544px;
 }
 
 #playbutton {
@@ -535,8 +535,8 @@ img {
     font-size: 20px;
     position: absolute;
     margin: auto;
-    top: 10;
-    left: 10;
+    top: 10px;
+    left: 10px;
     width: 460px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -663,8 +663,8 @@ img {
     font-size: 20px;
     position: absolute;
     margin: auto;
-    top: 30;
-    left: 10;
+    top: 30px;
+    left: 10px;
     width: 560px;
     padding-top: 10px;
     padding-bottom: 10px;

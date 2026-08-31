@@ -369,7 +369,7 @@ SceneSubtitleSearch.prototype.SearchSubtitlesByText = function(title, language, 
 SceneSubtitleSearch.prototype.ShowSubtitleNotFoundError = function() {
     sf.scene.get('PlayerPage').SetZIndex("hidden", 500);
     widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), "<DL><DT>" + subtitleNotFoundText[lang] + "</DT><DD></DD><SPAN></SPAN></DL>");
-    document.getElementById('OverlayMediaPage').style.height = document.getElementById('mediapageinfo').offsetHeight;
+    document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
     document.getElementById('OverlayMediaPage').style.visibility = "visible";
 
     setTimeout(function() {

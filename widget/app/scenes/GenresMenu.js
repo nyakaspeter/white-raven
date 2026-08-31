@@ -27,11 +27,11 @@ SceneGenresMenu.prototype.handleShow = function () {
 
     if (genresMenuText['genre'].length > 0) {
         if (genresMenuText['genre'].length < 8) {
-            document.getElementById('OverlayGenresMenu').style.height = ((genresMenuText['genre'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((genresMenuText['genre'].length - 1) * 46) + 80;
+            document.getElementById('OverlayGenresMenu').style.height = CSSPixels(((genresMenuText['genre'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((genresMenuText['genre'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlayGenresMenu').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlayGenresMenu').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
         document.getElementById('OverlayGenresMenu').style.visibility = "visible";
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -43,7 +43,7 @@ SceneGenresMenu.prototype.handleShow = function () {
 
 SceneGenresMenu.prototype.handleHide = function () {
 	document.getElementById('OverlayGenresMenu').style.visibility = "hidden";
-    document.getElementById('OverlayGenresMenu').style.height = 0;
+    document.getElementById('OverlayGenresMenu').style.height = CSSPixels(0);
     document.getElementById('OverlayMenuInfo').style.visibility = "hidden";
     
     widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsText[lang]);
@@ -108,7 +108,7 @@ SceneGenresMenu.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < genrelist.length - 1) {
                                 var genreul = document.getElementById('genrelist');
-                                genreul.style.top = genreul.offsetTop - 46;
+                                genreul.style.top = CSSPixels(genreul.offsetTop - 46);
                                 i++;
                             }
                         }
@@ -128,7 +128,7 @@ SceneGenresMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var genreul = document.getElementById('genrelist');
-                            genreul.style.top = genreul.offsetTop + 46;
+                            genreul.style.top = CSSPixels(genreul.offsetTop + 46);
                             i--;
                         }
                     }

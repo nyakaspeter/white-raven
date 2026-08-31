@@ -36,11 +36,11 @@ SceneSubtitleMenu.prototype.handleShow = function () {
 
         if (menulength > 0) {
             if (menulength < 7) {
-                document.getElementById('OverlaySubtitleMenu').style.height = ((menulength - 1) * 46) + 46;
-                document.getElementById('OverlayPlayerMenuInfo').style.top = ((menulength - 1) * 46) + 56;
+                document.getElementById('OverlaySubtitleMenu').style.height = CSSPixels(((menulength - 1) * 46) + 46);
+                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((menulength - 1) * 46) + 56);
             } else {
-                document.getElementById('OverlaySubtitleMenu').style.height = ((7 - 1) * 46) + 46;
-                document.getElementById('OverlayPlayerMenuInfo').style.top = ((7 - 1) * 46) + 56;
+                document.getElementById('OverlaySubtitleMenu').style.height = CSSPixels(((7 - 1) * 46) + 46);
+                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((7 - 1) * 46) + 56);
             }
             document.getElementById('OverlaySubtitleMenu').style.visibility = "visible";
             widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), "1 / " + menulength);
@@ -50,13 +50,13 @@ SceneSubtitleMenu.prototype.handleShow = function () {
         // No subtitles found for this video
         this.waiting = true;
         widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), "<DL><DT>" + subtitleNotFoundText[lang] + "</DT><DD></DD><SPAN></SPAN></DL>");
-        document.getElementById('OverlayMediaPage').style.height = document.getElementById('mediapageinfo').offsetHeight;
+        document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
         document.getElementById('OverlayMediaPage').style.visibility = "visible";
     } else {
         // Need to enable subtitles in settings menu
         this.waiting = true;
         widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), "<DL><DT>" + subtitleMustEnabledText[lang] + "</DT><DD></DD><SPAN></SPAN></DL>");
-        document.getElementById('OverlayMediaPage').style.height = document.getElementById('mediapageinfo').offsetHeight;
+        document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
         document.getElementById('OverlayMediaPage').style.visibility = "visible";
     }
 }
@@ -170,7 +170,7 @@ SceneSubtitleMenu.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i > 0) {
                                 var nameul = document.getElementById('subtitlemenulist');
-                                nameul.style.top = nameul.offsetTop + 46;
+                                nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                                 i--;
                             }
                         }
@@ -190,7 +190,7 @@ SceneSubtitleMenu.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < subtitlemenulist.length - 1) {
                                 var nameul = document.getElementById('subtitlemenulist');
-                                nameul.style.top = nameul.offsetTop - 46;
+                                nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                                 i++;
                             }
                         }

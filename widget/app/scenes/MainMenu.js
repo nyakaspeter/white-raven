@@ -35,11 +35,11 @@ SceneMainMenu.prototype.handleShow = function () {
 
     if (mainMenuText['name'].length > 0) {
         if (mainMenuText['name'].length < 8) {
-            document.getElementById('OverlayVideoMenu').style.height = ((mainMenuText['name'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((mainMenuText['name'].length - 1) * 46) + 80;
+            document.getElementById('OverlayVideoMenu').style.height = CSSPixels(((mainMenuText['name'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((mainMenuText['name'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlayVideoMenu').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlayVideoMenu').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
         document.getElementById('OverlayVideoMenu').style.visibility = "visible";
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -156,7 +156,7 @@ SceneMainMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var nameul = document.getElementById('menulist');
-                            nameul.style.top = nameul.offsetTop + 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                             i--;
                         }
                     }
@@ -176,7 +176,7 @@ SceneMainMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i < menulist.length - 1) {
                             var nameul = document.getElementById('menulist');
-                            nameul.style.top = nameul.offsetTop - 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                             i++;
                         }
                     }

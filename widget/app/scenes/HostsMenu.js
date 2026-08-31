@@ -93,11 +93,11 @@ SceneHostsMenu.prototype.handleShow = function () {
 
     if (torrenturls.length > 0) {
         if (torrenturls.length < 5) {
-            document.getElementById('OverlayHostsMenu').style.height = ((torrenturls.length - 1) * 70) + 70;
-            document.getElementById('OverlayMenuInfo').style.top = ((torrenturls.length - 1) * 70) + 104;
+            document.getElementById('OverlayHostsMenu').style.height = CSSPixels(((torrenturls.length - 1) * 70) + 70);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((torrenturls.length - 1) * 70) + 104);
         } else {
-            document.getElementById('OverlayHostsMenu').style.height = ((5 - 1) * 70) + 70;
-            document.getElementById('OverlayMenuInfo').style.top = ((5 - 1) * 70) + 104;
+            document.getElementById('OverlayHostsMenu').style.height = CSSPixels(((5 - 1) * 70) + 70);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((5 - 1) * 70) + 104);
         }
 
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -113,7 +113,7 @@ SceneHostsMenu.prototype.handleHide = function () {
     document.getElementById('OverlayHostsMenu').style.visibility = "hidden";
     document.getElementById('OverlayMenuInfo').style.visibility = "hidden";
     this.SetWaitAndZIndex("hidden", 5);
-    document.getElementById('hostlist').style.height = 0;
+    document.getElementById('hostlist').style.height = CSSPixels(0);
     document.getElementById('poster').className = "posterInfo";
     widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
 };
@@ -217,9 +217,7 @@ SceneHostsMenu.prototype.StartTorrentDownload = function(titletext, base64uri) {
                     sf.scene.show('MultiVideo', {videos: this.videolist, caller: "HostsMenu"});
                     sf.scene.focus('MultiVideo');
                 } else {
-                    infoHash = this.playurl.replace("get", "stats");
-	                n = infoHash.lastIndexOf("/");
-	                infoHash = infoHash.substr(0, n);
+                    infoHash = TorrentStatsURL(this.playurl);
 
 	                this.notorrent = false;
 
@@ -227,7 +225,7 @@ SceneHostsMenu.prototype.StartTorrentDownload = function(titletext, base64uri) {
 	                if (saveSettings['issubtitleenabled'] == "true" && saveSettings['subtitlemode'] == "imdb") {
 	                    this.SearchSubtitles(this.imdbid, this.titletext, this.filetitle, languageListText['shortcode'][this.langpos], this.season, this.episode);                              
 	                } else if (saveSettings['issubtitleenabled'] == "true" && saveSettings['subtitlemode'] == "hash") {
-	                    this.SearchSubtitlesByFile(this.playurl.replace("get", "subtitlesbyfile"), this.titletext, languageListText['shortcode'][this.langpos]);                              
+	                    this.SearchSubtitlesByFile(TorrentSubtitlesURL(this.playurl), this.titletext, languageListText['shortcode'][this.langpos]);
 	                } else {
 	                    this.PlayMovieUrl(this.playurl, this.titletext);
 	                }
@@ -378,7 +376,7 @@ SceneHostsMenu.prototype.handleKeyDown = function (keyCode) {
                             } else {
                                 if (i < menulist.length - 1) {
                                     var nameul = document.getElementById('hostlist');
-                                    nameul.style.top = nameul.offsetTop - 70;
+                                    nameul.style.top = CSSPixels(nameul.offsetTop - 70);
                                     i++;
                                 }
                             }
@@ -400,7 +398,7 @@ SceneHostsMenu.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i > 0) {
                                 var nameul = document.getElementById('hostlist');
-                                nameul.style.top = nameul.offsetTop + 70;
+                                nameul.style.top = CSSPixels(nameul.offsetTop + 70);
                                 i--;
                             }
                         }
@@ -434,9 +432,7 @@ SceneHostsMenu.prototype.StartPlayback = function(url, titletext, langpos, filet
         }
     }
 
-    infoHash = this.playurl.replace("get", "stats");
-    n = infoHash.lastIndexOf("/");
-    infoHash = infoHash.substr(0, n);
+    infoHash = TorrentStatsURL(this.playurl);
     
     issubtitle = false;
     if (saveSettings['issubtitleenabled'] == "true") {
@@ -501,7 +497,7 @@ SceneHostsMenu.prototype.GetResumeTime = function(type) {
 
 SceneHostsMenu.prototype.SearchSubtitles = function(imdbid, title, filetitle, language, season, episode) {
     document.getElementById('poster').className = "posterDownload";
-    document.getElementById("ProgressPercent").style.width = 0;
+    document.getElementById("ProgressPercent").style.width = CSSPixels(0);
     widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), subtitleSearchText[lang][0]);
     document.getElementById("ProgressBar").style.visibility = 'visible';
 
@@ -579,7 +575,7 @@ SceneHostsMenu.prototype.SearchSubtitles = function(imdbid, title, filetitle, la
 
 SceneHostsMenu.prototype.SearchSubtitlesByText = function(title, filetitle, language, season, episode) {
     document.getElementById('poster').className = "posterDownload";
-    document.getElementById("ProgressPercent").style.width = 0;
+    document.getElementById("ProgressPercent").style.width = CSSPixels(0);
     widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), subtitleSearchText[lang][0]);
     document.getElementById("ProgressBar").style.visibility = 'visible';
 
@@ -657,7 +653,7 @@ SceneHostsMenu.prototype.SearchSubtitlesByText = function(title, filetitle, lang
 
 SceneHostsMenu.prototype.SearchSubtitlesByFile = function(path, title, language) {
     document.getElementById('poster').className = "posterDownload";
-    document.getElementById("ProgressPercent").style.width = 0;
+    document.getElementById("ProgressPercent").style.width = CSSPixels(0);
     widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), subtitleSearchText[lang][0]);
     document.getElementById("ProgressBar").style.visibility = 'visible';
 

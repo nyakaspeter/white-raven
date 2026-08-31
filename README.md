@@ -13,24 +13,6 @@ White Raven is a torrent player application for Samsung Smart TV E, F, H series.
 - You can search for movies, episodes or whole season/series packs
 - You can play torrents with multiple video files inside
 
-## Screenshots
-
-![Screenshot](https://camo.githubusercontent.com/5685604ee5dc9b71d25c417e2b9eb4bdbce62292853616af1e1727ba68672db9/68747470733a2f2f692e6962622e636f2f7234673451346a2f747673686f77732e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/ebcae33f28aa5d66416fd6642ed1111baeaafcd07c41ae2d89a75cd752267a69/68747470733a2f2f692e6962622e636f2f316e4e524374422f696e747673686f772e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/b0cc589071750fd810e06467b31b9d3d15d152203993a2cb995469cfee6f3e4e/68747470733a2f2f692e6962622e636f2f6638624d5768362f747673686f777375627469746c652e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/1515d18a46aeed1af351c1469c7b09da4838cb65d45438b0d2fe15a011277d61/68747470733a2f2f692e6962622e636f2f50574e5a7632432f6d6f766965732e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/c96f920145ba15b4a248f0cad82c04aa55a4aafba6b5efc67ecd730c45225b47/68747470733a2f2f692e6962622e636f2f5a534c583243682f686f7374736d656e752e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/8e4e07f5a3563f27b5259214be53fdefef5291460b8426d8404408fb5a6d1558/68747470733a2f2f692e6962622e636f2f32644c786a56662f696e646f776e6c6f6164322e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/9331e8ded6b2914226f9da722cc2b9f7a7b07823468ae3cecd7953b786c61db3/68747470733a2f2f692e6962622e636f2f52516d764b51792f6d6f7669657375627469746c652e6a7067)
-
-![Screenshot](https://camo.githubusercontent.com/3cc130756ebb28b2f934c412a28b98d5e59cb4f94760a6c4324e895a024231f9/68747470733a2f2f692e6962622e636f2f6e3150363350372f696e73657474696e67732e6a7067)
-
 ## How to use
 
 ### Rootless version
@@ -80,6 +62,14 @@ You can build the White Raven widget zip file by running the following commands 
 First you have to [download](https://github.com/nyakaspeter/Raven-Torrent/releases) or [build](https://github.com/nyakaspeter/Raven-Torrent#build-instructions) the ARM version of the server binary and place it in the `build` directory, then run:
 
 `go run build/build.go rooted -serverfile="build/raven"`
+
+## Browser compatibility mode
+
+Start White Raven server first, then run this command from the White Raven repository root:
+
+`go run ./browser/devserver -server http://127.0.0.1:9000`
+
+Open `http://127.0.0.1:8080/`. The White Raven server address, including a custom port, is configured with the `-server` argument.
 
 ## Terms of service
 [TERMS OF SERVICE](TOS)

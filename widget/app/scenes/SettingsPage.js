@@ -105,11 +105,11 @@ SceneSettingsPage.prototype.handleShow = function () {
 
     if (settingsMainMenuText['name'].length > 0) {
         if (settingsMainMenuText['name'].length < 8) {
-            document.getElementById('OverlaySettingsPage').style.height = ((settingsMainMenuText['name'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((settingsMainMenuText['name'].length - 1) * 46) + 80;
+            document.getElementById('OverlaySettingsPage').style.height = CSSPixels(((settingsMainMenuText['name'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((settingsMainMenuText['name'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlaySettingsPage').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlaySettingsPage').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
 
         document.getElementById('OverlaySettingsPage').style.visibility = "visible";
@@ -122,7 +122,7 @@ SceneSettingsPage.prototype.handleShow = function () {
 
 SceneSettingsPage.prototype.handleHide = function () {
 	document.getElementById('OverlaySettingsPage').style.visibility = "hidden";
-    document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+    document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
     widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
 
     document.getElementById('OverlayVideoMenu').style.visibility = "visible";
@@ -252,7 +252,7 @@ SceneSettingsPage.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i < mainsettingslist.length - 1) {
                             var nameul = document.getElementById('mainsettingslist');
-                            nameul.style.top = nameul.offsetTop - 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                             i++;
                         }
                     }
@@ -272,7 +272,7 @@ SceneSettingsPage.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var nameul = document.getElementById('mainsettingslist');
-                            nameul.style.top = nameul.offsetTop + 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                             i--;
                         }
                     }

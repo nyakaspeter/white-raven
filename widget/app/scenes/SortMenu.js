@@ -27,11 +27,11 @@ SceneSortMenu.prototype.handleShow = function () {
 
     if (sortMenuText['name'].length > 0) {
         if (sortMenuText['name'].length < 8) {
-            document.getElementById('OverlaySortMenu').style.height = ((sortMenuText['name'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((sortMenuText['name'].length - 1) * 46) + 80;
+            document.getElementById('OverlaySortMenu').style.height = CSSPixels(((sortMenuText['name'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((sortMenuText['name'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlaySortMenu').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlaySortMenu').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
         document.getElementById('OverlaySortMenu').style.visibility = "visible";
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -43,7 +43,7 @@ SceneSortMenu.prototype.handleShow = function () {
 
 SceneSortMenu.prototype.handleHide = function () {
 	document.getElementById('OverlaySortMenu').style.visibility = "hidden";
-    document.getElementById('OverlaySortMenu').style.height = 0;
+    document.getElementById('OverlaySortMenu').style.height = CSSPixels(0);
     document.getElementById('OverlayMenuInfo').style.visibility = "hidden";
     
     widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsText[lang]);
@@ -108,7 +108,7 @@ SceneSortMenu.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < sortlist.length - 1) {
                                 var genreul = document.getElementById('sortlist');
-                                genreul.style.top = genreul.offsetTop - 46;
+                                genreul.style.top = CSSPixels(genreul.offsetTop - 46);
                                 i++;
                             }
                         }
@@ -128,7 +128,7 @@ SceneSortMenu.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var genreul = document.getElementById('sortlist');
-                            genreul.style.top = genreul.offsetTop + 46;
+                            genreul.style.top = CSSPixels(genreul.offsetTop + 46);
                             i--;
                         }
                     }

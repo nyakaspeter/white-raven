@@ -47,11 +47,11 @@ SceneDataSelect.prototype.handleShow = function (arguments) {
 
     if (this.dataText['shortcode'].length > 0) {
         if (this.dataText['shortcode'].length < 8) {
-            document.getElementById('OverlayDataSelect').style.height = ((this.dataText['shortcode'].length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((this.dataText['shortcode'].length - 1) * 46) + 80;
+            document.getElementById('OverlayDataSelect').style.height = CSSPixels(((this.dataText['shortcode'].length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((this.dataText['shortcode'].length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlayDataSelect').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlayDataSelect').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
 
         
@@ -65,7 +65,7 @@ SceneDataSelect.prototype.handleShow = function (arguments) {
 
 SceneDataSelect.prototype.handleHide = function () {
 	document.getElementById('OverlayDataSelect').style.visibility = "hidden";
-    document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+    document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
     widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
 
     // Need because multiple selectable sources
@@ -240,7 +240,7 @@ SceneDataSelect.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < datalist.length - 1) {
                                 var nameul = document.getElementById('datalist');
-                                nameul.style.top = nameul.offsetTop - 46;
+                                nameul.style.top = CSSPixels(nameul.offsetTop - 46);
                                 i++;
                             }
                         }
@@ -260,7 +260,7 @@ SceneDataSelect.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var nameul = document.getElementById('datalist');
-                            nameul.style.top = nameul.offsetTop + 46;
+                            nameul.style.top = CSSPixels(nameul.offsetTop + 46);
                             i--;
                         }
                     }

@@ -32,11 +32,11 @@ SceneMultiVideo.prototype.handleShow = function (videodata) {
 
     if (videodata.videos.length > 0) {
         if (videodata.videos.length < 8) {
-            document.getElementById('OverlayMultiVideo').style.height = ((videodata.videos.length - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((videodata.videos.length - 1) * 46) + 80;
+            document.getElementById('OverlayMultiVideo').style.height = CSSPixels(((videodata.videos.length - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((videodata.videos.length - 1) * 46) + 80);
         } else {
-            document.getElementById('OverlayMultiVideo').style.height = ((8 - 1) * 46) + 46;
-            document.getElementById('OverlayMenuInfo').style.top = ((8 - 1) * 46) + 80;
+            document.getElementById('OverlayMultiVideo').style.height = CSSPixels(((8 - 1) * 46) + 46);
+            document.getElementById('OverlayMenuInfo').style.top = CSSPixels(((8 - 1) * 46) + 80);
         }
         document.getElementById('OverlayMultiVideo').style.visibility = "visible";
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
@@ -50,7 +50,7 @@ SceneMultiVideo.prototype.handleHide = function () {
     $.ajax({ url: 'http://' + serverIP + ':9000/api/v0/deleteall', success: function(result) {}});
 
 	document.getElementById('OverlayMultiVideo').style.visibility = "hidden";
-    document.getElementById('OverlayMultiVideo').style.height = 0;
+    document.getElementById('OverlayMultiVideo').style.height = CSSPixels(0);
 
     if (this.videodata.caller == "ReceiverPage") {
         widgetAPI.putInnerHTML(document.getElementById("noConnection"), receiverText[lang] + "HTTP://" + serverIP + ":9000");
@@ -58,7 +58,7 @@ SceneMultiVideo.prototype.handleHide = function () {
         document.getElementById('OverlayMenuInfo').style.visibility = "hidden";
     } else if (this.videodata.caller == "HostsMenu") {
         document.getElementById('OverlayHostsMenu').style.visibility = "visible";
-        document.getElementById('OverlayMenuInfo').style.top = this.prevtop;
+        document.getElementById('OverlayMenuInfo').style.top = CSSPixels(this.prevtop);
         widgetAPI.putInnerHTML(document.getElementById('menuinfo'), this.prevdata);
         document.getElementById('OverlayMenuInfo').style.visibility = "visible";
     }
@@ -130,7 +130,7 @@ SceneMultiVideo.prototype.handleKeyDown = function (keyCode) {
                         } else {
                             if (i < videolist.length - 1) {
                                 var genreul = document.getElementById('videolist');
-                                genreul.style.top = genreul.offsetTop - 46;
+                                genreul.style.top = CSSPixels(genreul.offsetTop - 46);
                                 i++;
                             }
                         }
@@ -150,7 +150,7 @@ SceneMultiVideo.prototype.handleKeyDown = function (keyCode) {
                     } else {
                         if (i > 0) {
                             var genreul = document.getElementById('videolist');
-                            genreul.style.top = genreul.offsetTop + 46;
+                            genreul.style.top = CSSPixels(genreul.offsetTop + 46);
                             i--;
                         }
                     }
