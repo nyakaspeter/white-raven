@@ -38,14 +38,14 @@ If you don't have root on your television or just don't want to run the server o
 
 ### Root version
 
-If you have a rooted E, F, or H series Samsung Smart TV, you can run both the client and the server simultaneously on your television. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the root version of White Raven. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Unfortunately Jackett cannot be run from the TV itself, but it can run on a number of devices, I've written about it [here](https://github.com/nyakaspeter/Raven-Torrent#how-to-use).
+If you have a rooted E, F, or H series Samsung Smart TV, you can run both the client and the server simultaneously on your television. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the root version of White Raven. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Unfortunately Jackett cannot be run from the TV itself, but it can run on a number of devices, I've written about it [here](https://github.com/nyakaspeter/white-raven-server#how-to-use).
 
 #### Installing the widget on rooted Samsung Smart TV E, F, H series
 
 1. Connect to your television over FTP/SFTP.
 2. Create a folder named as `WhiteRaven` inside the `/mtd_rwcommon/widgets/user` directory.
 3. Extract the contents of the downloaded zip file to this directory.
-4. If you want to use the Jackett provider or tweak server settings, modify `server.init` inside the `server` directory. See the [documentation](https://github.com/nyakaspeter/Raven-Torrent#cli-arguments) for launch arguments.
+4. If you want to use the Jackett provider or tweak server settings, modify `server.init` inside the `server` directory. See the [documentation](https://github.com/nyakaspeter/white-raven-server#cli-arguments) for launch arguments.
 5. Reboot your television.
 6. After reboot White Raven should show up in the apps section. After launching it, it should automatically start the server and connect to it.
 
@@ -59,9 +59,9 @@ You can build the White Raven widget zip file by running the following commands 
 
 #### Building the rooted version
 
-First you have to [download](https://github.com/nyakaspeter/Raven-Torrent/releases) or [build](https://github.com/nyakaspeter/Raven-Torrent#build-instructions) the ARM version of the server binary and place it in the `build` directory, then run:
+First you have to [download](https://github.com/nyakaspeter/white-raven-server/releases) or [build](https://github.com/nyakaspeter/white-raven-server#build-instructions) the ARM version of the server binary and place it in the `build` directory, then run:
 
-`go run build/build.go rooted -serverfile="build/raven"`
+`go run build/build.go rooted -serverfile="build/wrserver"`
 
 ## Browser compatibility mode
 

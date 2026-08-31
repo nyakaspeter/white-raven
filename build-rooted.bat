@@ -1,1 +1,1 @@
-go run build/build.go rooted -serverfile="build/raven"
+go run build/build.go rooted -serverfile="build/wrserver"
