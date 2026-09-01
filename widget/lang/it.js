@@ -71,7 +71,7 @@ var aboutInfoText = { it: 'GUARDA FILM E SERIE TV DA TORRENT IMMEDIATAMENTE!<SPA
                     '<DL><DT>MOVIE AND TV SHOW</DT>' + 
                     '<DD>THE MOVIE DB, TVMAZE</DD>' +
                     '<DT>TORRENT</DT>' +
-                    '<DD>YTS, EZTV, 1337X, ITORRENT</DD>' +
+                    '<DD>TORRENTIO</DD>' +
                     '<DT>SUBTITLE</DT>' +
                     '<DD>OPENSUBTITLES</DD></DL>' };
 var aboutFooterText = { it: 'VERSIONE: ' + version + '</BR>GITHUB.COM/SILENTMURDOCK' };
@@ -94,8 +94,8 @@ languageListText['it'] = ['AUTOMATICO',
                         'LITUANO', 'NORVEGESE', 'PERSIANO', 'POLACCO', 'PORTOGESE', 'PORTOGESE ( BR )', 'RUMENO', 'RUSSO', 'SERBO',
                         'SLOVACCO', 'SPAGNOLO', 'SWAHILI', 'SVEDESE', 'THAI', 'TURCO', 'URDU', 'VIETNAMITA'];                      
 interfaceLangText['it'] = ['AUTOMATICO', 'BULGARO', 'CROATO', 'INGLESE', 'UNGHERESE', 'SPAGNOLO', 'SLOCCO', 'ITALIANO'];
-movieSourceListText['it'] = ['JACKETT', 'NCORE', 'INSANE', 'YTS', '1337X', 'ITORRENT'];
-tvSourceListText['it'] = ['JACKETT', 'NCORE', 'INSANE', 'EZTV', '1337X', 'ITORRENT'];
+movieSourceListText['it'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
+tvSourceListText['it'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
 subtitleModeListText['it'] = ['IMDB ID', 'FILE HASH'];
 downSpeedListText['it'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'UNLIMITED'];
 upSpeedListText['it'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'DISABILITATA'];

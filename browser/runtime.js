@@ -340,11 +340,36 @@
       setDisplayRect: function (rect) {
         var element = ensureVideo();
         var container = element.parentElement;
+
         container.style.position = "absolute";
-        container.style.left = rect.left + "px";
-        container.style.top = rect.top + "px";
-        container.style.width = rect.width + "px";
-        container.style.height = rect.height + "px";
+        container.style.backgroundColor = "#000";
+
+        // AVPlay's display rectangle describes the native video plane. Keep a
+        // full-screen black surface behind fullscreen/letterboxed playback so
+        // the widget background cannot show through around a wide video.
+        if (rect.left === 0 && rect.width === 960) {
+          container.style.left = "0px";
+          container.style.top = "0px";
+          container.style.width = "960px";
+          container.style.height = "540px";
+
+          element.style.position = "absolute";
+          element.style.left = rect.left + "px";
+          element.style.top = rect.top + "px";
+          element.style.width = rect.width + "px";
+          element.style.height = rect.height + "px";
+        } else {
+          container.style.left = rect.left + "px";
+          container.style.top = rect.top + "px";
+          container.style.width = rect.width + "px";
+          container.style.height = rect.height + "px";
+
+          element.style.position = "absolute";
+          element.style.left = "0px";
+          element.style.top = "0px";
+          element.style.width = "100%";
+          element.style.height = "100%";
+        }
       }
     };
 

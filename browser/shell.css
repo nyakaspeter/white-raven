@@ -5,7 +5,11 @@
   color: #f5f7f8;
 }
 
-* {
+.browser-shell,
+.browser-toolbar,
+.browser-stage,
+#tv-screen,
+.browser-help {
   box-sizing: border-box;
 }
 

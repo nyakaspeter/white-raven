@@ -71,7 +71,7 @@ var aboutInfoText = { hr: 'GLEDAJTE FILMOVE I TV SERIJE POMOĆU TORRENTA!<SPAN><
                     '<DL><DT>FILMOVI I TV SERIJE</DT>' + 
                     '<DD>THE MOVIE DB, TVMAZE</DD>' +
                     '<DT>TORRENT</DT>' +
-                    '<DD>YTS, EZTV, 1337X, ITORRENT</DD>' +
+                    '<DD>TORRENTIO</DD>' +
                     '<DT>PODNASLOVI</DT>' +
                     '<DD>OPENSUBTITLES</DD></DL>' };
 var aboutFooterText = { hr: 'INAČICA: ' + version + '</BR>GITHUB.COM/SILENTMURDOCK' };
@@ -94,8 +94,8 @@ languageListText['hr'] = ['AUTOMATSKI',
                         'LITVANSKI', 'NORVEŠKI', 'PERZIJSKI', 'POLJSKI', 'PORTUGALSKI', 'PORTUGALSKI ( BR )', 'RUMUNJSKI', 'RUSKI', 'SRPSKI',
                         'SLOVAČKI', 'ŠPANJOLSKI', 'SVAHILI', 'ŠVEDSKI', 'TAJLANDSKI', 'TURSKI', 'URDU', 'VIJETNAMSKI'];                      
 interfaceLangText['hr'] = ['AUTOMATSKI', 'BUGARSKI', 'HRVATSKI', 'ENGLESKI', 'MAĐARSKI', 'ŠPANJOLSKI', 'SLOVAČKI', 'TALIJANSKI'];
-movieSourceListText['hr'] = ['JACKETT', 'NCORE', 'INSANE', 'YTS', '1337X', 'ITORRENT'];
-tvSourceListText['hr'] = ['JACKETT', 'NCORE', 'INSANE', 'EZTV', '1337X', 'ITORRENT'];
+movieSourceListText['hr'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
+tvSourceListText['hr'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
 subtitleModeListText['hr'] = ['IMDB ID', 'FILE HASH'];
 downSpeedListText['hr'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'NEOGRANIČENO'];
 upSpeedListText['hr'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'ONEMOGUČENO'];

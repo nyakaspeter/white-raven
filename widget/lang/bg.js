@@ -71,7 +71,7 @@ var aboutInfoText = { bg: 'ГЛЕДАЙТЕ ФИЛМИ И ТВ ШОУ ОТ ТО�
                     '<DL><DT>ФИЛМИ И ТВ ШОУ ПРАГРАМИ</DT>' + 
                     '<DD>THE MOVIE DB, TVMAZE</DD>' +
                     '<DT>TORRENT</DT>' +
-                    '<DD>YTS, EZTV, 1337X, ITORRENT</DD>' +
+                    '<DD>TORRENTIO</DD>' +
                     '<DT>СУБТИТРИ</DT>' +
                     '<DD>OPENSUBTITLES</DD></DL>' };
 var aboutFooterText = { bg: 'ВЕРСИЯ: ' + version + '</BR>GITHUB.COM/SILENTMURDOCK' };
@@ -94,8 +94,8 @@ languageListText['bg'] = ['АВТОМАТИЧНО',
                         'ЛИТОВСКИ', 'НОРВЕЖКИ', 'ПЕРСИЙСКИ', 'ПОЛСКИ', 'ПОРТУГАЛСКИ', 'ПОРТУГАЛСКИ ( БР )', 'РУМЪНСКИ', 'РУСКИ', 'СРЪБСКИ',
                         'СЛОВАШКИ', 'ИСПАНСКИ', 'СУАХИЛИ', 'ШВЕДСКИ', 'ТАЙЛАНДСКИ', 'ТУРСКИ', 'УРДУ', 'ВИЕТНАМСКИ'];                      
 interfaceLangText['bg'] = ['АВТОМАТИЧНИ', 'БЪЛГАРСКИ', 'ХЪРВАТСКИ', 'АНГЛИЙСКИ', 'УНГАРСКИ', 'ИСПАНСКИ', 'СЛОВАШКИ', 'ИТАЛИАНСКИ'];
-movieSourceListText['bg'] = ['JACKETT', 'NCORE', 'INSANE', 'YTS', '1337X', 'ITORRENT'];
-tvSourceListText['bg'] = ['JACKETT', 'NCORE', 'INSANE', 'EZTV', '1337X', 'ITORRENT'];
+movieSourceListText['bg'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
+tvSourceListText['bg'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
 subtitleModeListText['bg'] = ['IMDB ID', 'FILE HASH'];
 downSpeedListText['bg'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'НЕОГРАНИЧЕН'];
 upSpeedListText['bg'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'ЗАБРАНИ'];

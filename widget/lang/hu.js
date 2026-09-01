@@ -71,7 +71,7 @@ var aboutInfoText = { hu: 'NÉZZ FILMEKET ÉS SOROZATOKAT TORRENTEKBŐL!<SPAN></
                     '<DL><DT>FILM ÉS SOROZAT</DT>' + 
                     '<DD>THE MOVIE DB, TVMAZE</DD>' +
                     '<DT>TORRENT</DT>' +
-                    '<DD>YTS, EZTV, 1337X, ITORRENT</DD>' +
+                    '<DD>TORRENTIO</DD>' +
                     '<DT>FELIRAT</DT>' +
                     '<DD>OPENSUBTITLES</DD></DL>' };
 var aboutFooterText = { hu: 'VERZIÓ: ' + version + '</BR>GITHUB.COM/SILENTMURDOCK' };
@@ -94,8 +94,8 @@ languageListText['hu'] = ['AUTOMATIKUS',
                         'LITVÁN', 'NORVÉG', 'PERZSA ', 'LENGYEL', 'PORTUGÁL', 'PORTUGÁL ( BR )', 'ROMÁN', 'OROSZ', 'SZERB',
                         'SZLOVÁK', 'SPANYOL', 'SZUAHÉLI', 'SVÉD', 'THAI', 'TÖRÖK', 'URDU', 'VIETNÁMI'];                        
 interfaceLangText['hu'] = ['AUTOMATIKUS', 'BOLGÁR', 'HORVÁT', 'ANGOL', 'MAGYAR', 'SPANYOL', 'SZLOVÁK', 'OLASZ'];
-movieSourceListText['hu'] = ['JACKETT', 'NCORE', 'INSANE', 'YTS', '1337X', 'ITORRENT'];
-tvSourceListText['hu'] = ['JACKETT', 'NCORE', 'INSANE', 'EZTV', '1337X', 'ITORRENT'];
+movieSourceListText['hu'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
+tvSourceListText['hu'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
 subtitleModeListText['hu'] = ['IMDB ID', 'FÁJL HASH'];
 downSpeedListText['hu'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'KORLÁTLAN'];
 upSpeedListText['hu'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'LETILTVA'];
