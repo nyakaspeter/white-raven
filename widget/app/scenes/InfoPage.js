@@ -70,6 +70,22 @@ SceneInfoPage.prototype.handleFocus = function () {};
 
 SceneInfoPage.prototype.handleBlur = function () {};
 
+SceneInfoPage.prototype.GetSeasonLabel = function (season) {
+    return parseInt(season, 10) === 0 ? "*" : season;
+};
+
+SceneInfoPage.prototype.GetEpisodeLabel = function (episode) {
+    return parseInt(episode, 10) === 0 ? "*" : episode;
+};
+
+SceneInfoPage.prototype.GetSeasonValue = function (season) {
+    return season === "*" ? 0 : parseInt(season, 10);
+};
+
+SceneInfoPage.prototype.GetEpisodeValue = function (episode) {
+    return episode === "*" ? 0 : parseInt(episode, 10);
+};
+
 SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
     currentkeytime = new Date();
     if (currentkeytime - lastkeytime > keytimeout) {
@@ -130,7 +146,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                             var se = 0;
                             for(var i=0; i<sb.length; i++) {
                                 if (sb[i].className == "seasonboxes selectedbox") {
-                                    ss = sb[i].innerHTML;
+                                    ss = this.GetSeasonValue(sb[i].innerHTML);
                                 }
                             }
                             if (ss<10) { ss = "0" + ss; }
@@ -138,7 +154,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                             var eb = document.getElementsByClassName('episodeboxes');
                             for(var i=0; i<eb.length; i++) {
                                 if (eb[i].className == "episodeboxes selectedbox") {
-                                    se = eb[i].innerHTML;
+                                    se = this.GetEpisodeValue(eb[i].innerHTML);
                                 }
                             }
                             if (se<10) { se = "0" + se; }
@@ -227,9 +243,9 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                 if ((i + 1) >= this.maxee && (((i + 1) * this.episodescroll) + ebox.offsetLeft == this.maxee * this.episodescroll)) {
                                     if ((i + 1) < (eb.length - 1)) {
                                         ebox.style.left = CSSPixels(ebox.offsetLeft - this.episodescroll);
-                                        widgetAPI.putInnerHTML(eb[i + 1], this.episodesave[i + 2]);
+                                        widgetAPI.putInnerHTML(eb[i + 1], this.GetEpisodeLabel(this.episodesave[i + 2]));
                                         widgetAPI.putInnerHTML(eb[i + 2 - this.maxee], "&#xF81C;");
-                                        widgetAPI.putInnerHTML(eb[i + 1 - this.maxee], this.episodesave[i + 2 - this.maxee]);
+                                        widgetAPI.putInnerHTML(eb[i + 1 - this.maxee], this.GetEpisodeLabel(this.episodesave[i + 2 - this.maxee]));
                                         
                                         if (i + 2 != eb.length - 1) {
                                             widgetAPI.putInnerHTML(eb[i + 2], "&#xF81E;");
@@ -242,7 +258,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     eb[i+1].className = "episodeboxes activebox";
                                 } else {
                                     if (i > this.maxee && ((i * this.episodescroll) + ebox.offsetLeft == this.maxee * this.episodescroll)) {
-                                        widgetAPI.putInnerHTML(eb[eb.length - 1 - this.maxee], this.episodesave[eb.length - this.maxee]);
+                                        widgetAPI.putInnerHTML(eb[eb.length - 1 - this.maxee], this.GetEpisodeLabel(this.episodesave[eb.length - this.maxee]));
                                         widgetAPI.putInnerHTML(eb[this.maxee], "&#xF81E;");
                                     }
                                     document.getElementById('episodecontent').style.left = CSSPixels(0);
@@ -263,9 +279,9 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     if ((i + 1) >= this.maxse && (((i + 1) * this.seasonscroll) + sbox.offsetLeft == this.maxse * this.seasonscroll)) {
                                         if ((i + 1) < (sb.length - 1)) {
                                             sbox.style.left = CSSPixels(sbox.offsetLeft - this.seasonscroll);
-                                            widgetAPI.putInnerHTML(sb[i + 1], this.seasonsave[i + 2]);
+                                            widgetAPI.putInnerHTML(sb[i + 1], this.GetSeasonLabel(this.seasonsave[i + 2]));
                                             widgetAPI.putInnerHTML(sb[i + 2 - this.maxse], "&#xF81C;");
-                                            widgetAPI.putInnerHTML(sb[i + 1 - this.maxse], this.seasonsave[i + 2 - this.maxse]);
+                                            widgetAPI.putInnerHTML(sb[i + 1 - this.maxse], this.GetSeasonLabel(this.seasonsave[i + 2 - this.maxse]));
                                             
                                             if (i + 2 != sb.length - 1) {
                                                 widgetAPI.putInnerHTML(sb[i + 2], "&#xF81E;");
@@ -276,15 +292,15 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                     }
                                     if (i < sb.length - 1) {
                                         sb[i+1].className = "seasonboxes activebox";
-                                        var seasoncount = sb[i+1].innerHTML;
+                                        var seasoncount = this.GetSeasonValue(sb[i+1].innerHTML);
                                     } else {
                                         if (i > this.maxse && ((i * this.seasonscroll) + sbox.offsetLeft == this.maxse * this.seasonscroll)) {
-                                            widgetAPI.putInnerHTML(sb[sb.length - 1 - this.maxse], this.seasonsave[sb.length - this.maxse]);
+                                            widgetAPI.putInnerHTML(sb[sb.length - 1 - this.maxse], this.GetSeasonLabel(this.seasonsave[sb.length - this.maxse]));
                                             widgetAPI.putInnerHTML(sb[this.maxse], "&#xF81E;");
                                         }
                                         document.getElementById('seasoncontent').style.left = CSSPixels(0);
                                         sb[0].className = "seasonboxes activebox";
-                                        var seasoncount = sb[0].innerHTML;
+                                        var seasoncount = this.GetSeasonValue(sb[0].innerHTML);
                                     }
                                     
                                     // Insert season episode boxes
@@ -301,7 +317,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                                 episodeboxes.className = 'episodeboxes';
                                                 episodeboxes.id = 'e' + j;
                                                 episodeboxes.style.width = CSSPixels(this.episodeboxsize);
-                                                widgetAPI.putInnerHTML(episodeboxes, episodeobject[j].number);
+                                                widgetAPI.putInnerHTML(episodeboxes, this.GetEpisodeLabel(episodeobject[j].number));
                                                 episodecontent.appendChild(episodeboxes);
                                                 this.episodesave[saveindex] = episodeobject[j].number;
                                                 saveindex++;
@@ -344,25 +360,25 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                             //console.log(ebox.offsetLeft, ':', i * -26);
                             if (i > 0) {
                                 if (ebox.offsetLeft == (i - 1) * (-this.episodescroll)) {
-                                    widgetAPI.putInnerHTML(eb[i], this.episodesave[i + 1]);
-                                    widgetAPI.putInnerHTML(eb[i - 1], this.episodesave[i]);
+                                    widgetAPI.putInnerHTML(eb[i], this.GetEpisodeLabel(this.episodesave[i + 1]));
+                                    widgetAPI.putInnerHTML(eb[i - 1], this.GetEpisodeLabel(this.episodesave[i]));
                                     if (i - 2 > 0) {
                                         ebox.style.left = CSSPixels(ebox.offsetLeft + this.episodescroll);
                                         widgetAPI.putInnerHTML(eb[i - 2], "&#xF81C;");
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 2], "&#xF81E;");
-                                        widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.episodesave[i + this.maxee]);
+                                        widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.GetEpisodeLabel(this.episodesave[i + this.maxee]));
                                     } else if (i - 2 == 0) {
                                         ebox.style.left = CSSPixels(ebox.offsetLeft + this.episodescroll);
-                                        widgetAPI.putInnerHTML(eb[i - 2], this.episodesave[i - 1]);
+                                        widgetAPI.putInnerHTML(eb[i - 2], this.GetEpisodeLabel(this.episodesave[i - 1]));
                                         widgetAPI.putInnerHTML(eb[i + this.maxee - 2], "&#xF81E;");
-                                        widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.episodesave[i + this.maxee]);
+                                        widgetAPI.putInnerHTML(eb[i + this.maxee - 1], this.GetEpisodeLabel(this.episodesave[i + this.maxee]));
                                     }
                                 }
                                 eb[i-1].className = "episodeboxes activebox";
                             } else {
                                 if (eb.length > (this.maxee + 1)) {
                                     ebox.style.left = CSSPixels(ebox.offsetLeft - ((eb.length - (this.maxee + 1)) * this.episodescroll));
-                                    widgetAPI.putInnerHTML(eb[this.maxee], this.episodesave[this.maxee + 1]);
+                                    widgetAPI.putInnerHTML(eb[this.maxee], this.GetEpisodeLabel(this.episodesave[this.maxee + 1]));
                                     widgetAPI.putInnerHTML(eb[eb.length - 1 - this.maxee], "&#xF81C;");
                                 }
                                 eb[eb.length-1].className = "episodeboxes activebox";
@@ -381,30 +397,30 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
 
                                 if (i > 0) {
                                     if (sbox.offsetLeft == (i - 1) * (-this.seasonscroll)) {
-                                        widgetAPI.putInnerHTML(sb[i], this.seasonsave[i + 1]);
-                                        widgetAPI.putInnerHTML(sb[i - 1], this.seasonsave[i]);
+                                        widgetAPI.putInnerHTML(sb[i], this.GetSeasonLabel(this.seasonsave[i + 1]));
+                                        widgetAPI.putInnerHTML(sb[i - 1], this.GetSeasonLabel(this.seasonsave[i]));
                                         if (i - 2 > 0) {
                                             sbox.style.left = CSSPixels(sbox.offsetLeft + this.seasonscroll);
                                             widgetAPI.putInnerHTML(sb[i - 2], "&#xF81C;");
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 2], "&#xF81E;");
-                                            widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.seasonsave[i + this.maxse]);
+                                            widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.GetSeasonLabel(this.seasonsave[i + this.maxse]));
                                         } else if (i - 2 == 0) {
                                             sbox.style.left = CSSPixels(sbox.offsetLeft + this.seasonscroll);
-                                            widgetAPI.putInnerHTML(sb[i - 2], this.seasonsave[i - 1]);
+                                            widgetAPI.putInnerHTML(sb[i - 2], this.GetSeasonLabel(this.seasonsave[i - 1]));
                                             widgetAPI.putInnerHTML(sb[i + this.maxse - 2], "&#xF81E;");
-                                            widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.seasonsave[i + this.maxse]);
+                                            widgetAPI.putInnerHTML(sb[i + this.maxse - 1], this.GetSeasonLabel(this.seasonsave[i + this.maxse]));
                                         }                                    
                                     }
                                     sb[i-1].className = "seasonboxes activebox";
-                                    var seasoncount = sb[i-1].innerHTML;
+                                    var seasoncount = this.GetSeasonValue(sb[i-1].innerHTML);
                                 } else {
                                     if (sb.length > (this.maxse + 1)) {
                                         sbox.style.left = CSSPixels(sbox.offsetLeft - ((sb.length - (this.maxse + 1)) * this.seasonscroll));
-                                        widgetAPI.putInnerHTML(sb[this.maxse], this.seasonsave[this.maxse + 1]);
+                                        widgetAPI.putInnerHTML(sb[this.maxse], this.GetSeasonLabel(this.seasonsave[this.maxse + 1]));
                                         widgetAPI.putInnerHTML(sb[sb.length - 1 - this.maxse], "&#xF81C;");
                                     }
                                     sb[sb.length-1].className = "seasonboxes activebox";
-                                    var seasoncount = sb[sb.length - 1].innerHTML;
+                                    var seasoncount = this.GetSeasonValue(sb[sb.length - 1].innerHTML);
                                 }
 
                                 // Insert season episode boxes
@@ -421,7 +437,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                                             episodeboxes.className = 'episodeboxes';
                                             episodeboxes.id = 'e' + j;
                                             episodeboxes.style.width = CSSPixels(this.episodeboxsize);
-                                            widgetAPI.putInnerHTML(episodeboxes, episodeobject[j].number);
+                                            widgetAPI.putInnerHTML(episodeboxes, this.GetEpisodeLabel(episodeobject[j].number));
                                             episodecontent.appendChild(episodeboxes);
                                             this.episodesave[saveindex] = episodeobject[j].number;
                                             saveindex++;
@@ -825,8 +841,9 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
 
         var maxLength = 1;
         for (var i=0; i<maxIndex; i++) {
-            if (maxLength < dataobject[i].season.toString().length) {
-                maxLength = dataobject[i].season.toString().length;
+            var seasonLabel = this.GetSeasonLabel(dataobject[i].season).toString();
+            if (maxLength < seasonLabel.length) {
+                maxLength = seasonLabel.length;
             }
         }
 
@@ -862,7 +879,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                     seasonboxes.className = 'seasonboxes';
                     seasonboxes.id = 's' + seasoncount;
                     seasonboxes.style.width = CSSPixels(this.seasonboxsize);
-                    widgetAPI.putInnerHTML(seasonboxes, dataobject[i].season);
+                    widgetAPI.putInnerHTML(seasonboxes, this.GetSeasonLabel(dataobject[i].season));
                     seasoncontent.appendChild(seasonboxes);
                     this.seasonsave[saveindex] = dataobject[i].season;
                     saveindex++;
@@ -897,8 +914,9 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
 
         maxLength = 1;
         for(var i=0; i<maxIndex; i++) {
-            if (maxLength < dataobject[i].number.toString().length) {
-                maxLength = dataobject[i].number.toString().length;
+            var episodeLabel = this.GetEpisodeLabel(dataobject[i].number).toString();
+            if (maxLength < episodeLabel.length) {
+                maxLength = episodeLabel.length;
             }
         }
         
@@ -932,7 +950,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
                     episodeboxes.className = 'episodeboxes';
                     episodeboxes.id = 'e' + i;
                     episodeboxes.style.width = CSSPixels(this.episodeboxsize);
-                    widgetAPI.putInnerHTML(episodeboxes, dataobject[i].number);
+                    widgetAPI.putInnerHTML(episodeboxes, this.GetEpisodeLabel(dataobject[i].number));
                     episodecontent.appendChild(episodeboxes);
                     this.episodesave[saveindex] = dataobject[i].number;
                     saveindex++;
