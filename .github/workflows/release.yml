@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-master
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository and tags
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: Determine release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          existing_tag="$(git tag --points-at "$GITHUB_SHA" --sort=-version:refname | awk '/^v[0-9]+\.[0-9]+\.[0-9]+$/ { print; exit }')"
+
+          if [[ -n "$existing_tag" ]] && gh release view "$existing_tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "tag=$existing_tag" >> "$GITHUB_OUTPUT"
+            echo "Commit already has published release $existing_tag."
+            exit 0
+          fi
+
+          if [[ -n "$existing_tag" ]]; then
+            version="${existing_tag#v}"
+          else
+            version="$(bash .github/scripts/next-version.sh)"
+          fi
+
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Preparing v$version."
+
+      - name: Build rootless widget
+        if: steps.version.outputs.release == 'true'
+        run: go run ./build rootless -version "${{ steps.version.outputs.version }}"
+
+      - name: Build rooted widget
+        if: steps.version.outputs.release == 'true'
+        run: go run ./build rooted -version "${{ steps.version.outputs.version }}"
+
+      - name: Publish GitHub release
+        if: steps.version.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          gh release create "$RELEASE_TAG" \
+            "build/whiteraven-rootless-${RELEASE_VERSION}.zip#White Raven rootless" \
+            "build/whiteraven-${RELEASE_VERSION}.zip#White Raven rooted" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "White Raven $RELEASE_TAG" \
+            --generate-notes

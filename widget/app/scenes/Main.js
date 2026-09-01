@@ -4,8 +4,9 @@
 // Common settings
 var serverIP = "127.0.0.1";
 
-// Current version
-var version = "0.7.0";
+// Current version. Packaged builds replace the placeholder; the browser
+// harness supplies WHITE_RAVEN_VERSION at runtime.
+var version = typeof WHITE_RAVEN_VERSION == "string" ? WHITE_RAVEN_VERSION : "__WHITE_RAVEN_VERSION__";
 
 // Detect TV IP address
 var network = document.getElementById('networkplugin');
