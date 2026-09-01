@@ -35,8 +35,8 @@ var searchMissingSettingsText = { en: '<img id="return-icon"> RETURN TO MAIN PAG
 var torrentText = { en: '...SEARCHING TORRENT URLS...' };
 var downloadText = { en: '...BUFFERING TORRENT FILE ... ' };
 var downloadSpeedText = { en: 'DOWNLOAD SPEED: ' };
-var downloadBufferText = { en: '<span id="sp">~<span id="sp">DOWNLOADED DATA: ' };
-var downloadPeersText = { en: '<span id="sp">~<span id="sp">PEERS: ' };
+var downloadBufferText = { en: '<span id="sp">·<span id="sp">DOWNLOADED DATA: ' };
+var downloadPeersText = { en: '<span id="sp">·<span id="sp">PEERS: ' };
 var playText = { en: '...STARTING VIDEO...' };
 var restartServerText = { en: '...RESTARTING SERVER...' };
 var novideoText = { en: 'NO PLAYABLE VIDEO FOUND!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { en: 'ENTER YOUR SERVER API KEY' };
 var seasonText = { en: 'Season: ' };
 var episodeText = { en: 'Episode: ' };
 var genresText = { en: 'Genre: ' };
-var yearText = { en: ' ~ Year: ' };
-var runtimeText = { en: ' ~ Runtime: ' };
-var ratingText = { en: ' min ~ Rating: ' };
-var subtitleDisabledText = { en: 'SUBTITLE - DISABLED' };
+var yearText = { en: ' · Year: ' };
+var runtimeText = { en: ' · Runtime: ' };
+var ratingText = { en: ' min · Rating: ' };
+var subtitleDisabledText = { en: 'SUBTITLE SEARCH - DISABLED' };
 var logDisabledText = { en: 'CREATE LOG FILE - DISABLED' };
 var subtitleShowText = { en: 'HIDE SUBTITLE' };
 var subtitleHiddenText = { en: 'SHOW SUBTITLE' };
 var subtitleNotFoundText = { en: 'NO SUBTITLE FOUND' };
 var subtitleSearchText = { en: ['SEARCHING SUBTITLE', 'LOADING SUBTITLE'] };
-var subtitleMustEnabledText = { en: 'YOU NEED TO ENABLE SUBTITLES IN THE SETTINGS MENU' };
+var subtitleMustEnabledText = { en: 'NO SUBTITLE TRACKS AVAILABLE. ENABLE SUBTITLE SEARCH IN SETTINGS TO SEARCH ONLINE' };
 var aboutInfoText = { en: 'WATCH MOVIES AND TV SHOWS FROM TORRENTS INSTANTLY!<SPAN></SPAN>DOWNLOADING COPYRIGHTED MATERIAL MAY BE ILLEGAL IN YOUR COUNTRY. USE AT YOUR OWN RISK.<SPAN></SPAN>' + 
                     'THIS PROGRAM IS BASED ON THE FOLLOWING DATABASES:' +
                     '<DL><DT>MOVIE AND TV SHOW</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['en'] = ['ALL GENRE', 'ACTION', 'ADVENTURE', 'ANIMATION', 'C
 genresTVMenuText['en'] = ['ALL GENRE', 'ACTION & ADVENTURE', 'ANIMATION', 'COMEDY', 'CRIME', 'DOCUMENTARY', 'DRAMA', 'FAMILY', 'KIDS', 'MYSTERY', 'NEWS', 'REALITY', 'SCI-FI & FANTASY', 'SOAP', 'TALK', 'WAR & POLITICS', 'WESTERN'];
 sortMovieMenuText['en'] = ['MOST POPULAR', 'RECENTLY RELEASED', 'TOP RATED'];
 sortTVMenuText['en'] = ['MOST POPULAR', 'RECENTLY RELEASED', 'TOP RATED'];
-settingsMainMenuText['en'] = ['INTERFACE LANGUAGE', 'MOVIE DATABASE LANGUAGE', 'MOVIE SOURCE', 'TV SHOW SOURCE', 'SUBTITLE - ENABLED', 'SUBTITLE LANGUAGE', 'SUBTITLE SEARCH MODE', 'DOWNLOAD SPEED', 'UPLOAD SPEED', 'CREATE LOG FILE - ENABLED', 'APPLY SETTINGS', 'RESTORE DEFAULTS'];
-subtitleMenuText['en'] = ['HIDE SUBTITLE', 'SYNC SUBTITLE', 'LOAD ANOTHER SUBTITLE', 'SEARCH NEW SUBTITLE', 'SET SUBTITLE STYLE'];
+settingsMainMenuText['en'] = ['INTERFACE LANGUAGE', 'MOVIE DATABASE LANGUAGE', 'MOVIE SOURCE', 'TV SHOW SOURCE', 'SUBTITLE SEARCH - ENABLED', 'SUBTITLE LANGUAGE', 'SUBTITLE SEARCH MODE', 'DOWNLOAD SPEED', 'UPLOAD SPEED', 'CREATE LOG FILE - ENABLED', 'APPLY SETTINGS', 'RESTORE DEFAULTS'];
+subtitleMenuText['en'] = ['HIDE SUBTITLE', 'SYNC SUBTITLE', 'SELECT SUBTITLE', 'SEARCH NEW SUBTITLE', 'SET SUBTITLE STYLE'];
 subtitleLoadText['en'] = ['PLEASE WAIT - LOADING SUBTITLE', 'SUBTITLE LOADED SUCCESSFULLY', 'CANNOT LOAD SUBTITLE'];
 subtitleStyleText['en'] = ['TEXT SIZE : ', 'TEXT POSITION : ', 'TEXT COLOR : ', 'BACKGROUND COLOR : ', 'BACKGROUND OPACITY : '];
 resumeMenuText['en'] = ['RESUME FROM', 'START FROM BEGINNING'];
+
+var playbackTrackText = {"en": ["EMBEDDED", "AUDIO TRACK SELECTION UNAVAILABLE", "COULD NOT SELECT TRACK"]};

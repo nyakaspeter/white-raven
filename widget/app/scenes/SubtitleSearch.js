@@ -118,7 +118,7 @@ SceneSubtitleSearch.prototype.handleKeyDown = function (keyCode) {
             	sf.key.preventDefault();
                 if (this.waiting == false) {
                 	sf.scene.hide('SubtitleSearch');
-                    if (saveSettings['issubtitleenabled'] == "true" && this.caller == "PlayerPage") {
+                    if (this.caller == "PlayerPage") {
                         sf.scene.focus('PlayerPage');
                     } else {
                         sf.scene.focus('SubtitleMenu');
@@ -320,11 +320,10 @@ SceneSubtitleSearch.prototype.SearchSubtitlesByText = function(title, language, 
                 reqSuccess = true;
                 //alert("SUBTITLE SEARCH: " + xhr.responseText);
                 var dataobject = JSON.parse(xhr.responseText).results;
-                if (dataobject) {
+                if (dataobject && dataobject.length > 0) {
                     subtitleslist = dataobject;
 
-                    // Need to enable, because subtitles found
-                    issubtitle = true;
+                    // Results are available; selection decides which subtitle is active.
                     
                     this.waiting = false;
                     

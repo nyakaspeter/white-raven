@@ -516,6 +516,11 @@ function FindLocalServer(fn) {
 
 // Start or stop White Raven server
 function StartStopWRServer(command) {
+    // Rootless builds force both flags to false and use an independent server.
+    if (command == "stop" && (window.WHITE_RAVEN_BROWSER || !isRooted || !isSupported)) {
+        return;
+    }
+
     SERVER_OK = false;
     document.getElementById("playbutton").style.width = CSSPixels(210);
     widgetAPI.putInnerHTML(document.getElementById("playbutton"), noServerButtonText[lang]);
@@ -1908,10 +1913,12 @@ SceneMain.prototype.handleHide = function(){
         return;
     }
 
-    // SMART HUB, SOURCE or EXIT key pressed so need to stop the server.    
-    alert("[White Raven] SMART HUB, SOURCE or EXIT key pressed and stopped the application.");
-    var imgStop = document.createElement("img");
-    imgStop.setAttribute("src", "http://" + serverIP + ":9000/api/v0/stop");
+    // Only the rooted widget manages the TV-local server's lifetime.
+    if (isRooted && isSupported) {
+        alert("[White Raven] SMART HUB, SOURCE or EXIT key pressed and stopped the application.");
+        var imgStop = document.createElement("img");
+        imgStop.setAttribute("src", "http://" + serverIP + ":9000/api/v0/stop");
+    }
 
     // Save resume data
     resume['time'] = sf.scene.get('PlayerPage').GetResumeTime();

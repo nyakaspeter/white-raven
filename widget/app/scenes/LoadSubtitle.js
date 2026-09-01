@@ -3,6 +3,7 @@ function SceneLoadSubtitle() {}
 SceneLoadSubtitle.prototype.initialize = function () {
     this.pos = 0;
     this.waiting = false;
+    this.request = (this.request || 0) + 1;
     this.prevtop = document.getElementById('OverlayPlayerMenuInfo').style.top;
     this.prevdata = document.getElementById('playermenuinfo').innerHTML;
 }
@@ -17,51 +18,36 @@ SceneLoadSubtitle.prototype.handleShow = function (data) {
     filelist.style.top = 'initial';
     widgetAPI.putInnerHTML(filelist, "");
 
-    if (issubtitle == true) {
-
-        subtitleslist.splice(99, subtitleslist.length);
-
-        for(var i=0; i<subtitleslist.length; i++) {    
-            var listitem = document.createElement('li');
-            var aitem = document.createElement('a');
-            if (i == 0) {
-                aitem.className = "active";
-            } else {
-                aitem.className = "";
-            }
-
-            var pos = languageListText['shortcode'].indexOf(subtitleslist[i].lang);
-            if (pos != -1) {
-                widgetAPI.putInnerHTML(aitem, subtitleslist[i].subtitlename.substring(0, 70) + " | " + languageListText[lang][pos]);
-            } else {
-                widgetAPI.putInnerHTML(aitem, subtitleslist[i].subtitlename.substring(0, 70));
-            }
-            listitem.appendChild(aitem);
-            filelist.appendChild(listitem);
-        }
-
-        if (subtitleslist.length > 0) {
-            if (subtitleslist.length < 5) {
-                document.getElementById('OverlayLoadSubtitleMenu').style.height = CSSPixels(((subtitleslist.length - 1) * 46) + 46);
-                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((subtitleslist.length - 1) * 46) - 54);
-            } else {
-                document.getElementById('OverlayLoadSubtitleMenu').style.height = CSSPixels(((5 - 1) * 46) + 46);
-                document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(((5 - 1) * 46) - 54);
-            }
-            document.getElementById('OverlayLoadSubtitleMenu').style.visibility = "visible";
-            widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), "1 / " + subtitleslist.length);
-            document.getElementById('OverlayPlayerMenuInfo').style.visibility = "visible";
-        }
+    this.entries = sf.scene.get('PlayerPage').getSubtitleChoices();
+    for (var i = 0; i < this.entries.length; i++) {
+        var listitem = document.createElement('li');
+        var aitem = document.createElement('a');
+        aitem.className = i === 0 ? 'active' : '';
+        aitem.textContent = (this.entries[i].selected ? '✓ ' : '') + this.entries[i].label;
+        listitem.appendChild(aitem);
+        filelist.appendChild(listitem);
+    }
+    var rows = Math.max(1, Math.min(5, this.entries.length));
+    document.getElementById('OverlayLoadSubtitleMenu').style.height = CSSPixels(rows * 46);
+    document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels((rows - 1) * 46 - 54);
+    document.getElementById('OverlayLoadSubtitleMenu').style.visibility = 'visible';
+    document.getElementById('playermenuinfo').textContent = this.entries.length ? '1 / ' + this.entries.length : '';
+    document.getElementById('OverlayPlayerMenuInfo').style.visibility = 'visible';
+    if (!this.entries.length) {
+        filelist.textContent = subtitleNotFoundText[lang];
+        this.waiting = true;
     }
 }
 
 SceneLoadSubtitle.prototype.handleHide = function (data) {
+    this.request++;
+    data = data || {caller: this.caller};
     document.getElementById('OverlayLoadSubtitleMenu').style.visibility = "hidden";
     document.getElementById('OverlayPlayerMenuInfo').style.top = CSSPixels(this.prevtop);
     widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), this.prevdata);
       
     if (data.caller == "SubtitleMenu") {
-        document.getElementById('OverlaySubtitleMenu').style.visibility = "visible";
+        sf.scene.get('SubtitleMenu').handleShow();
     } else if (data.caller == "SubtitleSearch") {
         document.getElementById('OverlayPlayerMenuInfo').style.visibility = "hidden";
     }
@@ -81,18 +67,7 @@ SceneLoadSubtitle.prototype.handleKeyDown = function (keyCode) {
         	        var filelist = document.getElementById('filelist').getElementsByTagName("li");
                     for(var i=0; i<filelist.length; i++) {
                         if (filelist[i].children[0].className == 'active') {
-                            this.waiting = true;
-                            sf.scene.get('PlayerPage').DownloadAnotherSubtitle(subtitleslist[i].subdata, filelist[i].children[0], filelist[i].children[0].innerHTML, function(state, menuelement, menuHTML) {
-                                if (state == true) {
-                                    widgetAPI.putInnerHTML(menuelement, subtitleLoadText[lang][1]); // ok text
-                                } else {
-                                    widgetAPI.putInnerHTML(menuelement, subtitleLoadText[lang][2]); // error text
-                                }
-                                setTimeout(function() {
-                                    widgetAPI.putInnerHTML(menuelement, menuHTML);
-                                    this.waiting = false;
-                                }.bind(this), 1000);
-                            }.bind(this));
+                            this.selectEntry(i, filelist[i].children[0]);
                             break;
                         }
                     }
@@ -173,4 +148,36 @@ SceneLoadSubtitle.prototype.SetZIndex = function(state, number) {
     document.getElementById("OverlayVideoFooter").style.zIndex = number;
     document.getElementById("VideoFooter").style.zIndex = number;
     document.getElementById("waitscreen").style.visibility = state;
+};
+
+SceneLoadSubtitle.prototype.selectEntry = function(index, item) {
+    var entry = this.entries[index];
+    var player = sf.scene.get('PlayerPage');
+    var request = ++this.request;
+    this.waiting = true;
+    item.textContent = subtitleLoadText[lang][0];
+    var finished = function(selected) {
+        if (request !== this.request) return;
+        item.textContent = subtitleLoadText[lang][selected ? 1 : 2];
+        setTimeout(function() {
+            if (request !== this.request) return;
+            var choices = player.getSubtitleChoices();
+            var items = document.getElementById('filelist').getElementsByTagName('li');
+            for (var i = 0; i < this.entries.length; i++) {
+                var selected = false;
+                for (var j = 0; j < choices.length; j++) {
+                    if (choices[j].key === this.entries[i].key) selected = choices[j].selected;
+                }
+                items[i].children[0].textContent = (selected ? '✓ ' : '') + this.entries[i].label;
+            }
+            this.waiting = false;
+        }.bind(this), 700);
+    }.bind(this);
+    if (entry.source === 'embedded') {
+        var result = player.selectEmbeddedSubtitle(entry.index);
+        if (result && typeof result.then === 'function') result.then(finished, function() { finished(false); });
+        else finished(result);
+    } else {
+        player.DownloadAnotherSubtitle(entry.url, item, entry.label, finished);
+    }
 };

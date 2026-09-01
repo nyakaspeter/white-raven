@@ -278,6 +278,9 @@ SceneReceiverPage.prototype.StartPlayback = function(url, titletext, langpos, fi
     infoHash = TorrentStatsURL(this.playurl);
     
     issubtitle = false;
+    subtitleslist = [];
+    subtitledata = [];
+    subtitlepos = 0;
     if (saveSettings['issubtitleenabled'] == "true") {
         this.SearchSubtitlesByText(this.titletext, this.filetitle, languageListText['shortcode'][this.langpos], s, e);                             
     } else {
@@ -352,7 +355,7 @@ SceneReceiverPage.prototype.SearchSubtitlesByText = function(title, filetitle, l
                 reqSuccess = true;
                 //alert("SUBTITLE SEARCH: " + xhr.responseText);
                 var dataobject = JSON.parse(xhr.responseText).results;
-                if (dataobject) {
+                if (dataobject && dataobject.length > 0) {
                     subtitleslist = dataobject;
 
                     var similar = 0;
@@ -428,8 +431,11 @@ SceneReceiverPage.prototype.DownloadSubtitle = function(zipdownload) {
                 //alert("SUBTITLE DOWNLOAD: " + xhr.responseText);
                 widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), subtitleLoadText[lang][1]);
 
-                issubtitle = true;
                 subtitledata = ParseSrtSubtitle(xhr.responseText);
+                issubtitle = subtitledata.length > 0;
+                for (var i = 0; i < subtitleslist.length; i++) {
+                    if (subtitleslist[i].subdata === zipdownload) subtitlepos = i;
+                }
                 this.PlayMovieUrl(this.playurl, this.titletext);
             } else {
                 reqSuccess = true;

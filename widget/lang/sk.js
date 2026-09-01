@@ -35,8 +35,8 @@ var searchMissingSettingsText = { sk: '<img id="return-icon"> NÁVRAT NA HLAVNÚ
 var torrentText = { sk: '...VYHĽADÁVANIE TORRENTOVÝCH ADRIES URL...' };
 var downloadText = { sk: '...VYROVNÁVANIE MEDZIPAMÄTE TORRENTOVEHO SÚBORU ... ' };
 var downloadSpeedText = { sk: 'RÝCHLOSŤ SŤAHOVANIA: ' };
-var downloadBufferText = { sk: '<span id="sp">~<span id="sp">STIAHNUTÉ ÚDAJE: ' };
-var downloadPeersText = { sk: '<span id="sp">~<span id="sp">PEERS: ' };
+var downloadBufferText = { sk: '<span id="sp">·<span id="sp">STIAHNUTÉ ÚDAJE: ' };
+var downloadPeersText = { sk: '<span id="sp">·<span id="sp">PEERS: ' };
 var playText = { sk: '...SPÚŠŤANIE VIDEA...' };
 var restartServerText = { sk: '...REŠTARTOVANIE SERVERA...' };
 var novideoText = { sk: 'NENAŠLO SA ŽIADNE  PREHRÁVATEĽNÉ VIDEO!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { sk: 'ZADAJTE KĽÚČ API SERVERA' };
 var seasonText = { sk: 'Séria: ' };
 var episodeText = { sk: 'Epizóda: ' };
 var genresText = { sk: 'Žáner: ' };
-var yearText = { sk: ' ~ Rok: ' };
-var runtimeText = { sk: ' ~ Čas spustenia: ' };
-var ratingText = { sk: ' min ~ Hodnotenie: ' };
-var subtitleDisabledText = { sk: 'TITULKY - VYPNUTÉ' };
+var yearText = { sk: ' · Rok: ' };
+var runtimeText = { sk: ' · Čas spustenia: ' };
+var ratingText = { sk: ' min · Hodnotenie: ' };
+var subtitleDisabledText = { sk: 'VYHĽADÁVANIE TITULKOV - VYPNUTÉ' };
 var logDisabledText = { sk: 'VYTVORIŤ SÚBOR DENNÍKA - VYPNUTÉ' };
 var subtitleShowText = { sk: 'SKRYŤ TITULKY' };
 var subtitleHiddenText = { sk: 'ZOBRAZIŤ TITULKY' };
 var subtitleNotFoundText = { sk: 'NO SUBTITLE FOUND' };
 var subtitleSearchText = { sk: ['VYHĽADÁVANIE TITULKOV', 'NAČITÁVANIE TITULKOV'] };
-var subtitleMustEnabledText = { sk: 'V PONUKE NASTAVENÍ MUSÍTE POVOLIŤ TITULKY' };
+var subtitleMustEnabledText = { sk: 'NIE SÚ DOSTUPNÉ ŽIADNE TITULKY. PRE ONLINE VYHĽADÁVANIE ZAPNITE VYHĽADÁVANIE TITULKOV V NASTAVENIACH' };
 var aboutInfoText = { sk: 'SLEDUJTE FILMY A TELEVÍZNE RELÁCIE Z TORRENTOV OKAMŽITE!<SPAN></SPAN>SŤAHOVANIE AUTORSKY CHRÁNENÝCH MATERIÁLOV MÔŽE BYŤ NEZÁKONNÉ VO VAŠEJ KRAJINE. POUŽITIE NA VLASTNÉ RIZIKO.<SPAN></SPAN>' +
                     'TENTO PROGRAM JE ZALOŽENÝ NA NASLEDUJÚCICH DATABÁZACH:' +
                     '<DL><DT>FILMY A TELEVÍZNE RELÁCIE</DT>' +
@@ -103,8 +103,10 @@ genresMovieMenuText['sk'] = ['VŠETKY ŽÁNRE', 'AKCIA', 'DOBRODRUŽSTVO', 'ANIM
 genresTVMenuText['sk'] = ['VŠETKY ŽÁNRE', 'AKCIA & DOBRODRUŽSTVO', 'ANIMÁCIA', 'KOMÉDIA', 'KRIMINALITA', 'DOKUMENTÁRNY', 'DRÁMA', 'RODINA', 'DETI', 'TAJOMSTVO', 'SPRÁVY', 'REALITA', 'SCI-FI & FANTÁZIA', 'TELENOVELA', 'ROZHOVOR', 'VOJNOVÝ & POLITICKÝ', 'WESTERN'];
 sortMovieMenuText['sk'] = ['NAJOBĽÚBENEJŠIE', 'NEDÁVNO VYDANÉ', 'NAJVYŠŠIE HODNOTENÉ'];
 sortTVMenuText['sk'] = ['NAJOBĽÚBENEJŠIE', 'NEDÁVNO VYDANÉ', 'NAJVYŠŠIE HODNOTENÉ'];
-settingsMainMenuText['sk'] = ['JAZYK ROZHRANIA', 'JAZYK DATABÁZY FILMOV', 'ZDROJ FILMU', 'ZDROJ TELEVÍZNEJ RELÁCIE', 'TITULKY - ZAPNUTÉ', 'JAZYK TITULKOV', 'REŽIM VYHĽADÁVANIA TITULKOV', 'RÝCHLOSŤ SŤAHOVANIA', 'RÝCHLOSŤ NAHRÁVANIA', 'VYTVORIŤ SÚBOR DENNÍKA - ZAPNUTÉ', 'POUŽIŤ NASTAVENIA', 'OBNOVIŤ PREDVOLENÉ HODNOTY'];
-subtitleMenuText['sk'] = ['SKRYŤ TITULKY', 'SYNCHRONIZÁCIA TITULKOV', 'NAČÍTAŤ ĎALŠIE TITULKY', 'SEARCH NEW SUBTITLE', 'NASTAVIŤ ŠTÝL TITULKOV'];
+settingsMainMenuText['sk'] = ['JAZYK ROZHRANIA', 'JAZYK DATABÁZY FILMOV', 'ZDROJ FILMU', 'ZDROJ TELEVÍZNEJ RELÁCIE', 'VYHĽADÁVANIE TITULKOV - ZAPNUTÉ', 'JAZYK TITULKOV', 'REŽIM VYHĽADÁVANIA TITULKOV', 'RÝCHLOSŤ SŤAHOVANIA', 'RÝCHLOSŤ NAHRÁVANIA', 'VYTVORIŤ SÚBOR DENNÍKA - ZAPNUTÉ', 'POUŽIŤ NASTAVENIA', 'OBNOVIŤ PREDVOLENÉ HODNOTY'];
+subtitleMenuText['sk'] = ['SKRYŤ TITULKY', 'SYNCHRONIZÁCIA TITULKOV', 'VYBRAŤ TITULKY', 'SEARCH NEW SUBTITLE', 'NASTAVIŤ ŠTÝL TITULKOV'];
 subtitleLoadText['sk'] = ['PROSÍM, POČKAJTE. - NAČÍTÁVAM TITULKY', 'TITULKY ÚSPEŠNE NAČÍTANÉ', 'NIE JE MOŽNÉ NAČÍTAŤ TITULKY'];
 subtitleStyleText['sk'] = ['VEĽKOSŤ TEXTU : ', 'POZÍCIA TEXTU : ', 'FARBA TEXTU : ', 'FARBA POZADIA : ', 'OPACITA POZADIA : '];
 resumeMenuText['sk'] = ['RESUME FROM', 'START FROM BEGINNING'];
+
+var playbackTrackText = {"sk": ["VLOŽENÉ", "VÝBER ZVUKOVEJ STOPY NIE JE DOSTUPNÝ", "STOPU SA NEPODARILO VYBRAŤ"]};

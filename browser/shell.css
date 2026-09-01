@@ -1,76 +1,34 @@
 :root {
   color-scheme: dark;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #111315;
+  background: #000;
   color: #f5f7f8;
-}
-
-.browser-shell,
-.browser-toolbar,
-.browser-stage,
-#tv-screen,
-.browser-help {
-  box-sizing: border-box;
 }
 
 body.browser-shell {
-  min-width: 720px;
-  min-height: 100vh;
   margin: 0;
-  background: #111315;
-  color: #f5f7f8;
-  user-select: auto;
-}
-
-.browser-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid #30353a;
-  background: #191c1f;
-}
-
-.browser-toolbar strong {
-  display: block;
-  font-size: 18px;
-}
-
-.browser-badge {
-  color: #9ba6af;
-  font-size: 12px;
-}
-
-#browser-status {
-  color: #b8c0c6;
-  font-size: 13px;
-}
-
-#browser-status[data-state="ok"] {
-  color: #84d9a0;
-}
-
-#browser-status[data-state="error"] {
-  color: #ff9d9d;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: #000;
 }
 
 .browser-stage {
-  display: flex;
-  min-height: calc(100vh - 126px);
-  align-items: center;
-  justify-content: center;
-  overflow: auto;
-  padding: 24px;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
+/* Preserve the widget's 960×540 coordinate system, including its video plane. */
 #tv-screen {
-  position: relative;
-  flex: 0 0 960px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
   width: 960px;
   height: 540px;
+  transform: translate(-50%, -50%) scale(var(--tv-scale, 1));
   overflow: hidden;
   background: #212224;
-  box-shadow: 0 18px 70px rgb(0 0 0 / 55%);
 }
 
 #scene-root {
@@ -78,11 +36,21 @@ body.browser-shell {
   inset: 0;
 }
 
-.browser-help {
-  padding: 0 20px 16px;
-  color: #8e989f;
-  font-size: 12px;
-  text-align: center;
+#browser-status {
+  display: none;
+}
+
+#browser-status[data-state="error"] {
+  display: block;
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 10000;
+  padding: 12px;
+  background: #351b1b;
+  color: #ffcdcd;
+  font-size: 14px;
 }
 
 #playerbox960x540 video {
@@ -92,8 +60,8 @@ body.browser-shell {
   background: #000;
 }
 
-@media (max-width: 1020px) {
-  .browser-stage {
-    justify-content: flex-start;
-  }
+.browser-media {
+  position: absolute;
+  overflow: hidden;
+  background: #000;
 }

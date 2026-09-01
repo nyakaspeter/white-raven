@@ -35,8 +35,8 @@ var searchMissingSettingsText = { hu: '<img id="return-icon"> VISSZA A FŐOLDALR
 var torrentText = { hu: '...TORRENT LINKEK KERESÉSE...' };
 var downloadText = { hu: '...TORRENT FÁJL PUFFERELÉSE ... ' };
 var downloadSpeedText = { hu: 'LETÖLTÉSI SEBESSÉG: ' };
-var downloadBufferText = { hu: '<span id="sp">~<span id="sp">LETÖLTÖTT ADAT: ' };
-var downloadPeersText = { hu: '<span id="sp">~<span id="sp">KAPCSOLATOK: ' };
+var downloadBufferText = { hu: '<span id="sp">·<span id="sp">LETÖLTÖTT ADAT: ' };
+var downloadPeersText = { hu: '<span id="sp">·<span id="sp">KAPCSOLATOK: ' };
 var playText = { hu: '...VIDEÓ ELINDÍTÁSA...' };
 var restartServerText = { hu: '...SZERVER ÚJRAINDÍTÁSA...' };
 var novideoText = { hu: 'NINCS LEJÁTSZHATÓ VIDEÓ!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { hu: 'ADD MEG A SZERVER API KULCSODAT' };
 var seasonText = { hu: 'Évad: ' };
 var episodeText = { hu: 'Epizód: ' };
 var genresText = { hu: 'Műfaj: ' };
-var yearText = { hu: ' ~ Év: ' };
-var runtimeText = { hu: ' ~ Hossz: ' };
-var ratingText = { hu: ' perc ~ Értékelés: ' };
-var subtitleDisabledText = { hu: 'FELIRAT - KIKAPCSOLVA' };
+var yearText = { hu: ' · Év: ' };
+var runtimeText = { hu: ' · Hossz: ' };
+var ratingText = { hu: ' perc · Értékelés: ' };
+var subtitleDisabledText = { hu: 'FELIRATOK KERESÉSE - KIKAPCSOLVA' };
 var logDisabledText = { hu: 'LOG FÁJL KÉSZÍTÉS - KIKAPCSOLVA' };
 var subtitleShowText = { hu: 'FELIRAT ELREJTÉSE' };
 var subtitleHiddenText = { hu: 'FELIRAT MEGJELENÍTÉSE' };
 var subtitleNotFoundText = { hu: 'NEM TALÁLHATÓ FELIRAT' };
 var subtitleSearchText = { hu: ['FELIRAT KERESÉS', 'FELIRAT BETÖLTÉS'] };
-var subtitleMustEnabledText = { hu: 'BE KELL KAPCSOLNOD A FELIRATOKAT A BEÁLLÍTÁSOKBAN' };
+var subtitleMustEnabledText = { hu: 'NINCS ELÉRHETŐ FELIRATSÁV. AZ ONLINE KERESÉSHEZ KAPCSOLD BE A FELIRATOK KERESÉSÉT A BEÁLLÍTÁSOKBAN' };
 var aboutInfoText = { hu: 'NÉZZ FILMEKET ÉS SOROZATOKAT TORRENTEKBŐL!<SPAN></SPAN>JOGVÉDETT ANYAGOK LETÖLTÉSE ILLEGÁLIS LEHET AZ ORSZÁGODBAN. CSAK SAJÁT FELELŐSSÉGEDRE HASZNÁLD!<SPAN></SPAN>' + 
                     'EZ A PROGRAM A KÖVETKEZŐ ADATBÁZISOKRA ÉPÜL:' +
                     '<DL><DT>FILM ÉS SOROZAT</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['hu'] = ['ÖSSZES MŰFAJ', 'AKCIÓ', 'KALAND', 'ANIMÁCIÓ',
 genresTVMenuText['hu'] = ['ÖSSZES MŰFAJ', 'AKCIÓ ÉS KALAND', 'ANIMÁCIÓ', 'VÍGJÁTÉK', 'KRIMI', 'DOKUMENTUM', 'DRÁMA', 'CSALÁDI', 'GYERMEK', 'MISZTIKUS', 'HÍREK', 'VALÓSÁGSHOW', 'SCI-FI ÉS FANTASY', 'SZAPPANOPERA', 'TALKSHOW', 'HÁBORÚ ÉS POLITIKA', 'WESTERN'];
 sortMovieMenuText['hu'] = ['LEGNÉPSZERŰBB', 'NEMRÉG MEGJELENT', 'LEGJOBBNAK ÉRTÉKELT'];
 sortTVMenuText['hu'] = ['LEGNÉPSZERŰBB', 'NEMRÉG MEGJELENT', 'LEGJOBBNAK ÉRTÉKELT'];
-settingsMainMenuText['hu'] = ['FELÜLET NYELV', 'FILM ADATBÁZIS NYELV', 'FILM FORRÁS', 'SOROZAT FORRÁS', 'FELIRAT - BEKAPCSOLVA', 'FELIRAT NYELV', 'FELIRAT KERESÉSI MÓD', 'LETÖLTÉSI SEBESSÉG', 'FELTÖLTÉSI SEBESSÉG', 'LOG FÁJL KÉSZÍTÉS - BEKAPCSOLVA', 'BEÁLLÍTÁSOK ALKALMAZÁSA', 'ALAPBEÁLLÍTÁSOK VISSZAÁLLÍTÁSA'];
-subtitleMenuText['hu'] = ['FELIRAT ELREJTÉSE', 'FELIRAT SZINKRONIZÁLÁSA', 'MÁSIK FELIRAT BETÖLTÉSE', 'ÚJ FELIRAT KERESÉSE', 'FELIRAT STÍLUS BEÁLLÍTÁSA'];
+settingsMainMenuText['hu'] = ['FELÜLET NYELV', 'FILM ADATBÁZIS NYELV', 'FILM FORRÁS', 'SOROZAT FORRÁS', 'FELIRATOK KERESÉSE - BEKAPCSOLVA', 'FELIRAT NYELV', 'FELIRAT KERESÉSI MÓD', 'LETÖLTÉSI SEBESSÉG', 'FELTÖLTÉSI SEBESSÉG', 'LOG FÁJL KÉSZÍTÉS - BEKAPCSOLVA', 'BEÁLLÍTÁSOK ALKALMAZÁSA', 'ALAPBEÁLLÍTÁSOK VISSZAÁLLÍTÁSA'];
+subtitleMenuText['hu'] = ['FELIRAT ELREJTÉSE', 'FELIRAT SZINKRONIZÁLÁSA', 'FELIRAT KIVÁLASZTÁSA', 'ÚJ FELIRAT KERESÉSE', 'FELIRAT STÍLUS BEÁLLÍTÁSA'];
 subtitleLoadText['hu'] = ['KÉRLEK VÁRJ - FELIRAT BETÖLTÉSE', 'FELIRAT BETÖLTÉSE SIKERÜLT', 'FELIRAT BETÖLTÉSE SIKERTELEN'];
 subtitleStyleText['hu'] = ['SZÖVEG MÉRET : ', 'SZÖVEG POZÍCIÓ : ', 'SZÖVEG SZÍN : ', 'HÁTTÉRSZÍN : ', 'HATTÉR ÁTLÁTSZÓSÁG : '];
 resumeMenuText['hu'] = ['FOLYTATÁS INNEN', 'LEJÁTSZÁS AZ ELEJÉTŐL'];
+
+var playbackTrackText = {"hu": ["BEÁGYAZOTT", "A HANGSÁVVÁLASZTÁS NEM ELÉRHETŐ", "A SÁV KIVÁLASZTÁSA SIKERTELEN"]};

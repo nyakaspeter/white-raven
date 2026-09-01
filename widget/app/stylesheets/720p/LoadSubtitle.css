@@ -57,7 +57,11 @@
     user-select: none;
     display: block;
     color: #ffffff;
-    padding: 8px 0px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     text-decoration: none;
     text-align: center;
     font-family: 'Oswald', sans-serif;

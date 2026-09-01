@@ -8,6 +8,13 @@
   var focusedScene = "";
   var browserRun = Date.now().toString(36);
 
+  function fitViewport() {
+    document.getElementById("tv-screen").style.setProperty("--tv-scale",
+      Math.min(window.innerWidth / 960, window.innerHeight / 540));
+  }
+  window.addEventListener("resize", fitViewport);
+  fitViewport();
+
   function devResource(source) {
     return source + (source.indexOf("?") === -1 ? "?" : "&") + "browser-run=" + browserRun;
   }
@@ -213,174 +220,19 @@
     var audio = document.getElementById("pluginAudio1");
     audio.Open = function () { return true; };
     audio.Execute = function (command, value) {
-      if (command === "SetVolumeWithKey") volume = Math.max(0, Math.min(100, volume + (value > 0 ? 1 : -1)));
+      if (command === "SetVolumeWithKey") {
+        volume = Math.max(0, Math.min(100, volume + (value === 0 ? 1 : -1)));
+        muted = false;
+      }
       if (command === "SetUserMute") muted = Boolean(value);
       if (command === "GetVolume") return muted ? 0 : volume;
+      window.webapis.avplay.setVolume(volume / 100, muted);
       return true;
     };
   }
 
-  function createAVPlayAdapter() {
-    var video;
-    var configuration;
-    var initialized = false;
-    var autoplayMuted = false;
-    var autoplayRestoreMuted = false;
 
-    function ensureVideo() {
-      if (video) return video;
-      var container = document.getElementById("playerbox960x540");
-      video = document.createElement("video");
-      video.playsInline = true;
-      video.preload = "auto";
-      container.appendChild(video);
-      video.addEventListener("timeupdate", function () {
-        if (configuration && configuration.playCallback && configuration.playCallback.oncurrentplaytime) {
-          configuration.playCallback.oncurrentplaytime({ millisecond: Math.floor(video.currentTime * 1000) });
-        }
-      });
-      video.addEventListener("ended", function () {
-        if (configuration && configuration.playCallback && configuration.playCallback.onstreamcompleted) {
-          configuration.playCallback.onstreamcompleted();
-        }
-      });
-      return video;
-    }
-
-    var adapter = {
-      status: "IDLE",
-      totalNumOfAudio: 1,
-      _getAllInstance: function () { return initialized ? { browser: adapter } : {}; },
-      getAVPlay: function (success) { success(adapter); },
-      init: function (options) {
-        configuration = options;
-        initialized = true;
-        ensureVideo();
-        adapter.setDisplayRect(options.displayRect || { top: 0, left: 0, width: 960, height: 540 });
-      },
-      open: function (url) {
-        adapter.status = "READY";
-        ensureVideo().src = rewriteServerURL(url);
-      },
-      play: function (success, failure) {
-        var element = ensureVideo();
-        adapter.status = "PLAYING";
-        if (configuration && configuration.bufferingCallback) {
-          configuration.bufferingCallback.onbufferingstart();
-          configuration.bufferingCallback.onbufferingprogress(100);
-        }
-        // Torrent metadata is resolved asynchronously after the user's Enter
-        // keypress, so Chromium may expire its transient autoplay permission by
-        // the time AVPlay.play() reaches the HTML video element. Try normal
-        // playback first, then fall back to muted playback if Chromium blocks it.
-        autoplayRestoreMuted = element.muted;
-        function playbackStarted() {
-          autoplayMuted = !autoplayRestoreMuted;
-          if (configuration && configuration.bufferingCallback) configuration.bufferingCallback.onbufferingcomplete();
-          if (success) success();
-        }
-        function playbackFailed(error) {
-          element.muted = autoplayRestoreMuted;
-          autoplayMuted = false;
-          var detail = (error && error.name ? error.name : "PlaybackError") +
-            (error && error.message ? ": " + error.message : "");
-          console.error("[White Raven browser player] " + detail);
-          if (failure) failure(error);
-        }
-        var promise = element.play();
-        if (promise && promise.then) {
-          promise.then(playbackStarted).catch(function (error) {
-            if (error && error.name === "NotAllowedError" && !autoplayRestoreMuted) {
-              element.muted = true;
-              element.play().then(playbackStarted).catch(playbackFailed);
-            } else {
-              playbackFailed(error);
-            }
-          });
-        } else if (success) {
-          success();
-        }
-        return true;
-      },
-      pause: function () { ensureVideo().pause(); adapter.status = "PAUSED"; return true; },
-      resume: function () { ensureVideo().play().catch(function () {}); adapter.status = "PLAYING"; return true; },
-      stop: function () {
-        var element = ensureVideo();
-        autoplayMuted = false;
-        element.pause();
-        element.removeAttribute("src");
-        element.load();
-        adapter.status = "IDLE";
-        return true;
-      },
-      restoreBrowserAudio: function () {
-        if (!autoplayMuted) return;
-        autoplayMuted = false;
-        var element = ensureVideo();
-        element.muted = autoplayRestoreMuted;
-        var promise = element.play();
-        if (promise && promise.catch) {
-          promise.catch(function (error) {
-            var detail = (error && error.name ? error.name : "PlaybackError") +
-              (error && error.message ? ": " + error.message : "");
-            console.error("[White Raven browser player] " + detail);
-          });
-        }
-      },
-      jumpForward: function (seconds) { video.currentTime = Math.min(video.duration || Infinity, video.currentTime + seconds); return true; },
-      jumpBackward: function (seconds) { video.currentTime = Math.max(0, video.currentTime - seconds); return true; },
-      getDuration: function () { return Number.isFinite(ensureVideo().duration) ? Math.floor(video.duration * 1000) : 0; },
-      getVideoResolution: function () { return video && video.videoWidth ? video.videoWidth + "|" + video.videoHeight : "0|0"; },
-      getCurrentBitrate: function () { return -1; },
-      setAudioStreamID: function () { return true; },
-      setInitialBufferSize: function () {},
-      setPendingBufferSize: function () {},
-      setTotalBufferSize: function () {},
-      setDisplayArea: function (rect) { adapter.setDisplayRect(rect); },
-      setDisplayRect: function (rect) {
-        var element = ensureVideo();
-        var container = element.parentElement;
-
-        container.style.position = "absolute";
-        container.style.backgroundColor = "#000";
-
-        // AVPlay's display rectangle describes the native video plane. Keep a
-        // full-screen black surface behind fullscreen/letterboxed playback so
-        // the widget background cannot show through around a wide video.
-        if (rect.left === 0 && rect.width === 960) {
-          container.style.left = "0px";
-          container.style.top = "0px";
-          container.style.width = "960px";
-          container.style.height = "540px";
-
-          element.style.position = "absolute";
-          element.style.left = rect.left + "px";
-          element.style.top = rect.top + "px";
-          element.style.width = rect.width + "px";
-          element.style.height = rect.height + "px";
-        } else {
-          container.style.left = rect.left + "px";
-          container.style.top = rect.top + "px";
-          container.style.width = rect.width + "px";
-          container.style.height = rect.height + "px";
-
-          element.style.position = "absolute";
-          element.style.left = "0px";
-          element.style.top = "0px";
-          element.style.width = "100%";
-          element.style.height = "100%";
-        }
-      }
-    };
-
-    Object.defineProperties(adapter, {
-      videoWidth: { get: function () { return video ? video.videoWidth : 0; } },
-      videoHeight: { get: function () { return video ? video.videoHeight : 0; } }
-    });
-    return adapter;
-  }
-
-  window.webapis = { avplay: createAVPlayAdapter() };
+  window.webapis = { avplay: window.createBrowserAVPlay(rewriteServerURL) };
 
   function jquery(selector) {
     var elements = typeof selector === "string" ? document.querySelectorAll(selector) : [selector];
@@ -433,10 +285,21 @@
     if (key === "b") return sf.key.GREEN;
     if (key === "c") return sf.key.YELLOW;
     if (key === "d") return sf.key.BLUE;
+    if (key === "+" || key === "=") return sf.key.VOL_UP;
+    if (key === "-") return sf.key.VOL_DOWN;
+    if (key === "m") return sf.key.MUTE;
     return null;
   }
 
   document.addEventListener("keydown", function (event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.key.toLowerCase() === "f") {
+      event.preventDefault();
+      if (!document.documentElement.requestFullscreen) return;
+      var fullscreen = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+      if (fullscreen && fullscreen.catch) fullscreen.catch(console.error);
+      return;
+    }
     var keyCode = mapKey(event);
     var scene = scenes[focusedScene];
     if (keyCode !== null && scene && typeof scene.handleKeyDown === "function") {
@@ -465,6 +328,7 @@
     }));
     document.getElementById("scene-root").innerHTML = fragments.join("\n");
 
+    await loadScript("/widget/app/playback-tracks.js");
     for (var i = 0; i < application.scenes.length; i++) {
       await loadScript("/widget/app/scenes/" + application.scenes[i] + ".js");
     }

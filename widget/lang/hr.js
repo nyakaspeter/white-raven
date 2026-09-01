@@ -35,8 +35,8 @@ var searchMissingSettingsText = { hr: '<img id="return-icon"> POVRATAK NA GLAVNU
 var torrentText = { hr: '...PRETRAŽIVANJE TORRENT URL-ova...' };
 var downloadText = { hr: '...MEĐUSPREMANJE TORRENT DATOTEKE ... ' };
 var downloadSpeedText = { hr: 'BRZINA PREUZIMANJA: ' };
-var downloadBufferText = { hr: '<span id="sp">~<span id="sp">PREUZETO PODATAKA: ' };
-var downloadPeersText = { hr: '<span id="sp">~<span id="sp">DJELITELJI: ' };
+var downloadBufferText = { hr: '<span id="sp">·<span id="sp">PREUZETO PODATAKA: ' };
+var downloadPeersText = { hr: '<span id="sp">·<span id="sp">DJELITELJI: ' };
 var playText = { hr: '...POKRETANJE VIDEA...' };
 var restartServerText = { hr: '...PONOVNO POKRETANJE POSLUŽITELJA...' };
 var novideoText = { hr: 'NEMA PRONAĐENIH VIDEA KOJI SE MOGU REPRODUCIRATI!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { hr: 'UPIŠITE SVOJ API KLJUČ POSLUŽITELJA' };
 var seasonText = { hr: 'Sezona: ' };
 var episodeText = { hr: 'Epizoda: ' };
 var genresText = { hr: 'Žanr: ' };
-var yearText = { hr: ' ~ Godina: ' };
-var runtimeText = { hr: ' ~ Trajanje: ' };
-var ratingText = { hr: ' min ~ Ocjena: ' };
-var subtitleDisabledText = { hr: 'PODNASLOV - ONEMOGUĆEN' };
+var yearText = { hr: ' · Godina: ' };
+var runtimeText = { hr: ' · Trajanje: ' };
+var ratingText = { hr: ' min · Ocjena: ' };
+var subtitleDisabledText = { hr: 'PRETRAGA PODNASLOVA - ONEMOGUĆENA' };
 var logDisabledText = { hr: 'STVARANJE DATOTEKE ZAPISA - ONEMOGUĆENO' };
 var subtitleShowText = { hr: 'SAKRIJ PODNASLOV' };
 var subtitleHiddenText = { hr: 'PRIKAŽI PODNASLOV' };
 var subtitleNotFoundText = { hr: 'PODNASLOV NIJE PRONAĐEN' };
 var subtitleSearchText = { hr: ['PRETRAŽIVANJE PODNASLOVA', 'UČITAVANJE PODNASLOVA'] };
-var subtitleMustEnabledText = { hr: 'MORATE OMOGUĆITI PODNASLOVE U IZBORNIKU POSTAVKI' };
+var subtitleMustEnabledText = { hr: 'NEMA DOSTUPNIH PODNASLOVA. OMOGUĆITE PRETRAGU PODNASLOVA U POSTAVKAMA ZA MREŽNO PRETRAŽIVANJE' };
 var aboutInfoText = { hr: 'GLEDAJTE FILMOVE I TV SERIJE POMOĆU TORRENTA!<SPAN></SPAN>PREUZIMANJE MATERIJALA ZAŠTIĆENIH AUTORSKIM PRAVOM MOŽE BITI ILEGALNO U VAŠOJ ZEMLJI. KORISTITE NA VLASTIT RIZIK.<SPAN></SPAN>' + 
                     'OVAJ PROGRAM SE TEMELJI NA SLJEDEĆIM BAZAMA PODATAKA:' +
                     '<DL><DT>FILMOVI I TV SERIJE</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['hr'] = ['SVI ŽANROVI', 'AKCIJA', 'AVANTURA', 'ANIMACIJA', 
 genresTVMenuText['hr'] = ['SVI ŽANROVI', 'AKCIJA I AVANTURA', 'ANIMACIJA', 'KOMEDIJA', 'KRIMIĆ', 'DOKUMETARCI', 'DRAMA', 'OBITELJSKI', 'DJEČJI', 'MISTERIJA', 'NOVOSTI', 'RIJALITI', 'ZNANSTVENA FANTASTIKA I FANTAZIJA', 'SAPUNICE', 'RAZGOVOR', 'RAT I POLITIKA', 'KAUBOJAC'];
 sortMovieMenuText['hr'] = ['NAJPOPULARNIJE', 'NEDAVNO IZAŠLO', 'NAJOCJENJENIJE'];
 sortTVMenuText['hr'] = ['NAJPOPULARNIJE', 'NEDAVNO IZAŠLO', 'NAJOCJENJENIJE'];
-settingsMainMenuText['hr'] = ['JEZIK SUČELJA', 'JEZIK BAZE PODATAKA', 'IZVOR FILMOVA', 'IZVOR TV SERIJA', 'PODNASLOV - OMOGUĆEN', 'JEZIK PODNASLOVA', 'NAČIN PRETRAGE PODNASLOVA', 'BRZINA PREUZIMANJA', 'BRZINA SLANJA', 'STVARANJE DATOTEKE ZAPISA - OMOGUĆENO', 'PRIMIJENI POSTAVKE', 'VRATI IZVORNO'];
-subtitleMenuText['hr'] = ['SAKRIJ PODNASLOV', 'POMAK PODNASLOVA', 'UČITAJ DRUGI PODNASLOV', 'PRETRAŽI NOVI PODNASLOV', 'POSTAVI DRUGAČIJI IZGLED'];
+settingsMainMenuText['hr'] = ['JEZIK SUČELJA', 'JEZIK BAZE PODATAKA', 'IZVOR FILMOVA', 'IZVOR TV SERIJA', 'PRETRAGA PODNASLOVA - OMOGUĆENA', 'JEZIK PODNASLOVA', 'NAČIN PRETRAGE PODNASLOVA', 'BRZINA PREUZIMANJA', 'BRZINA SLANJA', 'STVARANJE DATOTEKE ZAPISA - OMOGUĆENO', 'PRIMIJENI POSTAVKE', 'VRATI IZVORNO'];
+subtitleMenuText['hr'] = ['SAKRIJ PODNASLOV', 'POMAK PODNASLOVA', 'ODABERI PODNASLOV', 'PRETRAŽI NOVI PODNASLOV', 'POSTAVI DRUGAČIJI IZGLED'];
 subtitleLoadText['hr'] = ['PRIČEKAJTE - UČITAVANJE PODNASLOVA', 'PODNASLOV UČITAN USPJEŠNO', 'NEMOGUĆE UČITAVANJE PODNASLOVA'];
 subtitleStyleText['hr'] = ['VELIČINA TEKSTA : ', 'POLOŽAJ TEKSTA : ', 'BOJA TEKSTA : ', 'BOJA POZADINE : ', 'PROZIRNOST POZADINE : '];
 resumeMenuText['hr'] = ['NASTAVI OD', 'POKRENI OD POČETKA'];
+
+var playbackTrackText = {"hr": ["UGRAĐENI", "ODABIR ZVUČNOG ZAPISA NIJE DOSTUPAN", "NIJE MOGUĆE ODABRATI ZAPIS"]};

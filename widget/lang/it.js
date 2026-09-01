@@ -35,8 +35,8 @@ var searchMissingSettingsText = { it: '<img id="return-icon"> RITORNA ALLA PAGIN
 var torrentText = { it: '...RICERCA INDIRIZZO TORRENT ...' };
 var downloadText = { it: '...BUFFERING TORRENT FILE ... ' };
 var downloadSpeedText = { it: 'VELOCITA\' DOWNLOAD: ' };
-var downloadBufferText = { it: '<span id="sp">~<span id="sp">SCARICAMENTO DATI: ' };
-var downloadPeersText = { it: '<span id="sp">~<span id="sp">PEERS: ' };
+var downloadBufferText = { it: '<span id="sp">·<span id="sp">SCARICAMENTO DATI: ' };
+var downloadPeersText = { it: '<span id="sp">·<span id="sp">PEERS: ' };
 var playText = { it: '...RIPRODIZIONE VIDEO...' };
 var restartServerText = { it: '...RIPARTENZA SERVER...' };
 var novideoText = { it: 'NESSUN VIDEO RIPRODUCIBILE TROVATO!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { it: 'INSERISCI LA TUA API KEY' };
 var seasonText = { it: 'Stagione: ' };
 var episodeText = { it: 'Episodio: ' };
 var genresText = { it: 'Genere: ' };
-var yearText = { it: ' ~ Anno: ' };
-var runtimeText = { it: ' ~ Runtime: ' };
-var ratingText = { it: ' min ~ Punteggio: ' };
-var subtitleDisabledText = { it: 'SOTTOTITOLI - DISABILITATI' };
+var yearText = { it: ' · Anno: ' };
+var runtimeText = { it: ' · Runtime: ' };
+var ratingText = { it: ' min · Punteggio: ' };
+var subtitleDisabledText = { it: 'RICERCA SOTTOTITOLI - DISATTIVATA' };
 var logDisabledText = { it: 'CREAZIONE LOG FILE - DISABILITATA' };
 var subtitleShowText = { it: 'NASCONDI SOTTOTITOLI' };
 var subtitleHiddenText = { it: 'MOSTRA SOTTOTITOLI' };
 var subtitleNotFoundText = { it: 'SOTTOTITOLI NON TROVATI' };
 var subtitleSearchText = { it: ['RICERCA SOTTOTITOLI', 'CARICAMENTO SOTTOTITOLI'] };
-var subtitleMustEnabledText = { it: 'DEVI ABILITARE I SOTTOTITOLI DAL MENU NELLE IMPOSTAZIONI' };
+var subtitleMustEnabledText = { it: 'NESSUNA TRACCIA SOTTOTITOLI DISPONIBILE. ABILITA LA RICERCA SOTTOTITOLI NELLE IMPOSTAZIONI PER CERCARE ONLINE' };
 var aboutInfoText = { it: 'GUARDA FILM E SERIE TV DA TORRENT IMMEDIATAMENTE!<SPAN></SPAN>SCARICARE MATERIALE COPERTO DA COPYRIGHTED POTREBBE RISULTARE ILLEGALE NEL TUO STATO. USA QUESTO PROGRAMMA A TUO RISCHIO E PERICOLO.<SPAN></SPAN>' + 
                     'QUESTO PROGRAMMA USA I SEGUENTI DATABASES:' +
                     '<DL><DT>MOVIE AND TV SHOW</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['it'] = ['TUTTI I GENERI', 'AZIONE', 'AVVENTURA', 'ANIMAZION
 genresTVMenuText['it'] = ['TUTTI I GENERI', 'AZIONE & AVVENTURA', 'ANIMAZIONE', 'COMMEDIA', 'CRIME', 'DOCUMENTARIO', 'DRAMA', 'FAMIGLIA', 'BAMBINI', 'MISTERO', 'NEWS', 'REALITY', 'SCI-FI & FANTASY', 'SOAP', 'TALK', 'GUERRA & POLITICA', 'WESTERN'];
 sortMovieMenuText['it'] = ['PIU\' POPOLARI', 'DISTRIBUITI RECENTEMENTE', 'PIU\' VOTATI'];
 sortTVMenuText['it'] = ['PIU\' POPOLARI', 'DISTRIBUITI RECENTEMENTE', 'PIU\' VOTATI'];
-settingsMainMenuText['it'] = ['LINGUA INTERFACCIA', 'LINGUA DATABASE FILM', 'SORGENTE FILM', 'SORGENTE SERIE TV', 'SOTTOTITOLI - ATTIVI', 'LINGUA SOTTOTITOLI', 'MODALITA\' RICERCA SOTTOTITOLI', 'VELOCITA\' DOWNLOAD', 'VELOCIA\' UPLOAD', 'CREAZIONE LOG FILE - ATTIVATA', 'APPLICA SETTAGGI', 'RIPRISTINA A DEFAULTS'];
-subtitleMenuText['it'] = ['NASCONDI SOTTOTITOLI', 'SINCRONIA SOTTOTITOLI', 'CARICA ALTRI SOTTOTITOLI', 'CERCA NUOVI SOTTOTITOLI', 'SELEZIONA LO STILE DEI SOTTOTITOLI'];
+settingsMainMenuText['it'] = ['LINGUA INTERFACCIA', 'LINGUA DATABASE FILM', 'SORGENTE FILM', 'SORGENTE SERIE TV', 'RICERCA SOTTOTITOLI - ATTIVA', 'LINGUA SOTTOTITOLI', 'MODALITA\' RICERCA SOTTOTITOLI', 'VELOCITA\' DOWNLOAD', 'VELOCIA\' UPLOAD', 'CREAZIONE LOG FILE - ATTIVATA', 'APPLICA SETTAGGI', 'RIPRISTINA A DEFAULTS'];
+subtitleMenuText['it'] = ['NASCONDI SOTTOTITOLI', 'SINCRONIA SOTTOTITOLI', 'SELEZIONA SOTTOTITOLI', 'CERCA NUOVI SOTTOTITOLI', 'SELEZIONA LO STILE DEI SOTTOTITOLI'];
 subtitleLoadText['it'] = ['ATTENDERE - CARICAMENTO SOTTOTITOLI', 'SOTTOTITOLI CARICATI CORRETTAMENTE', 'NON RIESCO A CARICARE I SOTTOTITOLI'];
 subtitleStyleText['it'] = ['MISURA TESTO : ', 'POSIZIONE TESTO : ', 'COLORE TESTO : ', 'COLORE SFONDO : ', 'TRASPARENZA SFONDO : '];
 resumeMenuText['it'] = ['RIPRENDI DA', 'RICOMINCIA DALL\' INIZIO'];
+
+var playbackTrackText = {"it": ["INCORPORATO", "SELEZIONE AUDIO NON DISPONIBILE", "IMPOSSIBILE SELEZIONARE LA TRACCIA"]};

@@ -7,14 +7,6 @@
   <link rel="stylesheet" href="/browser/shell.css">
 </head>
 <body class="browser-shell">
-  <header class="browser-toolbar">
-    <div>
-      <strong>White Raven</strong>
-      <span class="browser-badge">browser compatibility mode</span>
-    </div>
-    <div id="browser-status" role="status">Loading widget…</div>
-  </header>
-
   <main class="browser-stage">
     <div id="tv-screen" aria-label="White Raven TV viewport">
       <object id="pluginFileSystem" hidden></object>
@@ -23,14 +15,11 @@
       <object id="pluginAudio1" hidden></object>
       <object id="pluginObjectTVMW1" hidden></object>
       <div id="scene-root"></div>
+      <div id="browser-status" role="status"></div>
     </div>
   </main>
 
-  <footer class="browser-help">
-    Arrows: move · Enter: select · Backspace: back · Space: main menu · A/B/C/D: options
-  </footer>
-
   <script src="/browser-config.js"></script>
-  <script src="/browser/runtime.js?v=2"></script>
+  <script type="module" src="/browser/start.js"></script>
 </body>
 </html>

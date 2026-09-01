@@ -3,15 +3,19 @@ function SceneAudioMenu() {}
 SceneAudioMenu.prototype.initialize = function () {
     this.pos = 0;
     this.waiting = false;
+    this.request = (this.request || 0) + 1;
 }
 
 SceneAudioMenu.prototype.handleShow = function (streamcount) {
     this.initialize();
+    this.tracks = sf.scene.get('PlayerPage').getAudioTracks();
+    streamcount = this.tracks.length;
     
     document.getElementById('OverlayAudioMenu').style.visibility = "hidden";
     document.getElementById('OverlayPlayerMenuInfo').style.visibility = "hidden";
 
     var audiomenulist = document.getElementById('audiomenulist');
+    audiomenulist.className = streamcount === 0 ? 'audio-menu-empty' : '';
     audiomenulist.style.top = 'initial';
     widgetAPI.putInnerHTML(audiomenulist, "");
 
@@ -24,12 +28,18 @@ SceneAudioMenu.prototype.handleShow = function (streamcount) {
             aitem.className = "";
         }
 
-        widgetAPI.putInnerHTML(aitem, (i+1) + '. ' + audioStreamText[lang][0]);
+        aitem.textContent = (this.tracks[i].selected ? '✓ ' : '') + PlaybackAudioTrackLabel(this.tracks[i], audioStreamText[lang][0]);
         
         listitem.appendChild(aitem);
         audiomenulist.appendChild(listitem);
     }
 
+    if (streamcount === 0) {
+        this.waiting = true;
+        audiomenulist.textContent = playbackTrackText[lang][1];
+        document.getElementById('OverlayAudioMenu').style.height = CSSPixels(92);
+        document.getElementById('OverlayAudioMenu').style.visibility = 'visible';
+    }
     if (streamcount > 0) {
         if (streamcount < 5) {
             document.getElementById('OverlayAudioMenu').style.height = CSSPixels(((streamcount - 1) * 46) + 46);
@@ -45,6 +55,7 @@ SceneAudioMenu.prototype.handleShow = function (streamcount) {
 }
 
 SceneAudioMenu.prototype.handleHide = function () {
+    this.request++;
     document.getElementById('OverlayAudioMenu').style.visibility = "hidden";
     document.getElementById('OverlayPlayerMenuInfo').style.visibility = "hidden";
 };
@@ -63,13 +74,27 @@ SceneAudioMenu.prototype.handleKeyDown = function (keyCode) {
         	        var audiomenulist = document.getElementById('audiomenulist').getElementsByTagName("li");
                     for(var i=0; i<audiomenulist.length; i++) {
                         if (audiomenulist[i].children[0].className == 'active') {
+                            if (this.tracks[i].selected) break;
                             this.waiting = true;
-                            widgetAPI.putInnerHTML(audiomenulist[i].children[0], audioStreamText[lang][1]);
-                            sf.scene.get('PlayerPage').setAudioStreamID(i);
-                            setTimeout(function(){
-                                widgetAPI.putInnerHTML(audiomenulist[i].children[0], (i+1) + '. ' + audioStreamText[lang][0]);
-                                this.waiting = false;
-                            }.bind(this), 500);
+                            var request = this.request;
+                            var finished = function(selected) {
+                                if (request !== this.request) return;
+                                if (selected) {
+                                    for (var j = 0; j < this.tracks.length; j++) {
+                                        this.tracks[j].selected = j === i;
+                                        audiomenulist[j].children[0].textContent = (j === i ? '✓ ' : '') + PlaybackAudioTrackLabel(this.tracks[j], audioStreamText[lang][0]);
+                                    }
+                                }
+                                audiomenulist[i].children[0].textContent = selected ? audioStreamText[lang][1] : playbackTrackText[lang][2];
+                                setTimeout(function(){
+                                    if (request !== this.request) return;
+                                    audiomenulist[i].children[0].textContent = (this.tracks[i].selected ? '✓ ' : '') + PlaybackAudioTrackLabel(this.tracks[i], audioStreamText[lang][0]);
+                                    this.waiting = false;
+                                }.bind(this), 700);
+                            }.bind(this);
+                            var selected = sf.scene.get('PlayerPage').setAudioStreamID(this.tracks[i].index);
+                            if (selected && typeof selected.then === 'function') selected.then(finished, function() { finished(false); });
+                            else finished(selected);
                             break;
                         }
                     }

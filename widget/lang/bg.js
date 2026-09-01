@@ -35,8 +35,8 @@ var searchMissingSettingsText = { bg: '<img id="return-icon"> ВРЪЩАНЕ К�
 var torrentText = { bg: '...ТЪРСЕНЕ НА URL...' };
 var downloadText = { bg: '...БУФЕРИРАНЕ НА ТОРЕНТ ФАЙЛ ... ' };
 var downloadSpeedText = { bg: 'СКОРОСТ НА ИЗТЕГЛЯНЕ: ' };
-var downloadBufferText = { bg: '<span id="sp">~<span id="sp">ИЗТЕГЛЕНИ ФАЙЛОВЕ: ' };
-var downloadPeersText = { bg: '<span id="sp">~<span id="sp">ПИЪРИ: ' };
+var downloadBufferText = { bg: '<span id="sp">·<span id="sp">ИЗТЕГЛЕНИ ФАЙЛОВЕ: ' };
+var downloadPeersText = { bg: '<span id="sp">·<span id="sp">ПИЪРИ: ' };
 var playText = { bg: '...СТАРТИРАНЕ НА ВИДЕО...' };
 var restartServerText = { bg: '...РЕСТАРТИРАНЕ НА СЪРВЪР...' };
 var novideoText = { bg: 'ВИДЕОТО НЕ МОЖЕ ДА БЪДЕ ВЪЗПРОИЗВЕДЕНО!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { bg: 'ВЪВЕДИ СВОЯ API КЛЮЧ' };
 var seasonText = { bg: 'СЕЗОН: ' };
 var episodeText = { bg: 'ЕПИЗОД: ' };
 var genresText = { bg: 'ЖАНР: ' };
-var yearText = { bg: ' ~ ГОДИНА: ' };
-var runtimeText = { bg: ' ~ ПРОДЪЛЖИТЕЛНОСТ: ' };
-var ratingText = { bg: ' min ~ ОЦЕНКА: ' };
-var subtitleDisabledText = { bg: 'СУБТИТРИ – ИЗКЛЮЧЕНИ' };
+var yearText = { bg: ' · ГОДИНА: ' };
+var runtimeText = { bg: ' · ПРОДЪЛЖИТЕЛНОСТ: ' };
+var ratingText = { bg: ' min · ОЦЕНКА: ' };
+var subtitleDisabledText = { bg: 'ТЪРСЕНЕ НА СУБТИТРИ – ИЗКЛЮЧЕНО' };
 var logDisabledText = { bg: 'СЪЗДАВАНЕ НА ОТЧЕТ – ИЗКЛЮЧЕНО' };
 var subtitleShowText = { bg: 'СКРИВАНЕ НА СУБТИТРИТЕ' };
 var subtitleHiddenText = { bg: 'ПОКАЗВАНЕ НА СУБТИТРИТЕ' };
 var subtitleNotFoundText = { bg: 'NO SUBTITLE FOUND' };
 var subtitleSearchText = { bg: ['ТЪРСЕНЕ НА СУБТИТРИ', 'ЗАРЕЖДАНЕ НА СУБТИТРИ'] };
-var subtitleMustEnabledText = { bg: 'АКТИВИРАЙТЕ СУБТИТРИТЕ В МЕНЮ „НАСТРОЙКИ“' };
+var subtitleMustEnabledText = { bg: 'НЯМА НАЛИЧНИ СУБТИТРИ. ВКЛЮЧЕТЕ ТЪРСЕНЕТО НА СУБТИТРИ В НАСТРОЙКИТЕ ЗА ОНЛАЙН ТЪРСЕНЕ' };
 var aboutInfoText = { bg: 'ГЛЕДАЙТЕ ФИЛМИ И ТВ ШОУ ОТ ТОРЕНТ НА МОМЕНТА!<SPAN></SPAN>СВАЛЯНЕТО НА ЗАЩИТЕНО СЪДЪРЖАНИЕ МОЖЕ ДА БЪДЕ НЕЗАКОННО ВЪВ ВАШИЯТ РЕГИОН, НОСЕЙКИ НАКАЗАТЕЛНА ОТГОВОРНОСТ<SPAN></SPAN>' + 
                     'ПРОГРАМАТА СЪДЪРЖА СЛЕДНИТЕ КАТЕГОРИИ:' +
                     '<DL><DT>ФИЛМИ И ТВ ШОУ ПРАГРАМИ</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['bg'] = ['ВСИЧКИ', 'ЕКШЪН', 'ПРИКЛЮЧЕНС
 genresTVMenuText['bg'] = ['AВСИЧКИ', 'ЕКШЪН & ПРИКЛЮЧЕНСКИ', 'АНИМАЦИОНЕН', 'КОМЕДИЯ', 'КРИМИНАЛЕН', 'ДОКУМЕНТАЛЕН', 'ДРАМА', 'СЕМЕЕН', 'ДЕТСКИ', 'МИСТЕРИЯ', 'НОВИНИ', 'РЕАЛИТИ', 'НАУЧНО-ФАНТАСТИЧЕН & ФЕНТЪЗИ', 'САПУНКА', 'РАЗГОВОР', 'ВОЕНЕН & ПОЛИТИЧЕСКИ', 'УЕСТЪРН'];
 sortMovieMenuText['bg'] = ['НАЙ-ПОПУЛАРНИ', 'НАЙ-СКОРОШНИ', 'НАЙ-ОЦЕНЕНИ'];
 sortTVMenuText['bg'] = ['НАЙ-ПОПУЛАРНИ', 'НАЙ-СКОРОШНИ', 'НАЙ-ОЦЕНЕНИ'];
-settingsMainMenuText['bg'] = ['ЕЗИК', 'ЕЗИК НА ФИЛМ', 'ИЗТОЧНИК НА ФИЛМ', 'ИЗТОЧНИК НА ТВ ШОУ', 'СУБТИТРИ – РАЗРЕШЕНИ', 'ЕЗИК СУБТИТРИ', 'СУБТИТРИ ТЪРСЕНЕ', 'СКОРОСТ НА СВАЛЯНЕ', 'СКОРОСТ НА КАЧВАНЕ', 'СЪЗДВАНЕ НА ОТЧЕТ - РАЗРЕШЕНО', 'ПРИЛАГАНЕ НА НАСТРОЙКИ', 'НАСТРОЙКИ ПО ПОДРАЗБИРАНЕ'];
-subtitleMenuText['bg'] = ['СКРИВАНЕ НА СУБТИТРИ', 'СИНХРОНИЗИРАНЕ НА СУБТИТРИ', 'ЗАРЕЖДАНЕ НА ДРУГИ СУБТИТРИ', 'SEARCH NEW SUBTITLE', 'ИЗГЛЕД НА СУБТИТРИ'];
+settingsMainMenuText['bg'] = ['ЕЗИК', 'ЕЗИК НА ФИЛМ', 'ИЗТОЧНИК НА ФИЛМ', 'ИЗТОЧНИК НА ТВ ШОУ', 'ТЪРСЕНЕ НА СУБТИТРИ – ВКЛЮЧЕНО', 'ЕЗИК СУБТИТРИ', 'СУБТИТРИ ТЪРСЕНЕ', 'СКОРОСТ НА СВАЛЯНЕ', 'СКОРОСТ НА КАЧВАНЕ', 'СЪЗДВАНЕ НА ОТЧЕТ - РАЗРЕШЕНО', 'ПРИЛАГАНЕ НА НАСТРОЙКИ', 'НАСТРОЙКИ ПО ПОДРАЗБИРАНЕ'];
+subtitleMenuText['bg'] = ['СКРИВАНЕ НА СУБТИТРИ', 'СИНХРОНИЗИРАНЕ НА СУБТИТРИ', 'ИЗБОР НА СУБТИТРИ', 'SEARCH NEW SUBTITLE', 'ИЗГЛЕД НА СУБТИТРИ'];
 subtitleLoadText['bg'] = ['СУБТИТРИТЕ СЕ ЗАРЕЖДАТ', 'СУБТИТРИТЕ СА ЗАРЕДЕНИ', 'СУБТИТРИТЕ НЕМОГАТ ДА БЪДАТ ЗАРЕДЕНИ'];
 subtitleStyleText['bg'] = ['РАЗМЕР ТЕКСТ : ', 'ПОЗИЦИЯ ТЕКСТ : ', 'ЦВЯТ ТЕКСТ : ', 'ФОН ЦВЯТ : ', 'ПРОЗРАЧНОСТ НА ФОНА : '];
 resumeMenuText['bg'] = ['RESUME FROM', 'START FROM BEGINNING'];
+
+var playbackTrackText = {"bg": ["ВГРАДЕНИ", "ИЗБОРЪТ НА АУДИО ПИСТА НЕ Е НАЛИЧЕН", "НЕУСПЕШЕН ИЗБОР НА ПИСТА"]};

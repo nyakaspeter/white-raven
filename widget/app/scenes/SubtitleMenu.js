@@ -12,13 +12,22 @@ SceneSubtitleMenu.prototype.handleShow = function () {
     subtitlemenulist.style.top = 'initial';
     widgetAPI.putInnerHTML(subtitlemenulist, "");
 
-    if (saveSettings['issubtitleenabled'] == "true" && issubtitle == true) {
-            
-        var menulength = subtitleMenuText['name'].length;
+    var player = sf.scene.get('PlayerPage');
+    var choices = player.getSubtitleChoices();
+    var nativeState = player.Player.tracks;
+    var hasSelection = player.Player.externalSubtitleURL || (nativeState && nativeState.subtitleIndex >= 0);
+    this.entries = [];
+    if (hasSelection) {
+        var active = nativeState && nativeState.subtitleIndex >= 0 ? nativeState.subtitleActive : player.Player.subtitleState === 1;
+        this.entries.push({name: active ? 'hide' : 'show', label: active ? subtitleShowText[lang] : subtitleHiddenText[lang]});
+        this.entries.push({name: 'sync', label: subtitleMenuText[lang][1]});
+    }
+    if (choices.length > 0) this.entries.push({name: 'load', label: subtitleMenuText[lang][2]});
+    if (hasSelection) this.entries.push({name: 'style', label: subtitleMenuText[lang][4]});
+    if (saveSettings['issubtitleenabled'] == "true") this.entries.push({name: 'search', label: subtitleMenuText[lang][3]});
 
-        if (subtitleMenuText['name'][0] == 'show') {
-            menulength = 1;
-        }
+    if (this.entries.length > 0) {
+        var menulength = this.entries.length;
 
         for(var i=0; i<menulength; i++) {    
             var listitem = document.createElement('li');
@@ -29,7 +38,7 @@ SceneSubtitleMenu.prototype.handleShow = function () {
                 aitem.className = "";
             }
 
-            widgetAPI.putInnerHTML(aitem, subtitleMenuText[lang][i]);
+            aitem.textContent = this.entries[i].label;
             listitem.appendChild(aitem);
             subtitlemenulist.appendChild(listitem);
         }
@@ -46,14 +55,8 @@ SceneSubtitleMenu.prototype.handleShow = function () {
             widgetAPI.putInnerHTML(document.getElementById('playermenuinfo'), "1 / " + menulength);
             document.getElementById('OverlayPlayerMenuInfo').style.visibility = "visible";
         }
-    } else if (saveSettings['issubtitleenabled'] == "true" && issubtitle == false) {
-        // No subtitles found for this video
-        this.waiting = true;
-        widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), "<DL><DT>" + subtitleNotFoundText[lang] + "</DT><DD></DD><SPAN></SPAN></DL>");
-        document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
-        document.getElementById('OverlayMediaPage').style.visibility = "visible";
     } else {
-        // Need to enable subtitles in settings menu
+        // No tracks are available and online subtitle search is disabled.
         this.waiting = true;
         widgetAPI.putInnerHTML(document.getElementById('mediapageinfo'), "<DL><DT>" + subtitleMustEnabledText[lang] + "</DT><DD></DD><SPAN></SPAN></DL>");
         document.getElementById('OverlayMediaPage').style.height = CSSPixels(document.getElementById('mediapageinfo').offsetHeight);
@@ -62,14 +65,10 @@ SceneSubtitleMenu.prototype.handleShow = function () {
 }
 
 SceneSubtitleMenu.prototype.handleHide = function () {
-	if (saveSettings['issubtitleenabled'] == "true" && issubtitle == true) {
-        document.getElementById('OverlaySubtitleMenu').style.visibility = "hidden";
-        document.getElementById('OverlayPlayerMenuInfo').style.visibility = "hidden";
-    } else if (saveSettings['issubtitleenabled'] == "true" && issubtitle == false) {
-        document.getElementById('OverlayMediaPage').style.visibility = "hidden";
-    } else {
-        document.getElementById('OverlayMediaPage').style.visibility = "hidden";
-    }
+    this.selectionRequest = (this.selectionRequest || 0) + 1;
+    document.getElementById('OverlaySubtitleMenu').style.visibility = 'hidden';
+    document.getElementById('OverlayPlayerMenuInfo').style.visibility = 'hidden';
+    document.getElementById('OverlayMediaPage').style.visibility = 'hidden';
 };
 
 SceneSubtitleMenu.prototype.handleFocus = function () {};
@@ -87,7 +86,8 @@ SceneSubtitleMenu.prototype.handleKeyDown = function (keyCode) {
                     for(var i=0; i<subtitlemenulist.length; i++) {
                         if (subtitlemenulist[i].children[0].className == 'active') {
 
-                            var itemname = subtitleMenuText['name'][i];
+                            var entry = this.entries[i];
+                            var itemname = entry.name;
                             break;
                         }
                     }
@@ -100,8 +100,13 @@ SceneSubtitleMenu.prototype.handleKeyDown = function (keyCode) {
                             this.handleShow();
         		        	break;
                         case "show":
+                            var nativeState = sf.scene.get('PlayerPage').Player.tracks;
+                            if (nativeState && nativeState.subtitleIndex >= 0) {
+                                this.selectEmbedded(nativeState.subtitleIndex, subtitlemenulist[i].children[0]);
+                                break;
+                            }
                             this.waiting = true;
-                            sf.scene.get('PlayerPage').DownloadAnotherSubtitle(subtitleslist[0].subdata, subtitlemenulist[0].children[0], subtitlemenulist[0].children[0].innerHTML, function(state, menuelement, menuHTML) {
+                            sf.scene.get('PlayerPage').DownloadAnotherSubtitle(sf.scene.get('PlayerPage').Player.externalSubtitleURL, subtitlemenulist[0].children[0], subtitlemenulist[0].children[0].innerHTML, function(state, menuelement, menuHTML) {
                                 if (state == true) {
                                     widgetAPI.putInnerHTML(menuelement, subtitleLoadText[lang][1]); // ok text
                                     setTimeout(function() {
@@ -209,4 +214,18 @@ SceneSubtitleMenu.prototype.SetZIndex = function(state, number) {
     document.getElementById("OverlayVideoFooter").style.zIndex = number;
     document.getElementById("VideoFooter").style.zIndex = number;
     document.getElementById("waitscreen").style.visibility = state;
+};
+
+SceneSubtitleMenu.prototype.selectEmbedded = function(index, item) {
+    this.waiting = true;
+    var request = this.selectionRequest = (this.selectionRequest || 0) + 1;
+    var finished = function(selected) {
+        if (request !== this.selectionRequest) return;
+        this.waiting = false;
+        if (selected) this.handleShow();
+        else item.textContent = playbackTrackText[lang][2];
+    }.bind(this);
+    var result = sf.scene.get('PlayerPage').selectEmbeddedSubtitle(index);
+    if (result && typeof result.then === 'function') result.then(finished, function() { finished(false); });
+    else finished(result);
 };

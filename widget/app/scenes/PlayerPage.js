@@ -52,9 +52,13 @@ ScenePlayerPage.prototype.initialize = function () {
     };
 
     var playCB = {
+        onsubtitle: function(text) {
+            if (Player.tracks) Player.tracks.renderSubtitle(text);
+        },
         oncurrentplaytime: function (time) {
             //alert("playing time : " + time);
             Player.setCurTime(time);
+            if (Player.isSuccess && !Player.defaultSubtitleSelected) sf.scene.get('PlayerPage').selectDefaultSubtitle();
         },
         onresolutionchanged: function (width, height) {
             //alert("resolution changed : " + width + ", " + height);
@@ -214,6 +218,12 @@ ScenePlayerPage.prototype.initialize = function () {
 
     Player.clear = function()
     {
+        this.subtitleRequest = (this.subtitleRequest || 0) + 1;
+        clearTimeout(this.defaultSubtitleTimer);
+        this.defaultSubtitleTimer = null;
+        this.defaultSubtitleSelected = false;
+        this.externalSubtitleURL = '';
+        if (this.tracks) { this.tracks.dispose(); this.tracks = null; }
         //this.AVPlayer = null;
         /*if (this.AVPlayer) {
             try {
@@ -255,6 +265,10 @@ ScenePlayerPage.prototype.initialize = function () {
             },
             autoRatio: false
         });
+        Player.tracks = new PlaybackTracks(avplay, function(text) {
+            // Native cues are media data; never interpret them as widget HTML.
+            document.getElementById('subtext').textContent = String(text).replace(/<br\s*\/?\s*>/gi, '\n').replace(/<[^>]*>/g, '');
+        });
         //alert(Player.AVPlayer);
     };
 
@@ -278,7 +292,11 @@ ScenePlayerPage.prototype.initialize = function () {
         }, 4000);
     };
 
-    Player.onError = function(){
+    Player.onError = function(error){
+        if (error && error.name) {
+            playCB.onerror(error);
+            return;
+        }
         alert('######onError: ');
         if(Player.getState() != Player.STOPPED) {
             if (issubtitle) {
@@ -347,11 +365,7 @@ ScenePlayerPage.prototype.initialize = function () {
 
         document.getElementById("playerbox960x540").style.visibility = 'visible';
 
-        // Load subtitle if enabled
-        if (issubtitle == true) {
-            document.getElementById("subcontainer").style.visibility = 'visible';
-            Player.startSubtitle();
-        }
+        sf.scene.get('PlayerPage').selectDefaultSubtitle();
     };
 
     Player.setWindow = function()
@@ -369,8 +383,8 @@ ScenePlayerPage.prototype.initialize = function () {
         Player.AVPlayer.setDisplayRect({
             top: 0,
             left: 0,
-            width: (window.screen.width || 960),
-            height: (window.screen.height || 540)
+            width: window.WHITE_RAVEN_BROWSER ? 960 : (window.screen.width || 960),
+            height: window.WHITE_RAVEN_BROWSER ? 540 : (window.screen.height || 540)
         });
     };
 
@@ -527,6 +541,9 @@ ScenePlayerPage.prototype.initialize = function () {
     // Subtitle handling
     Player.stopSubtitle = function()
     {
+        this.subtitleRequest = (this.subtitleRequest || 0) + 1;
+        if (this.tracks) this.tracks.hideSubtitle();
+        widgetAPI.putInnerHTML(document.getElementById('subtext'), '');
         this.subtitleFirsRun = 1;
         this.subtitleState = 0;
         this.subtitleIndex = 0;
@@ -536,6 +553,7 @@ ScenePlayerPage.prototype.initialize = function () {
 
     Player.startSubtitle = function()
     {
+        document.getElementById('subtext').style.whiteSpace = 'normal';
         this.subtitleFirsRun = 1;
         this.subtitleState = 1;
         this.subtitleIndex = 0;
@@ -585,14 +603,14 @@ ScenePlayerPage.prototype.initialize = function () {
     Player.setSubtitleText = function(time)
     {
         time = Math.floor(time) + this.subtitleOffset;
-        if (subtitledata != null && this.subtitleSeek == 0) {
+        if (subtitledata != null && subtitledata.length > 0 && this.subtitleIndex >= 0 && this.subtitleSeek == 0) {
             if (time >= subtitledata[this.subtitleIndex].endTime) {
                 widgetAPI.putInnerHTML(document.getElementById("subtext"), "");
                 if (subtitledata.length - 1 > this.subtitleIndex){
                     this.subtitleIndex++;
                 }
             }
-            if (time >= subtitledata[this.subtitleIndex].startTime && time < subtitledata[this.subtitleIndex].endTime && document.getElementById("subtext").innerHTML != subtitledata.text) {
+            if (time >= subtitledata[this.subtitleIndex].startTime && time < subtitledata[this.subtitleIndex].endTime && document.getElementById("subtext").innerHTML != subtitledata[this.subtitleIndex].text) {
                 widgetAPI.putInnerHTML(document.getElementById("subtext"), subtitledata[this.subtitleIndex].text);
             }
         }
@@ -705,7 +723,9 @@ ScenePlayerPage.prototype.initialize = function () {
                 }
                 break;
         }
-        Player.AVPlayer.resume();
+        // Browser decoding also buffers while selecting a track or seeking
+        // while paused. Preserve the user's paused state when that completes.
+        if (!window.WHITE_RAVEN_BROWSER || Player.state == Player.PLAYING) Player.AVPlayer.resume();
         this.isBuffering = 0;
         this.subtitleFirsRun = 1;
         this.tryCount = 0;
@@ -730,7 +750,7 @@ ScenePlayerPage.prototype.initialize = function () {
             Player.skipForwardVideo(Math.floor(resume['time'] / 1000));
             resume['time'] = 0;
         } else {
-            if (issubtitle && this.subtitleState == 1) {
+            if (issubtitle && this.subtitleState == 1 && subtitledata.length > 0) {
                 if (this.subtitleFirsRun == 1) {
                     this.subtitleFirsRun = 0;
                     Player.setSubtitleIndex(time.millisecond);
@@ -1322,7 +1342,7 @@ ScenePlayerPage.prototype.handleEnterKey = function()
                         sf.scene.focus('AudioMenu');
                         //this.Player.resumeVideo();
                     } else if (this.Player.menuPosition == 4) {
-                        if (saveSettings['issubtitleenabled'] == "true" && issubtitle == false) {
+                        if (saveSettings['issubtitleenabled'] == "true" && this.getSubtitleChoices().length === 0) {
                             sf.scene.show('SubtitleSearch', {caller: "PlayerPage"});
                             sf.scene.focus('SubtitleSearch');
                         } else {
@@ -1546,53 +1566,45 @@ ScenePlayerPage.prototype.handleVolDownKey = function() {
 }
 
 ScenePlayerPage.prototype.DownloadAnotherSubtitle = function(zipdownload, menuelement, menuHTML, fn) {
-    widgetAPI.putInnerHTML(menuelement, subtitleLoadText[lang][0]); // wait text
-
-    var reqSuccess = false;
-
+    menuelement.textContent = subtitleLoadText[lang][0];
+    var player = this.Player;
+    var request = player.subtitleRequest = (player.subtitleRequest || 0) + 1;
+    var completed = false;
     var xhr = new XMLHttpRequest();
-    //xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function () {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-                reqSuccess = true;
-                //alert("SUBTITLE DOWNLOAD: " + xhr.responseText);
-                //this.setSubtitleOffset(0);
+    var timer;
+    var finished = function(success) {
+        if (completed) return;
+        completed = true;
+        clearTimeout(timer);
+        if (request === player.subtitleRequest) {
+            var cues = success ? ParseSrtSubtitle(xhr.responseText) : [];
+            success = cues.length > 0;
+            if (success) {
                 sf.scene.get('SubtitleSync').ClearOffset();
-
-                this.Player.stopSubtitle();
-                document.getElementById("subcontainer").style.visibility = 'hidden';
-
+                player.stopSubtitle();
+                if (player.tracks) player.tracks.subtitleIndex = -1;
+                player.externalSubtitleURL = zipdownload;
                 issubtitle = true;
-                subtitledata = [];
-                subtitledata = ParseSrtSubtitle(xhr.responseText);
-                
-                document.getElementById("subcontainer").style.visibility = 'visible';
-                this.Player.startSubtitle();
-
-                fn(true, menuelement, menuHTML);
-            } else {
-                reqSuccess = true;
-                fn(false, menuelement, menuHTML);
+                subtitledata = cues;
+                document.getElementById('subcontainer').style.visibility = 'visible';
+                player.startSubtitle();
+                subtitleMenuText['name'][0] = 'hide';
+                subtitleMenuText[lang][0] = subtitleShowText[lang];
             }
-
-            if (xhr.destroy) { xhr.destroy(); }           
+            fn(success, menuelement, menuHTML);
         }
-    }.bind(this));
-
-    xhr.open("GET", zipdownload);
-    xhr.send();
-
-    setTimeout(function() {
-        if (!reqSuccess) {
-            xhr.abort();
-            if (xhr.destroy) { xhr.destroy(); }
-            reqSuccess = true;
-            fn(false, menuelement, menuHTML);
-        }
+        if (xhr.destroy) xhr.destroy();
+    };
+    xhr.addEventListener('readystatechange', function() {
+        if (xhr.readyState === 4) finished(xhr.status === 200);
+    });
+    xhr.open('GET', zipdownload);
+    timer = setTimeout(function() {
+        xhr.abort();
+        finished(false);
     }, 15000);
-}
+    xhr.send();
+};
 
 ScenePlayerPage.prototype.SetZIndex = function(state, number) {
     if (state == "visible") {
@@ -1608,7 +1620,7 @@ ScenePlayerPage.prototype.SetZIndex = function(state, number) {
 ScenePlayerPage.prototype.menuStopSubtitle = function()
 {
     if(this.Player.getState() != this.Player.STOPPED) {
-        if (issubtitle) {
+        if (issubtitle || (this.Player.tracks && this.Player.tracks.subtitleActive)) {
             this.Player.stopSubtitle();
             document.getElementById("subcontainer").style.visibility = 'hidden';
         }
@@ -1617,13 +1629,94 @@ ScenePlayerPage.prototype.menuStopSubtitle = function()
 
 ScenePlayerPage.prototype.setSubtitleOffset = function(offset)
 {
+    if (this.Player.tracks && this.Player.tracks.subtitleActive) {
+        this.Player.tracks.setSubtitleSync(offset * 100);
+        return;
+    }
     this.Player.setSubtitleSync(offset);    
 }
 
 ScenePlayerPage.prototype.setAudioStreamID = function(number)
 {
-    this.Player.AVPlayer.setAudioStreamID(number);
+    return this.Player.tracks ? this.Player.tracks.selectAudio(number) : false;
 }
+
+ScenePlayerPage.prototype.getAudioTracks = function() {
+    return this.Player.tracks ? this.Player.tracks.list(1) : [];
+};
+
+ScenePlayerPage.prototype.getEmbeddedSubtitleTracks = function() {
+    return this.Player.tracks ? this.Player.tracks.list(4) : [];
+};
+
+ScenePlayerPage.prototype.getSubtitleChoices = function() {
+    var choices = [];
+    var embedded = this.getEmbeddedSubtitleTracks();
+    var tracks = this.Player.tracks;
+    for (var i = 0; i < embedded.length; i++) {
+        choices.push({key: 'embedded:' + embedded[i].index, source: 'embedded', index: embedded[i].index,
+            label: playbackTrackText[lang][0] + ' · ' + PlaybackSubtitleTrackLabel(embedded[i]),
+            selected: !!tracks && tracks.subtitleActive && tracks.subtitleIndex === embedded[i].index});
+    }
+    for (var j = 0; j < subtitleslist.length && j < 99; j++) {
+        var subtitle = subtitleslist[j];
+        var name = String(subtitle.subtitlename || subtitle.releasename || '').substring(0, 70);
+        choices.push({key: 'opensubtitles:' + subtitle.subdata, source: 'opensubtitles', url: subtitle.subdata,
+            label: PlaybackSubtitleTrackLabel({language: subtitle.lang, title: name}),
+            selected: this.Player.subtitleState === 1 && this.Player.externalSubtitleURL === subtitle.subdata});
+    }
+    return choices;
+};
+
+ScenePlayerPage.prototype.selectDefaultSubtitle = function() {
+    var scene = this, player = this.Player;
+    if (player.defaultSubtitleSelected || player.defaultSubtitleTimer != null) return;
+    // On TV, buffering completion can precede the first usable playback tick.
+    if (player.isBuffering || (player.tracks && !player.tracks.subtitlesReady())) return;
+    var tracks = player.tracks, request = player.subtitleRequest;
+    // AVPlay invokes this through playback/buffering callbacks. Let those
+    // return before selecting a native stream, and recheck after a seek/close.
+    player.defaultSubtitleTimer = setTimeout(function() {
+        player.defaultSubtitleTimer = null;
+        if (scene.Player !== player || player.tracks !== tracks) return;
+        if (player.subtitleRequest !== request) {
+            // A manual selection or hide supersedes the queued default.
+            player.defaultSubtitleSelected = true;
+            return;
+        }
+        if (player.defaultSubtitleSelected || !player.isSuccess || player.isBuffering ||
+                (tracks && !tracks.subtitlesReady())) return;
+        player.defaultSubtitleSelected = true;
+        if (issubtitle && subtitledata.length > 0) {
+            var subtitle = subtitleslist[subtitlepos];
+            player.externalSubtitleURL = subtitle ? subtitle.subdata : '';
+            document.getElementById('subcontainer').style.visibility = 'visible';
+            player.startSubtitle();
+        } else {
+            var embedded = scene.getEmbeddedSubtitleTracks();
+            if (embedded.length > 0) scene.selectEmbeddedSubtitle(embedded[0].index);
+        }
+    }, 0);
+};
+
+ScenePlayerPage.prototype.selectEmbeddedSubtitle = function(index) {
+    if (!this.Player.tracks) return false;
+    var request = this.Player.subtitleRequest = (this.Player.subtitleRequest || 0) + 1;
+    var tracks = this.Player.tracks;
+    var finished = function(selected) {
+        if (!selected || this.Player.tracks !== tracks || request !== this.Player.subtitleRequest) return false;
+        this.Player.externalSubtitleURL = '';
+        this.Player.subtitleState = 0;
+        this.Player.subtitleOffset = 0;
+        sf.scene.get('SubtitleSync').ClearOffset();
+        document.getElementById('subtext').style.whiteSpace = 'pre-line';
+        document.getElementById('subcontainer').style.visibility = 'visible';
+        tracks.refreshSubtitle();
+        return true;
+    }.bind(this);
+    var result = this.Player.tracks.selectSubtitle(index);
+    return result && typeof result.then === 'function' ? result.then(finished) : finished(result);
+};
 
 ScenePlayerPage.prototype.CheckDownload = function() {
     if (window.getComputedStyle(document.getElementById("ProgressBar"), null).visibility == "hidden") {

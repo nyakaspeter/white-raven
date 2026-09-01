@@ -35,8 +35,8 @@ var searchMissingSettingsText = { es: '<img id="return-icon"> VOLVER A LA PÁGIN
 var torrentText = { es: '...BUSCANDO ENLACES TORRENT...' };
 var downloadText = { es: '...CARGANDO EL FICHERO TORRENT ... ' };
 var downloadSpeedText = { es: 'VELOCIDAD DE DESCARGA: ' };
-var downloadBufferText = { es: '<span id="sp">~<span id="sp">DATOS DESCARGADOS: ' };
-var downloadPeersText = { es: '<span id="sp">~<span id="sp">PEERS: ' };
+var downloadBufferText = { es: '<span id="sp">·<span id="sp">DATOS DESCARGADOS: ' };
+var downloadPeersText = { es: '<span id="sp">·<span id="sp">PEERS: ' };
 var playText = { es: '...INICIANDO VÍDEO...' };
 var restartServerText = { es: '...REINICIANDO SERVIDOR...' };
 var novideoText = { es: '¡NO SE HA ENCONTRADO NINGÚN VÍDEO REPRODUCIBLE!' };
@@ -56,16 +56,16 @@ var serverApiInfoText = { es: 'ESCRIBE TU CLAVE DE API' };
 var seasonText = { es: 'Temporada: ' };
 var episodeText = { es: 'Episodio: ' };
 var genresText = { es: 'Género: ' };
-var yearText = { es: ' ~ Año: ' };
-var runtimeText = { es: ' ~ Duración: ' };
-var ratingText = { es: ' min ~ Valoración: ' };
-var subtitleDisabledText = { es: 'SUBTÍTULOS - DESACTIVADOS' };
+var yearText = { es: ' · Año: ' };
+var runtimeText = { es: ' · Duración: ' };
+var ratingText = { es: ' min · Valoración: ' };
+var subtitleDisabledText = { es: 'BÚSQUEDA DE SUBTÍTULOS - DESACTIVADA' };
 var logDisabledText = { es: 'CREAR FICHERO LOG - DESACTIVADO' };
 var subtitleShowText = { es: 'OCULTAR SUBTÍTULOS' };
 var subtitleHiddenText = { es: 'MOSTRAR SUBTÍTULOS' };
 var subtitleNotFoundText = { es: 'NO SUBTITLE FOUND' };
 var subtitleSearchText = { es: ['BUSCANDO SUBTÍTULOS', 'CARGANDO SUBTÍTULOS'] };
-var subtitleMustEnabledText = { es: 'ES NECESARIO ACTIVAR LOS SUBTÍTULOS EN EL MENÚ DE CONFIGURACIÓN' };
+var subtitleMustEnabledText = { es: 'NO HAY PISTAS DE SUBTÍTULOS DISPONIBLES. ACTIVA LA BÚSQUEDA DE SUBTÍTULOS EN CONFIGURACIÓN PARA BUSCAR EN LÍNEA' };
 var aboutInfoText = { es: '¡ACCEDE A PELÍCULAS Y SERIES DESDE TORRENTS AL INSTANTE!<SPAN></SPAN>LA DESCARGA DE MATERIAL CON PROTECCIÓN DE COPIA (COPYRIGHT) PUEDE SER ILEGAL EN TU PAÍS. ÚSALO BAJO TU PROPIA RESPONSABILIDAD.<SPAN></SPAN>' + 
                     'ESTE PROGRAMA UTILIZA LAS SIGUIENTES BASES DE DATOS:' +
                     '<DL><DT>PELÍCULAS Y SERIES</DT>' + 
@@ -103,8 +103,10 @@ genresMovieMenuText['es'] = ['TODOS LOS GÉNEROS', 'ACCIÓN', 'AVENTURA', 'ANIMA
 genresTVMenuText['es'] = ['TODOS LOS GÉNEROS', 'ACCIÓN Y AVENTURA', 'ANIMACIÓN', 'COMEDIA', 'CRIMEN', 'DOCUMENTAL', 'DRAMA', 'FAMILIA', 'INFANTIL', 'INTRIGA', 'NOTICIAS', 'REALITY', 'CIENCIA FICCIÓN Y FANTASÍA', 'TELENOVELA', 'ENTREVISTA', 'BÉLICO Y POLÍTICO', 'WESTERN'];
 sortMovieMenuText['es'] = ['MÁS POPULARIDAD', 'MÁS RECIENTE', 'MEJOR VALORACIÓN'];
 sortTVMenuText['es'] = ['MÁS POPULARIDAD', 'MÁS RECIENTE', 'MEJOR VALORACIÓN'];
-settingsMainMenuText['es'] = ['IDIOMA DE LA INTERFAZ', 'IDIOMA DE LA BASE DE DATOS DE PELÍCULAS', 'FUENTE DE LAS PELÍCULAS', 'FUENTE DE LAS SERIES', 'SUBTÍTULOS - ACTIVADOS', 'IDIOMA DE SUBTÍTULOS', 'MODO DE BÚSQUEDA DE SUBTÍTULOS', 'VELOCIDAD DE DESCARGA', 'VELOCIDAD DE SUBIDA', 'CREAR FICHERO DE LOG - ACTIVADO', 'APLICAR CONFIGURACIÓN', 'RESTAURAR VALORES POR DEFECTO'];
-subtitleMenuText['es'] = ['OCULTAR SUBTÍTULOS', 'SINCRONIZAR SUBTÍTULOS', 'CARGAR OTROS SUBTÍTULOS', 'SEARCH NEW SUBTITLE', 'CONFIGURAR EL ESTILO DE LOS SUBTÍTULOS'];
+settingsMainMenuText['es'] = ['IDIOMA DE LA INTERFAZ', 'IDIOMA DE LA BASE DE DATOS DE PELÍCULAS', 'FUENTE DE LAS PELÍCULAS', 'FUENTE DE LAS SERIES', 'BÚSQUEDA DE SUBTÍTULOS - ACTIVADA', 'IDIOMA DE SUBTÍTULOS', 'MODO DE BÚSQUEDA DE SUBTÍTULOS', 'VELOCIDAD DE DESCARGA', 'VELOCIDAD DE SUBIDA', 'CREAR FICHERO DE LOG - ACTIVADO', 'APLICAR CONFIGURACIÓN', 'RESTAURAR VALORES POR DEFECTO'];
+subtitleMenuText['es'] = ['OCULTAR SUBTÍTULOS', 'SINCRONIZAR SUBTÍTULOS', 'SELECCIONAR SUBTÍTULOS', 'SEARCH NEW SUBTITLE', 'CONFIGURAR EL ESTILO DE LOS SUBTÍTULOS'];
 subtitleLoadText['es'] = ['POR FAVOR ESPERE - CARGANDO SUBTÍTULOS', 'SUBTÍTULOS CARGADOS CORRECTAMENTE', 'NO SE PUEDEN CARGAR LOS SUBTÍTULOS'];
 subtitleStyleText['es'] = ['TAMAÑO DEL TEXTO : ', 'POSICIÓN DEL TEXTO : ', 'COLOR DEL TEXTO : ', 'COLOR DE FONDO : ', 'OPACIDAD DE FONDO : '];
 resumeMenuText['es'] = ['RESUME FROM', 'START FROM BEGINNING'];
+
+var playbackTrackText = {"es": ["INTEGRADO", "SELECCIÓN DE AUDIO NO DISPONIBLE", "NO SE PUEDE SELECCIONAR LA PISTA"]};
