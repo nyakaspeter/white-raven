@@ -32,6 +32,13 @@ func main() {
 
 	handler := http.NewServeMux()
 	handler.Handle("/images/", noStore(http.StripPrefix("/images/", http.FileServer(http.Dir(filepath.Join(root, "widget", "images"))))))
+	handler.HandleFunc("/browser-config.js", func(response http.ResponseWriter, _ *http.Request) {
+		value, _ := json.Marshal(*server)
+		response.Header().Set("Cache-Control", "no-store")
+		response.Header().Set("Content-Type", "application/javascript; charset=utf-8")
+		fmt.Fprintf(response, "window.WHITE_RAVEN_SERVER_URL = %s;\n", value)
+		fmt.Fprintln(response, "window.WHITE_RAVEN_VERSION = \"0.0.0\";")
+	})
 	handler.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
 		response.Header().Set("Cache-Control", "no-store")
 		if request.URL.Path == "/" {
@@ -40,15 +47,8 @@ func main() {
 		}
 		http.FileServer(http.Dir(root)).ServeHTTP(response, request)
 	})
-	handler.HandleFunc("/browser-config.js", func(response http.ResponseWriter, _ *http.Request) {
-		value, _ := json.Marshal(*server)
-		response.Header().Set("Cache-Control", "no-store")
-		response.Header().Set("Content-Type", "application/javascript; charset=utf-8")
-		fmt.Fprintf(response, "window.WHITE_RAVEN_SERVER_URL = %s;\n", value)
-	})
 
-	log.Printf("White Raven browser harness: http://%s/", *listen)
-	log.Printf("White Raven server: %s", *server)
+	log.Printf("White Raven started on address: http://%s", *listen)
 	log.Fatal(http.ListenAndServe(*listen, handler))
 }
 

@@ -1,78 +1,138 @@
 # White Raven
 
-White Raven is a torrent player application for Samsung Smart TV E, F, H series. This repository contains the Smart TV Widget part of the application. For it to work, the [White Raven Server](https://github.com/nyakaspeter/White-Raven-Server) application must also be running on the TV (which is only possible if it's rooted), or on the local network. I recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server too, to get the most out of the application. This repo is a fork of [White Raven](https://github.com/silentmurdock/whiteraven).
+White Raven is a torrent media player for Samsung Smart TV E, F, and H series. This repository contains the complete application:
+
+- `widget/`: the legacy Samsung Smart TV widget
+- `server/`: White Raven Server (`wrserver`)
+- `browser/`: the browser development harness
+- `build/`: the widget packager
+
+The project is a fork of the original [White Raven](https://github.com/silentmurdock/whiteraven) widget and [wrserver](https://github.com/silentmurdock/wrserver).
 
 ## Features
 
-- Torrent server can run locally on rooted TV
-- Torrent streaming from memory
-- Automatic subtitle search by IMDB ID, Text or by File Hash
-- Torrent receiver page allow to stream any magnet link or torrent file
-- Favourites handler
-- Subtitle style settings
-- You can search for movies, episodes or whole season/series packs
-- You can play torrents with multiple video files inside
+- Torrent streaming from memory or disk
+- Torrentio, Jackett, nCore, and iNSANE torrent search
+- Automatic subtitle search by IMDb ID, title, or file hash
+- Movie and TV metadata discovery
+- Torrent receiver page
+- DLNA casting and local media player integration
+- Rooted and rootless Samsung TV packages
+- Browser harness for development without a TV
 
-## How to use
+## Installing on a Samsung TV
 
-### Rootless version
+### For non-rooted Samsung E, F, H series
 
-If you don't have root on your television or just don't want to run the server on the TV, you can also run it from another device on your local network. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the rootless version of White Raven and run the [White Raven Server](https://github.com/nyakaspeter/White-Raven-Server/releases) separately. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Instructions for running White Raven Server and Jackett on various devices can be found [here](https://github.com/nyakaspeter/White-Raven-Server#how-to-use).
+1. Run White Raven Server on another device in the local network.
+2. Create a `WhiteRaven` folder on a FAT32 USB drive.
+3. Extract the rootless widget zip into that folder.
+4. Connect the drive to the TV and launch White Raven.
 
-#### Running the widget from USB on Samsung Smart TV E, F, H series
-
-0. Ensure that White Raven Server is running on the local network.
-1. Grab a FAT32 formatted USB stick and create a folder named as `WhiteRaven` in it's root.
-2. Extract the contents of the downloaded White Raven rootless zip file to this directory.
-3. Plug the pendrive into your television.
-4. White Raven should show up in the apps section. After launching it, it should automatically connect to the server. The pendrive has to be plugged in while using the app.
-
-#### Installing the widget on rooted Samsung Smart TV E, F, H series</summary>
-
-0. Ensure that White Raven Server is running on the local network.
-1. Connect to your television over FTP/SFTP.
-2. Create a folder named as `WhiteRaven` inside the `/mtd_rwcommon/widgets/user` directory.
-3. Extract the contents of the downloaded zip file to this directory.
-4. Reboot your television.
-5. After reboot White Raven should show up in the apps section. After launching it, it should automatically connect to the server.
-
-### Root version
-
-If you have a rooted E, F, or H series Samsung Smart TV, you can run both the client and the server simultaneously on your television. For this you have to [download](https://github.com/nyakaspeter/White-Raven/releases) the root version of White Raven. I also recommend setting up a [Jackett](https://github.com/Jackett/Jackett) server on your local network, to be able to use a significantly higher number of torrent trackers. Unfortunately Jackett cannot be run from the TV itself, but it can run on a number of devices, I've written about it [here](https://github.com/nyakaspeter/white-raven-server#how-to-use).
-
-#### Installing the widget on rooted Samsung Smart TV E, F, H series
+### For rooted Samsung E, F, H series
 
 1. Connect to your television over FTP/SFTP.
 2. Create a folder named as `WhiteRaven` inside the `/mtd_rwcommon/widgets/user` directory.
 3. Extract the contents of the downloaded zip file to this directory.
-4. If you want to use the Jackett provider or tweak server settings, modify `server.init` inside the `server` directory. See the [documentation](https://github.com/nyakaspeter/white-raven-server#cli-arguments) for launch arguments.
+4. Configure any provider credentials or server flags in `server.init` inside the `server` directory.
 5. Reboot your television.
 6. After reboot White Raven should show up in the apps section. After launching it, it should automatically start the server and connect to it.
 
-## Build instructions
+## Development
 
-You can build the White Raven widget zip file by running the following commands from the project directory. [Go](https://golang.org/) must be installed for these to work.
+Go 1.27 or newer is required.
 
-#### Building the rootless version
+Start White Raven Server on port 9000:
 
-`go run build/build.go rootless`
+```sh
+go run ./server -port 9000 -log
+```
 
-#### Building the rooted version
+In another terminal, start the browser harness:
 
-First you have to [download](https://github.com/nyakaspeter/white-raven-server/releases) or [build](https://github.com/nyakaspeter/white-raven-server#build-instructions) the ARM version of the server binary and place it in the `build` directory, then run:
+```sh
+go run ./browser -server http://127.0.0.1:9000
+```
 
-`go run build/build.go rooted -serverfile="build/wrserver"`
+## Building the widget
 
-## Browser compatibility mode
+Build the rootless widget:
 
-Start White Raven server first, then run this command from the White Raven repository root:
+```sh
+go run ./build rootless -version 0.8.0
+```
 
-`go run ./browser/devserver -server http://127.0.0.1:9000`
+This creates `build/whiteraven-rootless-0.8.0.zip`.
 
-Open `http://127.0.0.1:8080/`. The White Raven server address, including a custom port, is configured with the `-server` argument.
+Build the rooted widget:
+
+```sh
+go run ./build rooted -version 0.8.0
+```
+
+This cross-compiles `./server` for Linux/ARMv7, embeds it as `server/wrserver`, and creates `build/whiteraven-0.8.0.zip`.
+
+## Building White Raven Server
+
+For local development:
+
+```sh
+go build -o build/wrserver ./server
+```
+
+For a versioned standalone build, inject the same release value through Go's linker:
+
+```sh
+go build -trimpath -ldflags="-s -w -X github.com/nyakaspeter/white-raven/build/version.Value=0.8.0" -o build/wrserver ./server
+```
+
+Cross-compilation examples:
+
+```sh
+GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/nyakaspeter/white-raven/build/version.Value=0.8.0" -o build/wrserver-linux-armv7 ./server
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/nyakaspeter/white-raven/build/version.Value=0.8.0" -o build/wrserver-linux-x64 ./server
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X github.com/nyakaspeter/white-raven/build/version.Value=0.8.0" -o build/wrserver-windows-x64.exe ./server
+```
+
+## Server command-line arguments
+
+- `-host`: interface/IP to listen on
+- `-port`: HTTP port; default `9000`
+- `-dlnaport`: DLNA server port; default `3500`
+- `-storagetype`: `memory` or `file`; default `memory`
+- `-memorysize`: memory storage size in MB; minimum `64`, default `128`
+- `-dir`: download directory for file storage; default `data`
+- `-downrate`: download limit in Kbps; `0` is unlimited
+- `-uprate`: upload limit in Kbps; `0` disables uploading
+- `-maxconn`: maximum connections per torrent; default `50`
+- `-nodht`: disable DHT
+- `-jackettaddress` and `-jackettkey`: Jackett connection
+- `-ncoreuser` and `-ncorepassword`: nCore credentials
+- `-insaneuser` and `-insanepassword`: iNSANE credentials
+- `-osapikey`: OpenSubtitles.com API key
+- `-osuser` and `-ospassword`: optional OpenSubtitles.com credentials
+- `-tmdbkey`: TMDB API key
+- `-receiver`: enable the receiver page; default `true`
+- `-cors`: enable API CORS; default `true`
+- `-background`: run in the background
+- `-log`: enable logs
+
+Example using file storage:
+
+```sh
+./build/wrserver -storagetype file -dir downloads
+```
+
+Example using Jackett:
+
+```sh
+./build/wrserver -jackettaddress http://192.168.0.2:9117 -jackettkey YOUR_API_KEY
+```
 
 ## Terms of service
-[TERMS OF SERVICE](TOS)
+
+[Terms of service](TOS)
 
 ## License
-[GNU GENERAL PUBLIC LICENSE Version 3](LICENSE)
+
+[GNU General Public License version 3](LICENSE)

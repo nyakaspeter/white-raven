@@ -1,0 +1,155 @@
+package torrents
+
+import (
+	"sort"
+	"strconv"
+	"strings"
+
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/insane"
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/jackett"
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/ncore"
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/torrentio"
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/types"
+)
+
+func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []types.MovieTorrent {
+	output := []types.MovieTorrent{}
+	ch := make(chan []types.MovieTorrent)
+
+	count := 0
+	if movie.SearchText != "" {
+		if sources.Jackett.Enabled {
+			go jackett.GetMovieTorrentsByText(movie.SearchText, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+			count++
+		}
+		if sources.Ncore.Enabled {
+			go ncore.GetMovieTorrentsByText(movie.SearchText, sources.Ncore.Username, sources.Ncore.Password, ch)
+			count++
+		}
+		if sources.Insane.Enabled {
+			go insane.GetMovieTorrentsByText(movie.SearchText, sources.Insane.Username, sources.Insane.Password, ch)
+			count++
+		}
+	}
+	if movie.ImdbId != "" {
+		if sources.Torrentio.Enabled {
+			go torrentio.GetMovieTorrentsByImdbId(movie.ImdbId, ch)
+			count++
+		}
+
+		if sources.Jackett.Enabled {
+			go jackett.GetMovieTorrentsByImdbId(movie.ImdbId, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+			count++
+		}
+		if sources.Ncore.Enabled {
+			go ncore.GetMovieTorrentsByImdbId(movie.ImdbId, sources.Ncore.Username, sources.Ncore.Password, ch)
+			count++
+		}
+		if sources.Insane.Enabled {
+			go insane.GetMovieTorrentsByImdbId(movie.ImdbId, sources.Insane.Username, sources.Insane.Password, ch)
+			count++
+		}
+	}
+
+	for count > 0 {
+		results := <-ch
+		for _, result := range results {
+			duplicate := false
+			for _, outResult := range output {
+				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
+					(outResult.Torrent != "" && outResult.Provider == result.Provider && outResult.Title == result.Title) {
+					duplicate = true
+					if outResult.Size == "0" && result.Size != "0" {
+						outResult.Size = result.Size
+						outResult.Title = result.Title
+					}
+				}
+			}
+
+			if !duplicate {
+				output = append(output, result)
+			}
+		}
+		count--
+	}
+
+	// Sort by seeds in descending order
+	sort.Slice(output, func(i, j int) bool {
+		si, _ := strconv.ParseInt(output[i].Seeds, 10, 64)
+		sj, _ := strconv.ParseInt(output[j].Seeds, 10, 64)
+		return si > sj
+	})
+
+	return output
+}
+
+func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.ShowTorrent {
+	output := []types.ShowTorrent{}
+	ch := make(chan []types.ShowTorrent)
+
+	count := 0
+	if show.SearchText != "" {
+		if sources.Jackett.Enabled {
+			go jackett.GetShowTorrentsByText(show.SearchText, show.Season, show.Episode, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+			count++
+		}
+		if sources.Ncore.Enabled {
+			go ncore.GetShowTorrentsByText(show.SearchText, show.Season, show.Episode, sources.Ncore.Username, sources.Ncore.Password, ch)
+			count++
+		}
+		if sources.Insane.Enabled {
+			go insane.GetShowTorrentsByText(show.SearchText, show.Season, show.Episode, sources.Insane.Username, sources.Insane.Password, ch)
+			count++
+		}
+	}
+	if show.ImdbId != "" {
+		if sources.Torrentio.Enabled {
+			go torrentio.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, ch)
+			count++
+		}
+
+		if sources.Jackett.Enabled {
+			go jackett.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+			count++
+		}
+		if sources.Ncore.Enabled {
+			go ncore.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, sources.Ncore.Username, sources.Ncore.Password, ch)
+			count++
+		}
+		if sources.Insane.Enabled {
+			go insane.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, sources.Insane.Username, sources.Insane.Password, ch)
+			count++
+		}
+	}
+
+	for count > 0 {
+		results := <-ch
+		for _, result := range results {
+			duplicate := false
+			for _, outResult := range output {
+				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
+					(outResult.Torrent != "" && outResult.Provider == result.Provider && outResult.Title == result.Title) {
+					duplicate = true
+					if outResult.Size == "0" && result.Size != "0" {
+						outResult.Size = result.Size
+						outResult.Title = result.Title
+					}
+				}
+			}
+
+			if !duplicate {
+				output = append(output, result)
+			}
+		}
+		count--
+	}
+
+	// Sort by seeds in descending order
+	sort.Slice(output, func(i, j int) bool {
+		si, _ := strconv.ParseInt(output[i].Seeds, 10, 64)
+		sj, _ := strconv.ParseInt(output[j].Seeds, 10, 64)
+		return si > sj
+	})
+
+	return output
+}

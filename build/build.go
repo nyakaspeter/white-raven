@@ -3,14 +3,12 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"encoding/xml"
-	"errors"
 	"flag"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -21,97 +19,54 @@ import (
 )
 
 const (
-	builderVersion string = "0.1.0"
-
-	serverName        string = "wrserver"
-	legacyRoot        string = "widget/"
-	serverRoot        string = legacyRoot + "server/"
-	serverOutputPath  string = serverRoot + serverName
-	serverPathInZip string = "server/" + serverName
-	defaultZipName    string = "build/whiteraven.zip"
-	configFilePath    string = legacyRoot + "config.xml" // Needed for version detection
+	serverName         = "wrserver"
+	legacyRoot         = "widget/"
+	serverRoot         = legacyRoot + "server/"
+	serverOutputPath   = serverRoot + serverName
+	serverPathInZip    = "server/" + serverName
+	defaultZipName     = "build/whiteraven.zip"
+	versionPlaceholder = "__WHITE_RAVEN_VERSION__"
+	versionVariable    = "github.com/nyakaspeter/white-raven/build/version.Value"
 
 	mainName            string = "Main.js"
 	detectRootCode      string = "var detectedValues = DetectRoot();"
 	blockRootDetectCode string = "var detectedValues = { isRooted: false, isSupported: false };"
 )
 
-// Version detection from config.xml file
-type ConfigXML struct {
-	Version string `xml:"ver"`
-}
-
-// Some global variables
 var zipName string = defaultZipName
 var widgetVersion = ""
 
-func readVersionFromConfig(path string) string {
-	xmlFile, err := os.Open(path)
-	if err != nil {
-		return "" // Do not generate error
-	}
-	defer xmlFile.Close()
+var validVersion = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$`)
 
-	byteValue, err := ioutil.ReadAll(xmlFile)
-	if err != nil {
-		return "" // Do not generate error
-	}
-
-	var config ConfigXML
-	xml.Unmarshal(byteValue, &config)
-
-	return config.Version
+func buildServer(version string) error {
+	ldflags := fmt.Sprintf("-s -w -X %s=%s", versionVariable, version)
+	command := exec.Command("go", "build", "-trimpath", "-ldflags", ldflags, "-o", serverOutputPath, "./server")
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	command.Env = buildEnvironment(map[string]string{
+		"CGO_ENABLED": "0",
+		"GOARCH":      "arm",
+		"GOARM":       "7",
+		"GOOS":        "linux",
+	})
+	return command.Run()
 }
 
-func validateServerFile(path string) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
+func buildEnvironment(overrides map[string]string) []string {
+	environment := make([]string, 0, len(os.Environ())+len(overrides))
+	for _, entry := range os.Environ() {
+		name, _, found := strings.Cut(entry, "=")
+		if !found {
+			continue
+		}
+		if _, overridden := overrides[name]; !overridden {
+			environment = append(environment, entry)
+		}
 	}
-	defer file.Close()
-
-	var ident [4]byte
-	if _, err := io.ReadFull(file, ident[:]); err != nil {
-		return err
+	for name, value := range overrides {
+		environment = append(environment, name+"="+value)
 	}
-
-	if ident[0] != '\x7f' || ident[1] != 'E' || ident[2] != 'L' || ident[3] != 'F' {
-		return errors.New("the specified file is not a Linux executable")
-	}
-
-	return nil
-}
-
-func copyServerFile(sourcePath string) error {
-	if err := validateServerFile(sourcePath); err != nil {
-		return err
-	}
-
-	source, err := os.Open(sourcePath)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	destination, err := os.Create(serverOutputPath)
-	if err != nil {
-		return err
-	}
-
-	_, copyErr := io.Copy(destination, source)
-	closeErr := destination.Close()
-
-	if copyErr != nil {
-		os.Remove(serverOutputPath)
-		return copyErr
-	}
-
-	if closeErr != nil {
-		os.Remove(serverOutputPath)
-		return closeErr
-	}
-
-	return nil
+	return environment
 }
 
 func removeServerFile() {
@@ -122,11 +77,10 @@ func removeServerFile() {
 }
 
 func buildReleaseFromDirectory(root string, buildRootless bool) error {
-	// Create filename
-	if buildRootless == true {
-		zipName = strings.Replace(defaultZipName, ".", "-rootless-"+widgetVersion+".", -1)
+	if buildRootless {
+		zipName = strings.TrimSuffix(defaultZipName, ".zip") + "-rootless-" + widgetVersion + ".zip"
 	} else {
-		zipName = strings.Replace(defaultZipName, ".", "-"+widgetVersion+".", -1)
+		zipName = strings.TrimSuffix(defaultZipName, ".zip") + "-" + widgetVersion + ".zip"
 	}
 
 	// Create output file
@@ -183,10 +137,11 @@ func buildReleaseFromDirectory(root string, buildRootless bool) error {
 }
 
 func minifyFile(path string, buildRootless bool) ([]byte, error) {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return []byte{}, err
 	}
+	content = bytes.ReplaceAll(content, []byte(versionPlaceholder), []byte(widgetVersion))
 
 	r := bytes.NewBuffer(content)
 	var buff bytes.Buffer
@@ -299,69 +254,60 @@ func usageGuide() {
 }
 
 func main() {
-	fmt.Printf("White Raven Widget Builder For Legacy Samsung Smart TVs v%s\n", builderVersion)
+	fmt.Println("White Raven Widget Builder For Legacy Samsung Smart TVs")
 
 	rootless := flag.NewFlagSet("rootless", flag.ExitOnError)
+	rootlessVersion := rootless.String("version", "", "Version to embed, for example 0.8.0.")
 
 	rooted := flag.NewFlagSet("rooted", flag.ExitOnError)
-	serverFile := rooted.String(
-		"serverfile",
-		"",
-		"Specify the path of the \""+serverName+"\" executable compiled for Samsung Smart TVs.",
-	)
+	rootedVersion := rooted.String("version", "", "Version to embed, for example 0.8.0.")
 
 	if len(os.Args) < 2 {
 		usageGuide()
 	}
 
 	buildRootless := false
-	serverCopied := false
-
-	// Check if config.xml file and version number exist.
-	widgetVersion = readVersionFromConfig(configFilePath)
+	serverBuilt := false
 
 	switch os.Args[1] {
 	case "rooted":
 		rooted.Parse(os.Args[2:])
+		widgetVersion = strings.TrimSpace(*rootedVersion)
 
 		if len(rooted.Args()) != 0 {
 			fmt.Printf("Unknown parameter(s): %v\n", rooted.Args())
 			fmt.Printf("Usage of %s:\n", os.Args[1])
 			rooted.PrintDefaults()
 			os.Exit(2)
-		} else if *serverFile == "" {
+		} else if !validVersion.MatchString(widgetVersion) {
+			fmt.Println("-version must use semantic version form, for example 0.8.0")
 			fmt.Printf("Usage of %s:\n", os.Args[1])
 			rooted.PrintDefaults()
 			os.Exit(2)
-		} else if widgetVersion == "" {
-			fmt.Printf(
-				"The \"%s\" file cannot be found or cannot contain version information.\n",
-				configFilePath,
-			)
-			os.Exit(2)
 		}
 
-		fmt.Printf("\nAdd %s directly to the rooted widget.\n", serverName)
+		fmt.Printf("\nBuild %s for Samsung Smart TV Linux/ARMv7.\n", serverName)
 
-		err := copyServerFile(*serverFile)
+		err := buildServer(widgetVersion)
 		if err != nil {
-			fmt.Printf("Unable to add %s to the widget.\n -> %v\n", serverName, err)
+			removeServerFile()
+			fmt.Printf("Unable to build %s.\n -> %v\n", serverName, err)
 			os.Exit(2)
 		}
 
-		serverCopied = true
+		serverBuilt = true
 
 	case "rootless":
 		rootless.Parse(os.Args[2:])
+		widgetVersion = strings.TrimSpace(*rootlessVersion)
 
 		if len(rootless.Args()) != 0 {
 			fmt.Printf("Unknown parameter(s): %v\n", rootless.Args())
 			os.Exit(2)
-		} else if widgetVersion == "" {
-			fmt.Printf(
-				"The \"%s\" file is not found or does not contain widget version information.\n",
-				configFilePath,
-			)
+		} else if !validVersion.MatchString(widgetVersion) {
+			fmt.Println("-version must use semantic version form, for example 0.8.0")
+			fmt.Printf("Usage of %s:\n", os.Args[1])
+			rootless.PrintDefaults()
 			os.Exit(2)
 		}
 
@@ -373,7 +319,7 @@ func main() {
 
 	err := buildReleaseFromDirectory(legacyRoot, buildRootless)
 	if err != nil {
-		if serverCopied {
+		if serverBuilt {
 			removeServerFile()
 		}
 
@@ -381,7 +327,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	if serverCopied {
+	if serverBuilt {
 		removeServerFile()
 	}
 

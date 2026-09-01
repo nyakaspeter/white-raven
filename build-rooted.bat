@@ -1,1 +1,0 @@
-go run build/build.go rooted -serverfile="build/wrserver"
