@@ -8,9 +8,8 @@ import (
 	"os/exec"
 	"os/signal"
 
-	"github.com/nyakaspeter/white-raven/server/internal/httpserver"
+	"github.com/nyakaspeter/white-raven/server/appcore"
 	"github.com/nyakaspeter/white-raven/server/internal/settings"
-	"github.com/nyakaspeter/white-raven/server/internal/torrentclient"
 )
 
 var quitSignal = make(chan os.Signal, 1)
@@ -65,18 +64,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	if _, err := torrentclient.StartTorrentClient(); err != nil {
-		quit()
+	controller := &appcore.Controller{}
+	if err := controller.Start(settings.Current()); err != nil {
+		log.Fatal(err)
 	}
-
-	httpserver.StartHttpServer(quitSignal)
-
-	<-quitSignal
-	quit()
-}
-
-func quit() {
-	log.Println("Quitting.")
-	httpserver.StopHttpServer()
-	torrentclient.StopTorrentClient()
+	go func() {
+		<-quitSignal
+		controller.Stop()
+	}()
+	controller.Wait()
 }

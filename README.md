@@ -9,6 +9,27 @@ White Raven is a torrent media player for Samsung Smart TV E, F, and H series. T
 
 The project is a fork of the original [White Raven](https://github.com/silentmurdock/whiteraven) widget and [wrserver](https://github.com/silentmurdock/wrserver).
 
+## Companion app
+
+`companion/` contains the White Raven Companion, a small Wails application for Android, iOS, macOS, Windows, and Linux. It starts and stops White Raven Server, saves the useful server options, and shows a live log. On Android, the server uses an ongoing foreground-service notification while it is running.
+
+Install Wails v3 and build the desktop companion:
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.7
+cd companion
+wails3 build
+```
+
+Build an Android APK after installing the Android SDK, NDK, and a JDK:
+
+```sh
+cd companion
+wails3 package GOOS=android
+```
+
+The build is written to `companion/bin/`. Wails mobile support is currently experimental. The iOS build shares the interface and server code, but iOS only grants limited background execution time.
+
 ## Features
 
 - Torrent streaming from memory or disk

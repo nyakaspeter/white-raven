@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>White Raven Companion</title>
+</head>
+<body>
+  <main>
+    <section id="server-page" class="page active">
+      <header class="top-bar">
+        <h1>White Raven</h1>
+      </header>
+
+      <section class="server-control" aria-labelledby="server-state">
+        <button id="toggle" class="power-button start" aria-label="Start server" title="Start server">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10"/><path d="M6.35 5.65a8 8 0 1 0 11.3 0"/></svg>
+        </button>
+        <h2 id="server-state">Server stopped</h2>
+        <a id="server-hint" hidden></a>
+        <p id="error" role="alert"></p>
+      </section>
+
+      <section class="log-section">
+        <div class="section-heading">
+          <h2>Logs</h2>
+          <div class="toolbar">
+            <button id="copy" class="icon-button" aria-label="Copy logs" title="Copy logs">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v11H8z"/><path d="M16 8V5H5v11h3"/></svg>
+            </button>
+            <button id="clear" class="icon-button" aria-label="Clear logs" title="Clear logs">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+            </button>
+          </div>
+        </div>
+        <p id="copy-status" class="action-status" aria-live="polite"></p>
+        <pre id="logs">Server is stopped.</pre>
+      </section>
+    </section>
+
+    <section id="settings-page" class="page">
+      <header class="top-bar settings-title">
+        <h1>White Raven</h1>
+      </header>
+
+      <form id="settings">
+        <h2 class="group-title">Server</h2>
+        <section class="settings-group">
+          <label class="field-row">
+            <span><b>Memory limit</b><small>Megabytes</small></span>
+            <input name="memorySize" type="number" inputmode="numeric" min="64" required />
+          </label>
+          <label class="field-row">
+            <span><b>Connections</b><small>Per torrent</small></span>
+            <input name="maxConnections" type="number" inputmode="numeric" min="1" required />
+          </label>
+          <label class="switch-row">
+            <span><b>Disable DHT</b><small>Use trackers only</small></span>
+            <input name="noDHT" type="checkbox" role="switch" />
+          </label>
+        </section>
+
+        <h2 class="group-title">Bandwidth</h2>
+        <section class="settings-group">
+          <label class="field-row">
+            <span><b>Download limit</b><small>Kbps · 0 is unlimited</small></span>
+            <input name="downloadRate" type="number" inputmode="numeric" min="0" />
+          </label>
+          <label class="field-row">
+            <span><b>Upload limit</b><small>Kbps · 0 is unlimited</small></span>
+            <input name="uploadRate" type="number" inputmode="numeric" min="0" />
+          </label>
+        </section>
+
+        <h2 class="group-title provider-title">TMDB</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>API key</span><input name="tmdbKey" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">OpenSubtitles</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>API key</span><input name="openSubtitlesKey" type="password" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Username</span><input name="openSubtitlesUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="openSubtitlesPassword" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">Jackett</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Address</span><input name="jackettAddress" type="url" inputmode="url" /></label>
+          <label class="stacked-field"><span>API key</span><input name="jackettKey" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">nCore</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Username</span><input name="ncoreUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="ncorePassword" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">iNSANE</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Username</span><input name="insaneUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="insanePassword" type="password" autocomplete="off" /></label>
+        </section>
+
+      </form>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-item active" data-page="server-page" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M7.1 5.7a8 8 0 1 0 9.8 0" /></svg>
+      <span>Server</span>
+    </button>
+    <button class="nav-item" data-page="settings-page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.94 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.57 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7l2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.57 1.7 1.7 0 0 0 10 3.08V3h4v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 7l-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

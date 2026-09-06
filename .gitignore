@@ -8,3 +8,32 @@
 whiteraven*
 wrserver*
 raven*
+
+# macOS metadata
+.DS_Store
+
+# Wails application build output
+companion/.task/
+companion/bin/
+companion/frontend/dist/
+companion/frontend/node_modules/
+companion/frontend/frontend/
+companion/frontend/*.tsbuildinfo
+
+# Generated desktop packaging assets
+companion/build/darwin/Assets.car
+companion/build/darwin/icons.icns
+companion/build/windows/icon.ico
+companion/build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+companion/build/linux/appimage/build/
+
+# Generated mobile projects and build output
+companion/build/ios/xcode/
+companion/build/android/overlay.json
+companion/build/android/gen/
+companion/build/android/.gradle/
+companion/build/android/build/
+companion/build/android/local.properties
+companion/build/android/app/build/
+companion/build/android/app/.cxx/
+companion/build/android/app/src/main/jniLibs/

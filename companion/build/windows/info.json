@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.1.0",
+			"CompanyName": "White Raven",
+			"FileDescription": "Run and configure White Raven Server",
+			"LegalCopyright": "White Raven contributors",
+			"ProductName": "White Raven Companion",
+			"Comments": "White Raven Companion application"
+		}
+	}
+}

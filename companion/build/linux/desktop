@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=White Raven Companion
+Comment=Run and configure White Raven Server
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/white-raven-companion %u
+Terminal=false
+Type=Application
+Icon=white-raven-companion
+Categories=Utility;
+StartupWMClass=white-raven-companion
+
+ 
