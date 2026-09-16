@@ -125,7 +125,7 @@ func GetShowTorrentsByImdbId(imdb string, season string, episode string, user st
 
 	matchingTorrents := []types.ShowTorrent{}
 	for _, torrent := range torrents {
-		if (torrent.Season == season || season == "0") && (torrent.Episode == episode || episode == "0") {
+		if utils.ShowTorrentMatches(torrent.Title, torrent.Season, torrent.Episode, season, episode) {
 			matchingTorrents = append(matchingTorrents, torrent)
 		}
 	}
@@ -180,7 +180,7 @@ func GetShowTorrentsByText(searchText string, season string, episode string, use
 
 	matchingTorrents := []types.ShowTorrent{}
 	for _, torrent := range torrents {
-		if (torrent.Season == season || season == "0") && (torrent.Episode == episode || episode == "0") {
+		if utils.ShowTorrentMatches(torrent.Title, torrent.Season, torrent.Episode, season, episode) {
 			matchingTorrents = append(matchingTorrents, torrent)
 		}
 	}

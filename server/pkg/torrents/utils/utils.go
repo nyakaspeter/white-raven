@@ -119,6 +119,52 @@ func GuessSeasonEpisodeNumberFromString(value string) (string, string) {
 	return season, episode
 }
 
+// ShowTorrentMatches reports whether a show release can contain the requested
+// episode. Besides individual episodes, trackers commonly return season packs
+// (S01), season ranges (S01-S08), and complete-series packs.
+func ShowTorrentMatches(title string, torrentSeason string, torrentEpisode string, requestedSeason string, requestedEpisode string) bool {
+	seasonMatches := requestedSeason == "0" || torrentSeason == requestedSeason
+	episodeMatches := requestedEpisode == "0" || torrentEpisode == requestedEpisode
+
+	// Individual episode releases must match both values exactly (unless the
+	// corresponding request value is the wildcard "0").
+	if torrentEpisode != "" {
+		return seasonMatches && episodeMatches
+	}
+
+	// A season pack contains every episode in that season.
+	if seasonMatches && torrentSeason != "" {
+		return true
+	}
+
+	// A multi-season range can contain the requested season even though the
+	// basic parser records only its first season.
+	if requestedSeason != "0" && seasonRangeContains(title, requestedSeason) {
+		return true
+	}
+
+	// Markerless complete-series releases contain every season and episode.
+	return torrentSeason == "" && strings.Contains(strings.ToLower(title), "complete")
+}
+
+var seasonRangeRegex = regexp.MustCompile(`(?i)s0*(\d{1,3})\s*-\s*s?0*(\d{1,3})`)
+
+func seasonRangeContains(title string, requestedSeason string) bool {
+	season, err := strconv.Atoi(requestedSeason)
+	if err != nil {
+		return false
+	}
+
+	match := seasonRangeRegex.FindStringSubmatch(title)
+	if len(match) != 3 {
+		return false
+	}
+
+	first, firstErr := strconv.Atoi(match[1])
+	last, lastErr := strconv.Atoi(match[2])
+	return firstErr == nil && lastErr == nil && season >= first && season <= last
+}
+
 func DecodeSize(value string) string {
 	re := regexp.MustCompile("[0-9.]+")
 	stringsize := re.FindAllString(value, -1)
