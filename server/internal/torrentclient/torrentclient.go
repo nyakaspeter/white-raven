@@ -50,6 +50,7 @@ func StartTorrentClient() (*torrent.Client, error) {
 	cfg.EstablishedConnsPerTorrent = *settings.MaxConnections
 	cfg.NoDHT = *settings.NoDHT
 	cfg.DisableUTP = true
+	cfg.DisableIPv6 = *settings.DisableIPv6
 
 	// Discard or show the logs
 	if !*settings.EnableLog {

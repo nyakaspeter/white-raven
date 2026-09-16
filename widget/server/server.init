@@ -8,69 +8,77 @@
 
 # ALWAYS MAKE SURE THIS FILE IS SAVED WITH UNIX LINE ENDINGS (LF)!
 
-# If you want to use the subtitle search, you must set your OpenSubtitles.com API key here
-OPENSUBTITLESKEY=""
-# Optionally also set credentials for higher download limits
-OPENSUBTITLESUSER=""
-OPENSUBTITLESPASSWORD=""
+# TMDB API key used for movie and TV metadata
+TMDBKEY='a4d9ad8d2d072c50dc998cc0d1a508fa'
 
+# OpenSubtitles.com API key and optional credentials
+OPENSUBTITLESKEY=''
+OPENSUBTITLESUSER=''
+OPENSUBTITLESPASSWORD=''
 
-# If you want to use the Jackett provider, you must set the API address and API key here
-JACKETTADDRESS=""
-JACKETTKEY=""
+# Jackett API address and key
+JACKETTADDRESS=''
+JACKETTKEY=''
 
-# If you want to use the nCore provider, you must set your credentials here
-NCOREUSER=""
-NCOREPASSWORD=""
+# nCore credentials
+NCOREUSER=''
+NCOREPASSWORD=''
 
-# If you want to use the iNSANE provider, you must set your credentials here
-INSANEUSER=""
-INSANEPASSWORD=""
+# iNSANE credentials
+INSANEUSER=''
+INSANEPASSWORD=''
 
-# Specify the torrent storage memory size in MBs
-# 128 MB should work for H series TVs, older models may need to go lower
-MEMORYSIZE="128"
+# Torrent storage memory size in MB; 128 MB works for H-series TVs
+MEMORYSIZE='128'
 
-# Maximum download speed in Kbps (0 is unlimited speed)
-# This can be controlled from the widget settings
-DOWNSPEED="$2"
+# Transfer limits in Kbps; the widget can override them as arguments 2 and 3
+DOWNSPEED="${2:-0}"
+UPSPEED="${3:-0}"
 
-# Maximum upload speed in Kbps (0 is upload disabled)
-# This can be controlled from the widget settings
-UPSPEED="$3"
+# Maximum connections per torrent
+MAXCONNECTIONS='50'
 
-SERVERDIR="/mtd_rwcommon/widgets/user/WhiteRaven/server"
-SERVERPATH="/mtd_rwcommon/widgets/user/WhiteRaven/server/wrserver"
+# Set to '-nodht' to disable DHT
+NODHT=''
 
-check_processor()
-{
-	echo "Checking Processor Type..."
-	CPUTYPE=$(uname -m | awk '{print substr($0,0,3)}')
-	if [ "$CPUTYPE" == "arm" ]; then
-		echo "ARM Processor Found!"
-	else
-		echo "No ARM Processor Found! Init halted..."
+# Disable IPv6 torrent sockets on legacy TVs
+NOIPV6='-noipv6'
+
+SERVERDIR='/mtd_rwcommon/widgets/user/WhiteRaven/server'
+SERVERPATH='/mtd_rwcommon/widgets/user/WhiteRaven/server/wrserver'
+
+check_processor() {
+	CPUTYPE=$(uname -m | awk '{print substr($0,1,3)}')
+	if [ "$CPUTYPE" != "arm" ]; then
+		echo "No ARM processor found. Init halted."
 		exit 1
 	fi
 }
 
-start_wrserver()
-{
-	empty_cache
+set_swappiness() {
+	SWAPPINESS=$(sysctl -n vm.swappiness)
+	if [ "$SWAPPINESS" -gt 30 ]; then
+		sysctl -w vm.swappiness=30
+	fi
+}
+
+start_wrserver() {
 	SERVERSTATUS=$(ps -ef | grep wrserver | grep -v grep)
-
-	if [ "$SERVERSTATUS" == "" ]; then
-		echo "Trying To Start White Raven Server..."
-
-		cd "$SERVERDIR"
+	if [ -z "$SERVERSTATUS" ]; then
+		cd "$SERVERDIR" || exit 1
+		chmod 755 "$SERVERPATH"
+		sync && echo 3 > /proc/sys/vm/drop_caches
 		set_swappiness
-
 		nice -n +19 ./wrserver \
 			-background \
-			-storagetype="memory" \
-			-memorysize="$MEMORYSIZE" \
-			-downrate="$DOWNSPEED" \
-			-uprate="$UPSPEED" \
+			-storagetype memory \
+			-memorysize "$MEMORYSIZE" \
+			-downrate "$DOWNSPEED" \
+			-uprate "$UPSPEED" \
+			-maxconn "$MAXCONNECTIONS" \
+			$NODHT \
+			$NOIPV6 \
+			-tmdbkey "$TMDBKEY" \
 			-osuser "$OPENSUBTITLESUSER" \
 			-ospassword "$OPENSUBTITLESPASSWORD" \
 			-osapikey "$OPENSUBTITLESKEY" \
@@ -80,69 +88,21 @@ start_wrserver()
 			-ncorepassword "$NCOREPASSWORD" \
 			-insaneuser "$INSANEUSER" \
 			-insanepassword "$INSANEPASSWORD"
-
-		echo "White Raven Server Is Started!"
-	else
-		echo "White Raven Server Is Already Running!"
 	fi
 }
 
-start_wrserver_if_present()
-{
-	if [ -e "$SERVERPATH" ]; then
-		chmod 755 "$SERVERPATH"
-		start_wrserver
-	else
-		echo "White Raven Server Not Found!"
-	fi
-}
-
-stop_wrserver()
-{
-	echo "Trying To Stop White Raven Server..."
-	ps -ef | grep wrserver | grep -v grep | awk '{print $2}' | xargs kill -2
-	echo "White Raven Server Is Stopped!"
-}
-
-check_status()
-{
-	SERVERSTATUS=$(ps -ef | grep wrserver | grep -v grep)
-
-	if [ "$SERVERSTATUS" != "" ]; then
-		echo "White Raven Server Is Running!"
-	else
-		echo "White Raven Server Is Stopped!"
-	fi
-}
-
-set_swappiness()
-{
-	SWAPPINESS=$(sysctl -n vm.swappiness)
-
-	if [ $SWAPPINESS -gt 30 ]; then
-		echo "Set Swappiness Value To 30!"
-		sysctl -w vm.swappiness=30
-	fi
-}
-
-empty_cache()
-{
-	sync && echo 3 > /proc/sys/vm/drop_caches
-}
-
-case $1 in
-	start)
-		check_processor
-		start_wrserver_if_present
-		;;
+case "$1" in
+	start) check_processor; start_wrserver ;;
 	stop)
-		stop_wrserver
+		PIDS=$(ps -ef | grep wrserver | grep -v grep | awk '{print $2}')
+		if [ -n "$PIDS" ]; then kill -2 $PIDS; fi
 		;;
 	status)
-		check_status
+		if ps -ef | grep wrserver | grep -v grep >/dev/null; then
+			echo "White Raven Server is running."
+		else
+			echo "White Raven Server is stopped."
+		fi
 		;;
-	*)
-		echo "Usage: $0 {start|stop|status} downspeed upspeed" 1>&2
-		exit 0
-		;;
+	*) echo "Usage: $0 {start|stop|status} downspeed upspeed" >&2 ;;
 esac

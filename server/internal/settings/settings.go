@@ -10,6 +10,7 @@ var DownloadRate *int
 var UploadRate *int
 var MaxConnections *int
 var NoDHT *bool
+var DisableIPv6 *bool
 var EnableLog *bool
 var EnableReceiver *bool
 var StorageType *string
@@ -36,6 +37,7 @@ func Init() {
 	UploadRate = flag.Int("uprate", 0, "upload speed rate in Kbps")
 	MaxConnections = flag.Int("maxconn", 50, "max connections per torrent")
 	NoDHT = flag.Bool("nodht", false, "disable dht")
+	DisableIPv6 = flag.Bool("noipv6", false, "disable IPv6 torrent sockets")
 	EnableLog = flag.Bool("log", false, "enable log messages")
 	EnableReceiver = flag.Bool("receiver", true, "enable torrent receiver page")
 	StorageType = flag.String("storagetype", "memory", "select storage type (must be set to \"memory\" or \"file\")")

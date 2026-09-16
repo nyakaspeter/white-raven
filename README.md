@@ -106,6 +106,7 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X gi
 - `-uprate`: upload limit in Kbps; `0` disables uploading
 - `-maxconn`: maximum connections per torrent; default `50`
 - `-nodht`: disable DHT
+- `-noipv6`: disable IPv6 torrent sockets
 - `-jackettaddress` and `-jackettkey`: Jackett connection
 - `-ncoreuser` and `-ncorepassword`: nCore credentials
 - `-insaneuser` and `-insanepassword`: iNSANE credentials

@@ -2,6 +2,7 @@ package session
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -9,6 +10,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"sync"
+	"time"
 
 	"golang.org/x/net/publicsuffix"
 )
@@ -141,7 +143,12 @@ func (session *AuthenticatedSession) prepare(credentials Credentials) error {
 	}
 
 	session.client = &http.Client{
-		Jar: jar,
+		// nCore and iNSANE share this client. Rooted legacy TVs commonly boot
+		// with an unset clock and an old CA store, so use the same compatibility
+		// transport as the other torrent providers.
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+		Jar:       jar,
+		Timeout:   15 * time.Second,
 		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

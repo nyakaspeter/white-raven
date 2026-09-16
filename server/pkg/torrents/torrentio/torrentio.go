@@ -1,6 +1,7 @@
 package torrentio
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,7 +21,12 @@ const baseURL = "https://torrentio.strem.fun"
 
 const userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
 
-var client = &http.Client{Timeout: 15 * time.Second}
+var client = &http.Client{
+	// Rooted legacy TVs commonly boot with an unset system clock and an old CA
+	// store. Other White Raven providers use the same compatibility transport.
+	Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+	Timeout:   15 * time.Second,
+}
 
 type streamResponse struct {
 	Streams []stream `json:"streams"`
