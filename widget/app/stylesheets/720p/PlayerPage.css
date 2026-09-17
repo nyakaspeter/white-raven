@@ -126,10 +126,6 @@
     display: none;
 }
 
-#threeDbutton.enabled {
-    color: #09C3D2;
-}
-
 #mediaprogressbar {
     position: absolute;
     top: 2px;

@@ -1220,33 +1220,7 @@ ScenePlayerPage.prototype.initialize = function () {
         mode: 0,
         OFF: 0,
         TOP_BOTTOM: 1,
-        SIDE_BY_SIDE: 2,
-        MAX_MODE: 7
-    };
-
-    ThreeD.readMode = function()
-    {
-        var modes = [];
-
-        try {
-            if (this.directPlugin && typeof this.directPlugin.Get3DEffectMode == 'function') {
-                modes.push(this.directPlugin.Get3DEffectMode());
-            }
-        } catch (error) {}
-
-        try {
-            if (this.plugin) modes.push(this.plugin.Execute("Get3DEffectMode"));
-        } catch (error) {}
-
-        // Some TVs expose both Screen APIs but only one reports a mode that
-        // was selected automatically. Prefer any active result over OFF.
-        for (var i = 0; i < modes.length; i++) {
-            if (modes[i] > this.OFF && modes[i] <= this.MAX_MODE) return modes[i];
-        }
-        for (var j = 0; j < modes.length; j++) {
-            if (modes[j] == this.OFF) return this.OFF;
-        }
-        return -1;
+        SIDE_BY_SIDE: 2
     };
 
     ThreeD.init = function()
@@ -1262,6 +1236,7 @@ ScenePlayerPage.prototype.initialize = function () {
             if (this.plugin) {
                 this.plugin.Open("Screen", "1.003", "Screen");
                 this.supported = this.plugin.Execute("Flag3DEffectSupport") > 0;
+                if (this.supported) this.mode = this.plugin.Execute("Get3DEffectMode");
             }
         } catch (error) {
             this.supported = false;
@@ -1271,13 +1246,10 @@ ScenePlayerPage.prototype.initialize = function () {
             if (this.directPlugin && typeof this.directPlugin.Flag3DEffectSupport == 'function' &&
                 this.directPlugin.Flag3DEffectSupport() > 0) {
                 this.supported = true;
+                var directMode = this.directPlugin.Get3DEffectMode();
+                if (directMode >= this.OFF) this.mode = directMode;
             }
         } catch (error) {}
-
-        if (this.supported) {
-            var currentMode = this.readMode();
-            if (currentMode >= this.OFF) this.mode = currentMode;
-        }
 
         button.style.display = this.supported ? 'block' : 'none';
         this.render();
@@ -1290,27 +1262,33 @@ ScenePlayerPage.prototype.initialize = function () {
         if (!button) return;
 
         if (this.mode == this.SIDE_BY_SIDE) {
-            button.className = 'enabled';
+            button.className = '';
             button.textContent = 'SBS';
             button.title = '3D: half side-by-side';
         } else if (this.mode == this.TOP_BOTTOM) {
-            button.className = 'enabled';
+            button.className = '';
             button.textContent = 'TAB';
             button.title = '3D: half top-and-bottom';
         } else {
-            button.className = this.mode == this.OFF ? '' : 'enabled';
+            button.className = '';
             button.textContent = '3D';
-            button.title = this.mode == this.OFF ? '3D: off' : '3D: enabled';
+            button.title = '3D: off';
         }
     };
 
     ThreeD.sync = function()
     {
-        if (!this.supported) return;
+        if (!this.supported || !this.plugin) return;
 
         try {
-            var currentMode = this.readMode();
-            if (currentMode >= this.OFF && currentMode <= this.MAX_MODE && currentMode != this.mode) {
+            var currentMode = -1;
+            if (this.directPlugin && typeof this.directPlugin.Get3DEffectMode == 'function') {
+                currentMode = this.directPlugin.Get3DEffectMode();
+            }
+            if (currentMode < this.OFF && this.plugin) {
+                currentMode = this.plugin.Execute("Get3DEffectMode");
+            }
+            if (currentMode >= this.OFF && currentMode <= this.SIDE_BY_SIDE && currentMode != this.mode) {
                 this.mode = currentMode;
                 this.render();
             }

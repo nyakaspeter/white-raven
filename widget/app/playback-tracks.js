@@ -10,7 +10,10 @@ function PlaybackTracks(player, onSubtitle) {
     this.subtitleActive = false;
     this.subtitleText = '';
     this.pendingSubtitle = null;
-    this.nativeSubtitleIndex = -1;
+    // Legacy AVPlay starts on embedded subtitle stream zero too. Remember it
+    // so selecting the first entry is treated as enabling the current stream;
+    // some firmware rejects setStreamID when asked to select it again.
+    this.nativeSubtitleIndex = window.WHITE_RAVEN_BROWSER ? -1 : 0;
     this.nativeSubtitleOffset = 0;
     this.nativeSubtitleInitialized = false;
     this.nativeSubtitleTimer = null;
