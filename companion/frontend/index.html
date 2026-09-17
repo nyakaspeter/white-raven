@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>White Raven Companion</title>
+</head>
+<body>
+  <main>
+    <section id="server-page" class="page active">
+      <header class="top-bar">
+        <h1>White Raven</h1>
+      </header>
+
+      <section class="server-control" aria-labelledby="server-state">
+        <button id="toggle" class="power-button start" aria-label="Start server" title="Start server">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10"/><path d="M6.35 5.65a8 8 0 1 0 11.3 0"/></svg>
+        </button>
+        <h2 id="server-state">Server stopped</h2>
+        <a id="server-hint" hidden></a>
+        <p id="error" role="alert"></p>
+      </section>
+
+      <section class="log-section">
+        <div class="section-heading">
+          <h2>Logs</h2>
+          <div class="toolbar">
+            <button id="copy" class="icon-button" aria-label="Copy logs" title="Copy logs">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v11H8z"/><path d="M16 8V5H5v11h3"/></svg>
+            </button>
+            <button id="clear" class="icon-button" aria-label="Clear logs" title="Clear logs">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+            </button>
+          </div>
+        </div>
+        <p id="copy-status" class="action-status" aria-live="polite"></p>
+        <pre id="logs">Server is stopped.</pre>
+      </section>
+    </section>
+
+    <section id="settings-page" class="page">
+      <header class="top-bar settings-title">
+        <h1>White Raven</h1>
+      </header>
+
+      <form id="settings">
+        <h2 class="group-title">Server</h2>
+        <section class="settings-group">
+          <label class="field-row">
+            <span><b>Memory limit</b><small>Megabytes</small></span>
+            <input name="memorySize" type="number" inputmode="numeric" min="64" required />
+          </label>
+          <label class="field-row">
+            <span><b>Connections</b><small>Per torrent</small></span>
+            <input name="maxConnections" type="number" inputmode="numeric" min="1" required />
+          </label>
+          <label class="switch-row">
+            <span><b>Disable DHT</b><small>Use trackers only</small></span>
+            <input name="noDHT" type="checkbox" role="switch" />
+          </label>
+        </section>
+
+        <h2 class="group-title">Bandwidth</h2>
+        <section class="settings-group">
+          <label class="field-row">
+            <span><b>Download limit</b><small>Kbps · 0 is unlimited</small></span>
+            <input name="downloadRate" type="number" inputmode="numeric" min="0" />
+          </label>
+          <label class="field-row">
+            <span><b>Upload limit</b><small>Kbps · 0 is unlimited</small></span>
+            <input name="uploadRate" type="number" inputmode="numeric" min="0" />
+          </label>
+        </section>
+
+        <h2 class="group-title provider-title">TMDB</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>API key</span><input name="tmdbKey" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">OpenSubtitles</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>API key</span><input name="openSubtitlesKey" type="password" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Username</span><input name="openSubtitlesUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="openSubtitlesPassword" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">Jackett</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Address</span><input name="jackettAddress" type="url" inputmode="url" /></label>
+          <label class="stacked-field"><span>API key</span><input name="jackettKey" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">nCore</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Username</span><input name="ncoreUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="ncorePassword" type="password" autocomplete="off" /></label>
+        </section>
+
+        <h2 class="group-title provider-title">iNSANE</h2>
+        <section class="provider-group">
+          <label class="stacked-field"><span>Username</span><input name="insaneUser" autocomplete="off" /></label>
+          <label class="stacked-field"><span>Password</span><input name="insanePassword" type="password" autocomplete="off" /></label>
+        </section>
+
+      </form>
+    </section>
+
+    <section id="widget-page" class="page">
+      <header class="top-bar">
+        <h1>White Raven</h1>
+      </header>
+
+      <div class="install-choice" role="tablist" aria-label="TV type">
+        <button id="choose-unrooted" class="choice-button active" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span><b>Unrooted TV</b><small>Install through App Sync</small></span>
+        </button>
+        <button id="choose-rooted" class="choice-button" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 7.7-1.5"/></svg>
+          <span><b>Rooted TV</b><small>Install directly over SSH</small></span>
+        </button>
+      </div>
+
+      <section id="unrooted-install" class="install-panel">
+        <h2>App Sync server</h2>
+        <p>The companion downloads and hosts the latest unrooted release on your local network.</p>
+        <p class="sync-warning"><b>Warning:</b> App Sync removes all other user-installed widgets from the TV.</p>
+        <button id="app-sync-toggle" class="primary-button">Start App Sync server</button>
+        <div id="sync-instructions" class="instructions" hidden>
+          <p class="model-prompt">Choose your TV series:</p>
+
+          <details>
+            <summary>E series · 2012</summary>
+            <ol>
+              <li>Open <b>Smart Hub</b>, press the red <b>A</b> button, and sign in as <code>develop</code>. The usual password is <code>000000</code>. If the account does not exist, create a Smart Hub account named <code>develop</code> and choose your own 6–12 digit password.</li>
+              <li>Open <b>Tools → Settings → Development → Setting Server IP</b>.</li>
+              <li>Enter <code class="sync-address">—</code> as four number groups in <b>Setting Server IP</b>.</li>
+              <li>Select <b>User Application Synchronization</b> and wait for it to finish.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>F series · 2013</summary>
+            <ol>
+              <li>Press <b>Menu → Smart Features → Samsung Account → Log In</b>.</li>
+              <li>Use username <code>develop</code> and password <code>sso1029dev!</code>, including the exclamation mark. If the password field is disabled, select it or continue without editing it.</li>
+              <li>Open <b>Smart Hub → More Apps → Options → IP Setting</b>.</li>
+              <li>Enter <code class="sync-address">—</code>, then return to <b>Options</b> and choose <b>Start App Sync</b>.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>H series · 2014</summary>
+            <ol>
+              <li>Press <b>Menu → Smart Hub → Samsung Account → Log In</b>.</li>
+              <li>Enter <code>develop</code> and normally leave the password blank. If your firmware requires a password, try <code>000000</code>; some versions accept any value.</li>
+              <li>Open Smart Hub, highlight any installed app, then hold the remote's <b>Enter/OK</b> button until a menu appears.</li>
+              <li>Select <b>IP Setting</b> and enter <code class="sync-address">—</code>.</li>
+              <li>Hold <b>Enter/OK</b> on an app again and select <b>Start User App Sync</b>.</li>
+            </ol>
+          </details>
+
+          <p class="instruction-note"><b>After synchronization:</b> exit Smart Hub completely and reopen it. White Raven may appear at the end of the app list or under More Apps. If the TV cannot connect, check the companion device's firewall and confirm that nothing else is using TCP port 80.</p>
+        </div>
+      </section>
+
+      <section id="rooted-install" class="install-panel" hidden>
+        <h2>SSH installation</h2>
+        <p>The latest rooted release and a newly generated <code>server.init</code> will be uploaded to the TV. The settings tab supplies all server options.</p>
+        <form id="ssh-settings">
+          <label class="stacked-field"><span>TV IP address</span><input name="host" inputmode="decimal" placeholder="192.168.1.50" required /></label>
+          <div class="split-fields">
+            <label class="stacked-field"><span>SSH username</span><input name="username" value="root" autocomplete="username" required /></label>
+            <label class="stacked-field"><span>SSH port</span><input name="port" type="number" value="22" min="1" max="65535" required /></label>
+          </div>
+          <label class="stacked-field"><span>SSH password</span><input name="password" type="password" autocomplete="current-password" /></label>
+          <label class="switch-row compact-switch">
+            <span><b>Reboot after install</b><small>Required before the widget appears</small></span>
+            <input name="reboot" type="checkbox" role="switch" checked />
+          </label>
+          <button id="install-rooted" class="primary-button" type="submit">Install latest release</button>
+        </form>
+      </section>
+
+      <p id="sync-status" class="widget-status" role="status" aria-live="polite"></p>
+      <p id="rooted-status" class="widget-status" role="status" aria-live="polite" hidden></p>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-item active" data-page="server-page" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M7.1 5.7a8 8 0 1 0 9.8 0" /></svg>
+      <span>Server</span>
+    </button>
+    <button class="nav-item" data-page="widget-page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M9 10l2 2 4-4"/></svg>
+      <span>Widget</span>
+    </button>
+    <button class="nav-item" data-page="settings-page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 8.94 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.57 15a1.7 1.7 0 0 0-1.56-1.03H3v-4h.08A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7l2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.57 1.7 1.7 0 0 0 10 3.08V3h4v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 7l-.06.06a1.7 1.7 0 0 0-.34 1.88A1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

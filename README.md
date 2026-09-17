@@ -31,7 +31,7 @@ The project is a fork of the original [White Raven](https://github.com/silentmur
 
 ### For rooted Samsung E, F, H series
 
-1. Connect to your television over FTP/SFTP.
+1. Connect to your television over FTP/SSH.
 2. Create a folder named as `WhiteRaven` inside the `/mtd_rwcommon/widgets/user` directory.
 3. Extract the contents of the downloaded zip file to this directory.
 4. Configure any provider credentials or server flags in `server.init` inside the `server` directory.
@@ -129,6 +129,27 @@ Example using Jackett:
 ```sh
 ./build/wrserver -jackettaddress http://192.168.0.2:9117 -jackettkey YOUR_API_KEY
 ```
+
+## Companion app
+
+`companion/` contains the White Raven Companion, a small Wails application for Android, iOS, macOS, Windows, and Linux. It can run White Raven Server, modify configuration, and shows a live log. It can also install the widget on TV.
+
+### Install Wails v3 and build the desktop companion:
+
+```sh
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.7
+cd companion
+wails3 build
+```
+
+### Build an Android APK after installing the Android SDK, NDK, and a JDK:
+
+```sh
+cd companion
+wails3 package GOOS=android
+```
+
+The build is written to `companion/bin/`. Wails mobile support is currently experimental.
 
 ## Terms of service
 

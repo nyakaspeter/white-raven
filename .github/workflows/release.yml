@@ -12,10 +12,17 @@ concurrency:
   group: release-master
   cancel-in-progress: false
 
-jobs:
-  release:
-    runs-on: ubuntu-latest
+env:
+  WAILS_VERSION: v3.0.0-beta.7
 
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.version.outputs.release }}
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      previous_tag: ${{ steps.version.outputs.previous_tag }}
     steps:
       - name: Check out repository and tags
         uses: actions/checkout@v6
@@ -57,28 +64,203 @@ jobs:
           echo "previous_tag=$previous_tag" >> "$GITHUB_OUTPUT"
           echo "Preparing v$version."
 
-      - name: Set up Go
-        if: steps.version.outputs.release == 'true'
-        uses: actions/setup-go@v7
+  widgets:
+    needs: prepare
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache-dependency-path: go.sum
+      - name: Build widget packages
+        run: |
+          go run ./build rootless -version "${{ needs.prepare.outputs.version }}"
+          go run ./build rooted -version "${{ needs.prepare.outputs.version }}"
+      - name: Collect widget packages
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp "build/whiteraven-rootless-${{ needs.prepare.outputs.version }}.zip" \
+            "release-assets/whiteraven-widget-rootless-${{ needs.prepare.outputs.version }}.zip"
+          cp "build/whiteraven-${{ needs.prepare.outputs.version }}.zip" \
+            "release-assets/whiteraven-widget-${{ needs.prepare.outputs.version }}.zip"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: widgets
+          path: release-assets/
+          if-no-files-found: error
 
-      - name: Build rootless widget
-        if: steps.version.outputs.release == 'true'
-        run: go run ./build rootless -version "${{ steps.version.outputs.version }}"
+  companion-windows:
+    needs: prepare
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: companion/frontend/package-lock.json
+      - name: Install Wails
+        shell: bash
+        run: go install "github.com/wailsapp/wails/v3/cmd/wails3@$WAILS_VERSION"
+      - name: Set companion version
+        shell: bash
+        run: bash .github/scripts/set-companion-version.sh "${{ needs.prepare.outputs.version }}"
+      - name: Build portable Windows app
+        working-directory: companion
+        shell: bash
+        run: wails3 task windows:build ARCH=amd64
+      - name: Collect portable Windows app
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp companion/bin/white-raven-companion.exe \
+            "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-windows-x64.exe"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: companion-windows
+          path: release-assets/
+          if-no-files-found: error
 
-      - name: Build rooted widget
-        if: steps.version.outputs.release == 'true'
-        run: go run ./build rooted -version "${{ steps.version.outputs.version }}"
+  companion-linux:
+    needs: prepare
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: companion/frontend/package-lock.json
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential \
+            libfuse2 \
+            libgtk-4-dev \
+            libwebkitgtk-6.0-dev \
+            pkg-config
+      - name: Install Wails
+        run: go install "github.com/wailsapp/wails/v3/cmd/wails3@$WAILS_VERSION"
+      - name: Set companion version
+        run: bash .github/scripts/set-companion-version.sh "${{ needs.prepare.outputs.version }}"
+      - name: Build Linux AppImage
+        working-directory: companion
+        run: wails3 task linux:create:appimage ARCH=amd64
+      - name: Collect Linux AppImage
+        shell: bash
+        run: |
+          appimage="$(find companion/bin -maxdepth 1 -type f -name '*.AppImage' -print -quit)"
+          test -n "$appimage"
+          mkdir -p release-assets
+          cp "$appimage" "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-linux-x64.AppImage"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: companion-linux
+          path: release-assets/
+          if-no-files-found: error
 
+  companion-android:
+    needs: prepare
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: companion/frontend/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+          cache-dependency-path: companion/build/android/*.gradle
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+          log-accepted-android-sdk-licenses: false
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "ndk;26.3.11579264"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/26.3.11579264" >> "$GITHUB_ENV"
+      - name: Install Wails Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            libgtk-4-dev \
+            libwebkitgtk-6.0-dev \
+            pkg-config
+      - name: Install Wails
+        run: go install "github.com/wailsapp/wails/v3/cmd/wails3@$WAILS_VERSION"
+      - name: Set companion version
+        run: bash .github/scripts/set-companion-version.sh "${{ needs.prepare.outputs.version }}"
+      - name: Restore Android signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/whiteraven-android-release.p12"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/whiteraven-android-release.p12" >> "$GITHUB_ENV"
+      - name: Build signed universal Android APK
+        working-directory: companion
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: wails3 task android:package:fat
+      - name: Collect Android APK
+        shell: bash
+        run: |
+          mkdir -p release-assets
+          cp companion/bin/white-raven-companion.apk \
+            "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-android.apk"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: companion-android
+          path: release-assets/
+          if-no-files-found: error
+
+  release:
+    needs:
+      - prepare
+      - widgets
+      - companion-windows
+      - companion-linux
+      - companion-android
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: '*'
+          path: release-assets
+          merge-multiple: true
       - name: Publish GitHub release
-        if: steps.version.outputs.release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.version.outputs.tag }}
-          RELEASE_VERSION: ${{ steps.version.outputs.version }}
-          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          PREVIOUS_TAG: ${{ needs.prepare.outputs.previous_tag }}
         shell: bash
         run: |
           notes_arguments=(--generate-notes)
@@ -87,8 +269,7 @@ jobs:
           fi
 
           gh release create "$RELEASE_TAG" \
-            "build/whiteraven-rootless-${RELEASE_VERSION}.zip" \
-            "build/whiteraven-${RELEASE_VERSION}.zip" \
+            release-assets/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "$RELEASE_TAG" \
