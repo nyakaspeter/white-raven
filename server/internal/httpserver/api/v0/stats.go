@@ -3,7 +3,6 @@ package v0
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,8 +25,6 @@ type TorrentStatsResponse struct {
 func GetTorrentStats() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-
-		log.Println("Fetching torrent stats:", vars)
 
 		if t, ok := torrentclient.ActiveTorrents[vars["hash"]]; ok {
 			io.WriteString(w, downloadStats(r.Host, t.Torrent))
@@ -71,8 +68,6 @@ func downloadStats(address string, torr *torrent.Torrent) string {
 
 	// Wait 3 second because Long Polling
 	time.Sleep(3 * time.Second)
-
-	log.Println("Returning torrent stats.")
 
 	return string(messageString)
 }

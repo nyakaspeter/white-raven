@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"runtime"
@@ -40,7 +41,7 @@ func StartTorrentClient() (*torrent.Client, error) {
 
 	if *settings.StorageType == "memory" {
 		maxPieceLength = int64(math.Floor(float64(*settings.MemorySize) * 100 / 75 / 8))
-		memorystorage.SetMemorySize(*settings.MemorySize, maxPieceLength)
+		memorystorage.SetMemorySize(*settings.MemorySize, maxPieceLength, *settings.ForceGC)
 		cfg.DefaultStorage = memorystorage.NewMemoryStorage()
 	} else if *settings.StorageType == "file" {
 		cfg.DefaultStorage = storage.NewFileByInfoHash(*settings.DownloadDir)
@@ -49,7 +50,7 @@ func StartTorrentClient() (*torrent.Client, error) {
 
 	cfg.EstablishedConnsPerTorrent = *settings.MaxConnections
 	cfg.NoDHT = *settings.NoDHT
-	cfg.DisableUTP = true
+	cfg.DisableUTP = *settings.DisableUTP
 	cfg.DisableIPv6 = *settings.DisableIPv6
 
 	// Discard or show the logs
@@ -76,6 +77,14 @@ func StartTorrentClient() (*torrent.Client, error) {
 
 	var err error = nil
 	torrentClient, err = torrent.NewClient(cfg)
+	if err == nil {
+		log.Printf(
+			"Torrent client started: storage=%s memory=%dMB force_gc=%t max_connections=%d dht=%t ipv6=%t utp=%t download_limit_kbps=%d upload_limit_kbps=%d",
+			*settings.StorageType, *settings.MemorySize, *settings.ForceGC, *settings.MaxConnections,
+			!*settings.NoDHT, !*settings.DisableIPv6, !*settings.DisableUTP,
+			*settings.DownloadRate, *settings.UploadRate,
+		)
+	}
 
 	return torrentClient, err
 }
@@ -91,7 +100,9 @@ func StopTorrentClient() {
 	ActiveTorrents = nil
 	receivedTorrent = nil
 
-	runtime.GC()
+	if *settings.ForceGC {
+		runtime.GC()
+	}
 }
 
 func AddTorrent(uri string) types.TorrentInfo {
@@ -125,6 +136,7 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000")
 
 	reader := file.NewReader()
+	defer reader.Close()
 	// Never set a smaller buffer than the maximum torrent piece length!
 	reader.SetReadahead(maxPieceLength * megaByte)
 	reader.SetResponsive()

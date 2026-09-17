@@ -41,8 +41,14 @@ MAXCONNECTIONS='50'
 # Set to '-nodht' to disable DHT
 NODHT=''
 
-# Disable IPv6 torrent sockets on legacy TVs
+# Set to '-noipv6' to disable IPv6
 NOIPV6='-noipv6'
+
+# Set to '-noutp' to disable UDP
+NOUTP='-noutp'
+
+# Set to '-forcegc' to force garbage collection when memory storage evicts data
+FORCEGC='-forcegc'
 
 SERVERDIR='/mtd_rwcommon/widgets/user/WhiteRaven/server'
 SERVERPATH='/mtd_rwcommon/widgets/user/WhiteRaven/server/wrserver'
@@ -69,7 +75,7 @@ start_wrserver() {
 		chmod 755 "$SERVERPATH"
 		sync && echo 3 > /proc/sys/vm/drop_caches
 		set_swappiness
-		nice -n +19 ./wrserver \
+		./wrserver \
 			-background \
 			-storagetype memory \
 			-memorysize "$MEMORYSIZE" \
@@ -78,6 +84,8 @@ start_wrserver() {
 			-maxconn "$MAXCONNECTIONS" \
 			$NODHT \
 			$NOIPV6 \
+			$NOUTP \
+			$FORCEGC \
 			-tmdbkey "$TMDBKEY" \
 			-osuser "$OPENSUBTITLESUSER" \
 			-ospassword "$OPENSUBTITLESPASSWORD" \

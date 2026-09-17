@@ -11,7 +11,9 @@ type Config struct {
 	UploadRate            int    `json:"uploadRate"`
 	MaxConnections        int    `json:"maxConnections"`
 	NoDHT                 bool   `json:"noDHT"`
-	DisableIPv6           bool   `json:"-"`
+	DisableIPv6           bool   `json:"disableIPv6"`
+	DisableUTP            bool   `json:"disableUTP"`
+	ForceGC               bool   `json:"forceGC"`
 	EnableLog             bool   `json:"-"`
 	EnableReceiver        bool   `json:"-"`
 	StorageType           string `json:"storageType"`
@@ -33,6 +35,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		Port: 9000, DlnaPort: 3500, DownloadDir: "data", MaxConnections: 50,
+		DisableIPv6: true, DisableUTP: true, ForceGC: true,
 		EnableLog: true, EnableReceiver: true, StorageType: "memory", MemorySize: 128,
 		CORS: true, TMDBKey: "a4d9ad8d2d072c50dc998cc0d1a508fa",
 	}
@@ -48,6 +51,8 @@ func Apply(config Config) {
 	MaxConnections = &config.MaxConnections
 	NoDHT = &config.NoDHT
 	DisableIPv6 = &config.DisableIPv6
+	DisableUTP = &config.DisableUTP
+	ForceGC = &config.ForceGC
 	EnableLog = &config.EnableLog
 	EnableReceiver = &config.EnableReceiver
 	StorageType = &config.StorageType
@@ -70,7 +75,8 @@ func Current() Config {
 	return Config{
 		Host: *Host, Port: *Port, DlnaPort: *DlnaPort, DownloadDir: *DownloadDir,
 		DownloadRate: *DownloadRate, UploadRate: *UploadRate, MaxConnections: *MaxConnections,
-		NoDHT: *NoDHT, DisableIPv6: *DisableIPv6, EnableLog: *EnableLog, EnableReceiver: *EnableReceiver,
+		NoDHT: *NoDHT, DisableIPv6: *DisableIPv6, DisableUTP: *DisableUTP, ForceGC: *ForceGC,
+		EnableLog: *EnableLog, EnableReceiver: *EnableReceiver,
 		StorageType: *StorageType, MemorySize: *MemorySize, Background: *Background, CORS: *CORS,
 		TMDBKey: *TMDBKey, OpenSubtitlesUser: *OpenSubtitlesUser,
 		OpenSubtitlesPassword: *OpenSubtitlesPassword, OpenSubtitlesKey: *OpenSubtitlesKey,
@@ -89,6 +95,8 @@ var UploadRate *int
 var MaxConnections *int
 var NoDHT *bool
 var DisableIPv6 *bool
+var DisableUTP *bool
+var ForceGC *bool
 var EnableLog *bool
 var EnableReceiver *bool
 var StorageType *string
@@ -116,6 +124,8 @@ func Init() {
 	MaxConnections = flag.Int("maxconn", 50, "max connections per torrent")
 	NoDHT = flag.Bool("nodht", false, "disable dht")
 	DisableIPv6 = flag.Bool("noipv6", false, "disable IPv6 torrent sockets")
+	DisableUTP = flag.Bool("noutp", true, "disable uTP torrent sockets")
+	ForceGC = flag.Bool("forcegc", true, "force garbage collection when memory storage evicts data")
 	EnableLog = flag.Bool("log", false, "enable log messages")
 	EnableReceiver = flag.Bool("receiver", true, "enable torrent receiver page")
 	StorageType = flag.String("storagetype", "memory", "select storage type (must be set to \"memory\" or \"file\")")

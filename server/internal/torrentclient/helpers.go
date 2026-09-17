@@ -79,6 +79,12 @@ func addTorrentFromUri(uri string) *torrent.Torrent {
 	select {
 	case <-t.GotInfo():
 		if t.Info().PieceLength <= (maxPieceLength * megaByte) {
+			stats := t.Stats()
+			log.Printf(
+				"Torrent resolved: hash=%s name=%q size=%d piece_length=%d files=%d peers=%d/%d",
+				t.InfoHash().String(), t.Name(), t.Length(), t.Info().PieceLength,
+				len(t.Files()), stats.ActivePeers, stats.TotalPeers,
+			)
 			ActiveTorrents[t.InfoHash().String()] = &types.TorrentLeaf{
 				Torrent:     t,
 				Progress:    0,
@@ -88,11 +94,16 @@ func addTorrentFromUri(uri string) *torrent.Torrent {
 			receivedTorrent = nil
 			return t
 		} else {
+			log.Printf(
+				"Torrent rejected: hash=%s piece_length=%d maximum_piece_length=%d",
+				t.InfoHash().String(), t.Info().PieceLength, maxPieceLength*megaByte,
+			)
 			t.Drop()
 			receivedTorrent = nil
 			return nil
 		}
 	case <-time.After(resolveTimeout):
+		log.Printf("Torrent metadata timeout: hash=%s timeout=%s", t.InfoHash().String(), resolveTimeout)
 		t.Drop()
 		receivedTorrent = nil
 		return nil

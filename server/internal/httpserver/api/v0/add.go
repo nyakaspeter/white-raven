@@ -22,7 +22,7 @@ func AddTorrent() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		log.Println("Adding torrent:", vars)
+		log.Println("Adding torrent.")
 
 		base64uri := vars["base64uri"]
 

@@ -7,6 +7,7 @@ import (
 	"math"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/anacrolix/torrent/metainfo"
 	lru "github.com/hashicorp/golang-lru"
@@ -21,10 +22,23 @@ var lruStorage *lru.Cache
 var needToDeleteKey = -1
 var memStats runtime.MemStats
 var setMaxCount = true
+var forceGC bool
+var maintenanceLog = struct {
+	sync.Mutex
+	evictions int
+	gcTime    time.Duration
+	last      time.Time
+}{}
 
-func SetMemorySize(memorySize int64, pieceLength int64) {
+func SetMemorySize(memorySize int64, pieceLength int64, shouldForceGC bool) {
 	maxMemorySize = memorySize
 	maxPieceLength = pieceLength
+	forceGC = shouldForceGC
+	maintenanceLog.Lock()
+	maintenanceLog.evictions = 0
+	maintenanceLog.gcTime = 0
+	maintenanceLog.last = time.Time{}
+	maintenanceLog.Unlock()
 	maxCount = int(maxMemorySize / pieceLength)
 	lruStorage, _ = lru.NewWithEvict(maxCount, onEvicted)
 }
@@ -52,7 +66,7 @@ func FreeMemoryPercent(mt *memoryTorrent, threshold uint64, percent int) {
 
 		needToDeleteKey = -1
 
-		runtime.GC()
+		collectGarbage()
 	}
 }
 
@@ -155,13 +169,41 @@ func storageDelete(mu *sync.Mutex) {
 
 	needToDeleteKey = -1
 
-	runtime.GC()
+	collectGarbage()
 }
 
 func onEvicted(key interface{}, value interface{}) {
 	needToDeleteKey = key.(int)
-	runtime.GC()
+	gcDuration := collectGarbage()
+	logMemoryMaintenance(gcDuration)
 	//log.Printf("Removed piece from LRU: %d, LRU space: %d/%d", needToDeleteKey, lruStorage.Len(), maxCount)
+}
+
+func collectGarbage() time.Duration {
+	if forceGC {
+		started := time.Now()
+		runtime.GC()
+		return time.Since(started)
+	}
+	return 0
+}
+
+func logMemoryMaintenance(gcDuration time.Duration) {
+	maintenanceLog.Lock()
+	defer maintenanceLog.Unlock()
+	maintenanceLog.evictions++
+	maintenanceLog.gcTime += gcDuration
+	now := time.Now()
+	if !maintenanceLog.last.IsZero() && now.Sub(maintenanceLog.last) < 10*time.Second {
+		return
+	}
+	log.Printf(
+		"Memory cache maintenance: evictions=%d force_gc=%t gc_time=%s",
+		maintenanceLog.evictions, forceGC, maintenanceLog.gcTime.Round(time.Millisecond),
+	)
+	maintenanceLog.evictions = 0
+	maintenanceLog.gcTime = 0
+	maintenanceLog.last = now
 }
 
 func logMemStats() {

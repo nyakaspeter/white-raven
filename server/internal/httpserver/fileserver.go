@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/nyakaspeter/white-raven/server/internal/torrentclient"
@@ -24,15 +25,31 @@ func ServeTorrentFile() func(w http.ResponseWriter, r *http.Request) {
 					file := t.Torrent.Files()[idx]
 
 					path := file.DisplayPath()
-					log.Println("Downloading torrent:", vars["hash"])
+					started := time.Now()
+					completedBefore := t.Torrent.BytesCompleted()
+					peersBefore := t.Torrent.Stats()
+					streamWriter := &streamResponseWriter{ResponseWriter: w}
+					log.Printf(
+						"Torrent stream started: hash=%s file=%q range=%q remote=%s peers=%d/%d",
+						vars["hash"], path, r.Header.Get("Range"), r.RemoteAddr,
+						peersBefore.ActivePeers, peersBefore.TotalPeers,
+					)
 
 					torrentclient.IncreaseConnections(path, t)
-					torrentclient.ServeTorrentFile(w, r, file)
+					torrentclient.ServeTorrentFile(streamWriter, r, file)
 
 					//stop downloading the file when no connections left
 					if torrentclient.DecreaseConnections(path, t) <= 0 {
 						torrentclient.StopFileDownload(file)
 					}
+					peersAfter := t.Torrent.Stats()
+					log.Printf(
+						"Torrent stream finished: hash=%s file=%q status=%d bytes=%d duration=%s downloaded=%d write_error=%v context_error=%v peers=%d/%d",
+						vars["hash"], path, streamWriter.Status(), streamWriter.bytes,
+						time.Since(started).Round(time.Millisecond),
+						t.Torrent.BytesCompleted()-completedBefore, streamWriter.err, r.Context().Err(),
+						peersAfter.ActivePeers, peersAfter.TotalPeers,
+					)
 				} else {
 					http.Error(w, "Invalid path", http.StatusNotFound)
 					return
@@ -49,6 +66,46 @@ func ServeTorrentFile() func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+type streamResponseWriter struct {
+	http.ResponseWriter
+	status int
+	bytes  int64
+	err    error
+}
+
+func (writer *streamResponseWriter) WriteHeader(status int) {
+	if writer.status != 0 {
+		return
+	}
+	writer.status = status
+	writer.ResponseWriter.WriteHeader(status)
+}
+
+func (writer *streamResponseWriter) Write(data []byte) (int, error) {
+	if writer.status == 0 {
+		writer.status = http.StatusOK
+	}
+	written, err := writer.ResponseWriter.Write(data)
+	writer.bytes += int64(written)
+	if err != nil && writer.err == nil {
+		writer.err = err
+	}
+	return written, err
+}
+
+func (writer *streamResponseWriter) Status() int {
+	if writer.status == 0 {
+		return http.StatusOK
+	}
+	return writer.status
+}
+
+// Unwrap lets net/http preserve optional response-writer behavior through the
+// diagnostic wrapper.
+func (writer *streamResponseWriter) Unwrap() http.ResponseWriter {
+	return writer.ResponseWriter
 }
 
 func ServeSubtitleFile() func(w http.ResponseWriter, r *http.Request) {

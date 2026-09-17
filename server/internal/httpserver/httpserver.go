@@ -21,12 +21,10 @@ var httpServer *http.Server
 func StartHttpServer(appQuitSignal chan os.Signal) (*http.Server, error) {
 	quitSignal = appQuitSignal
 
-	httpServer = &http.Server{
-		Addr:         fmt.Sprintf("%s:%d", *settings.Host, *settings.Port),
-		ReadTimeout:  38 * time.Second,
-		WriteTimeout: 38 * time.Second,
-		Handler:      routesHandler(),
-	}
+	httpServer = newHTTPServer(
+		fmt.Sprintf("%s:%d", *settings.Host, *settings.Port),
+		routesHandler(),
+	)
 
 	localIP := *settings.Host
 	if localIP == "" {
@@ -58,6 +56,15 @@ func StartHttpServer(appQuitSignal chan os.Signal) (*http.Server, error) {
 	log.Printf("White Raven Server started on address: %s\n", address)
 
 	return httpServer, nil
+}
+
+func newHTTPServer(address string, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              address,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       38 * time.Second,
+		Handler:           handler,
+	}
 }
 
 func StopHttpServer() {
