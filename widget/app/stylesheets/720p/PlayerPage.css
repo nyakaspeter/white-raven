@@ -39,11 +39,72 @@
     border-radius: 18px 18px 18px 18px;
 }
 
+#performancebutton {
+    position:absolute;
+    top: 22px;
+    left: 770px;
+    border-radius: 18px 18px 18px 18px;
+}
+
 #audiobutton {
     position:absolute;
     top: 22px;
     left: 830px;
     border-radius: 18px 18px 18px 18px;
+}
+
+#performanceoverlay {
+    position: absolute;
+    top: 82px;
+    right: 20px;
+    width: 320px;
+    padding: 12px 16px 14px 16px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    background: rgba(20, 22, 24, 0.86);
+    box-shadow: 0 0 10px 4px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    visibility: hidden;
+    z-index: 5100;
+}
+
+#performancetitle {
+    margin-bottom: 5px;
+    color: #ffffff;
+    font-size: 19px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.performancesection {
+    margin-top: 7px;
+    padding-top: 5px;
+    color: #ffffff;
+    font-size: 17px;
+    border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.performancerow {
+    min-height: 24px;
+    overflow: hidden;
+}
+
+.performancerow span {
+    float: left;
+    width: 82px;
+    color: #b9b9b9;
+}
+
+.performancerow strong {
+    display: block;
+    margin-left: 82px;
+    font-weight: normal;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #subbutton {

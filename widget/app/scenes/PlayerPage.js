@@ -248,6 +248,7 @@ ScenePlayerPage.prototype.initialize = function () {
         this.subtitleSeek = 0;
         this.totalTime = 0;
         this.savedresumetime = resume['time'];
+        if (PerformanceOverlay && PerformanceOverlay.hide) PerformanceOverlay.hide();
     }
 
     Player.onAVPlayObtained = function(avplay) {
@@ -406,6 +407,7 @@ ScenePlayerPage.prototype.initialize = function () {
             document.getElementById("playpause").src = 'images\\pause.png';
             document.getElementById("playpause").style.backgroundColor = '#505050';
             document.getElementById("stop").style.backgroundColor = 'initial';
+            document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
             document.getElementById("audiobutton").style.backgroundColor = 'initial';
             document.getElementById("subbutton").style.backgroundColor = 'initial';
             Display.status(playerStateText[lang][0], 'images\\play.png');
@@ -441,6 +443,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("playpause").src = 'images\\play.png';
         document.getElementById("playpause").style.backgroundColor = '#505050';
         document.getElementById("stop").style.backgroundColor = 'initial';
+        document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][1], 'images\\pause.png');
@@ -460,6 +463,7 @@ ScenePlayerPage.prototype.initialize = function () {
             document.getElementById("playpause").src = 'images\\play.png';
             document.getElementById("playpause").style.backgroundColor = 'initial';
             document.getElementById("stop").style.backgroundColor = '#505050';
+            document.getElementById("performancebutton").style.backgroundColor = 'initial';
             document.getElementById("audiobutton").style.backgroundColor = 'initial';
             document.getElementById("subbutton").style.backgroundColor = 'initial';
             Display.status(playerStateText[lang][2], 'images\\stop.png');
@@ -500,6 +504,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("playpause").src = 'images\\pause.png';
         document.getElementById("playpause").style.backgroundColor = '#505050';
         document.getElementById("stop").style.backgroundColor = 'initial';
+        document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][0], 'images\\play.png');
@@ -1025,6 +1030,138 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("subcontainer").style.height = CSSPixels(saveSettings['subtitleposition']);
     }
 
+    /*************** Performance overlay *******************/
+    var PerformanceOverlay = {
+        isVisible: 0,
+        timerID: null,
+        torrentPending: 0,
+        torrentRequestID: 0,
+        torrentStats: null
+    };
+
+    PerformanceOverlay.value = function(getter, fallback)
+    {
+        try {
+            var value = getter();
+            return value === undefined || value === null || value === '' ? fallback : value;
+        } catch (e) {
+            return fallback;
+        }
+    };
+
+    PerformanceOverlay.trackLabel = function(type)
+    {
+        var tracks = this.value(function() {
+            return type === 'audio' ? Player.tracks.list(1) : Player.tracks.list(4);
+        }, []);
+        var selectedSubtitle = type === 'subtitle' && Player.tracks && Player.tracks.subtitleActive ? Player.tracks.subtitleIndex : -1;
+        for (var i = 0; i < tracks.length; i++) {
+            if (tracks[i].selected || tracks[i].index === selectedSubtitle) {
+                return type === 'audio' ? PlaybackAudioTrackLabel(tracks[i], 'UND') : PlaybackSubtitleTrackLabel(tracks[i]);
+            }
+        }
+        if (type === 'subtitle' && Player.subtitleState === 1) {
+            var external = subtitleslist[subtitlepos];
+            if (external) return PlaybackSubtitleTrackLabel({
+                language: external.lang,
+                title: external.subtitlename || external.releasename || ''
+            });
+        }
+        return type === 'audio' ? 'Unknown' : 'Off';
+    };
+
+    PerformanceOverlay.render = function()
+    {
+        if (!this.isVisible) return;
+        var state = Player.isBuffering ? 'BUFFERING' :
+            (Player.getState() === Player.PLAYING ? 'PLAYING' :
+            (Player.getState() === Player.PAUSED ? 'PAUSED' : 'STOPPED'));
+        var current = Display.timeToHTML(Display.currentTime || 0);
+        var total = Display.timeToHTML(Display.totalTime || Player.totalTime || 0);
+        var resolution = this.value(function() { return Player.getResolution(); }, 'Unknown');
+        var bitrate = this.value(function() { return Player.getCurrentBitrate(); }, 'Unknown');
+
+        document.getElementById('performancestatus').textContent = state + '  ' + current + ' / ' + total;
+        document.getElementById('performancevideo').textContent = resolution + '  |  ' + bitrate;
+        document.getElementById('performanceaudio').textContent = this.trackLabel('audio');
+        document.getElementById('performancesubtitles').textContent = this.trackLabel('subtitle');
+
+        var torrent = document.getElementById('torrentperformance');
+        torrent.style.display = infoHash ? 'block' : 'none';
+        if (infoHash) {
+            var stats = this.torrentStats;
+            document.getElementById('performancedownload').textContent = stats ? stats.downspeed + '  |  ' + stats.downpercent + '%' : 'Loading...';
+            document.getElementById('performancedata').textContent = stats ? stats.downdata + ' / ' + stats.fulldata : '--';
+            document.getElementById('performancepeers').textContent = stats ? stats.peers : '--';
+            if (!downloadprogress) this.refreshTorrent();
+        }
+    };
+
+    PerformanceOverlay.setTorrentStats = function(stats)
+    {
+        if (stats && stats.success) this.torrentStats = stats;
+    };
+
+    PerformanceOverlay.refreshTorrent = function()
+    {
+        if (!infoHash || this.torrentPending) return;
+        var requestedURL = infoHash;
+        var requestID = ++this.torrentRequestID;
+        this.torrentPending = requestID;
+        $.ajax({
+            url: requestedURL,
+            type: 'GET',
+            dataType: 'json',
+            timeout: 25000,
+            success: function(stats) {
+                if (PerformanceOverlay.torrentPending === requestID && infoHash === requestedURL) {
+                    PerformanceOverlay.setTorrentStats(stats);
+                }
+            },
+            complete: function() {
+                if (PerformanceOverlay.torrentPending === requestID) {
+                    PerformanceOverlay.torrentPending = 0;
+                    PerformanceOverlay.render();
+                }
+            }
+        });
+    };
+
+    PerformanceOverlay.show = function()
+    {
+        this.isVisible = 1;
+        document.getElementById('performanceoverlay').style.visibility = 'visible';
+        document.getElementById('performancebutton').style.backgroundColor = '#09C3D2';
+        this.render();
+        if (this.timerID) clearInterval(this.timerID);
+        this.timerID = setInterval(function() { PerformanceOverlay.render(); }, 1000);
+    };
+
+    PerformanceOverlay.hide = function()
+    {
+        this.isVisible = 0;
+        if (this.timerID) clearInterval(this.timerID);
+        this.timerID = null;
+        var overlay = document.getElementById('performanceoverlay');
+        var button = document.getElementById('performancebutton');
+        if (overlay) overlay.style.visibility = 'hidden';
+        if (button) button.style.backgroundColor = 'initial';
+    };
+
+    PerformanceOverlay.reset = function()
+    {
+        this.torrentRequestID++;
+        this.torrentPending = 0;
+        this.torrentStats = null;
+        this.hide();
+    };
+
+    PerformanceOverlay.toggle = function()
+    {
+        if (this.isVisible) this.hide();
+        else this.show();
+    };
+
     /*************** Audio.js *******************/
     var Audio =
     {
@@ -1086,6 +1223,7 @@ ScenePlayerPage.prototype.initialize = function () {
     this.Player = Player;
     this.Display = Display;
     this.Audio = Audio;
+    this.PerformanceOverlay = PerformanceOverlay;
 
     // Set subtitle styles
     this.subtext = document.getElementById('subtext');
@@ -1098,6 +1236,7 @@ ScenePlayerPage.prototype.initialize = function () {
 }
 
 ScenePlayerPage.prototype.handleShow = function (data) {
+    this.PerformanceOverlay.reset();
     downloadprogress = true;
     
     document.getElementById("ProgressBar").style.visibility = 'hidden';
@@ -1137,6 +1276,7 @@ ScenePlayerPage.prototype.handleShow = function (data) {
 };
 
 ScenePlayerPage.prototype.handleHide = function () {
+    this.PerformanceOverlay.hide();
     ScenePlayerPage.prototype.SetZIndex("hidden", 500);
     document.getElementById("ProgressBar").style.visibility = 'hidden';
     widgetAPI.putInnerHTML(document.getElementById("subtext"), "");
@@ -1338,10 +1478,13 @@ ScenePlayerPage.prototype.handleEnterKey = function()
                     } else if (this.Player.menuPosition == 2) {
                         this.handleStopKey();
                     } else if (this.Player.menuPosition == 3) {
+                        this.PerformanceOverlay.toggle();
+                        document.getElementById('performancebutton').style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : '#505050';
+                    } else if (this.Player.menuPosition == 4) {
                         sf.scene.show('AudioMenu', this.Player.AVPlayer.totalNumOfAudio);
                         sf.scene.focus('AudioMenu');
                         //this.Player.resumeVideo();
-                    } else if (this.Player.menuPosition == 4) {
+                    } else if (this.Player.menuPosition == 5) {
                         if (saveSettings['issubtitleenabled'] == "true" && this.getSubtitleChoices().length === 0) {
                             sf.scene.show('SubtitleSearch', {caller: "PlayerPage"});
                             sf.scene.focus('SubtitleSearch');
@@ -1395,12 +1538,16 @@ ScenePlayerPage.prototype.handleLeftKey = function()
 { 
     if (this.Display.isVisible == 1) {
         if (this.Player.isChevron == 0) {
-            if (this.Player.menuPosition == 4) {
+            if (this.Player.menuPosition == 5) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
                 document.getElementById("audiobutton").style.backgroundColor = '#505050';
+                this.Player.menuPosition = 4;
+            } else if (this.Player.menuPosition == 4) {
+                document.getElementById("audiobutton").style.backgroundColor = 'initial';
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 3;
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("audiobutton").style.backgroundColor = 'initial';
+                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
                 document.getElementById("stop").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 2;
             } else if (this.Player.menuPosition == 2) {
@@ -1410,7 +1557,7 @@ ScenePlayerPage.prototype.handleLeftKey = function()
             } else if (this.Player.menuPosition == 1) {
                 document.getElementById("playpause").style.backgroundColor = 'initial';
                 document.getElementById("subbutton").style.backgroundColor = '#505050';
-                this.Player.menuPosition = 4;
+                this.Player.menuPosition = 5;
             }
         } else {
             var chevronpos = parseFloat(document.getElementById("chevron").style.left);
@@ -1446,13 +1593,17 @@ ScenePlayerPage.prototype.handleRightKey = function()
                 this.Player.menuPosition = 2;
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = 'initial';
-                document.getElementById("audiobutton").style.backgroundColor = '#505050';
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 3;
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("audiobutton").style.backgroundColor = 'initial';
-                document.getElementById("subbutton").style.backgroundColor = '#505050';
+                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
+                document.getElementById("audiobutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 4;
             } else if (this.Player.menuPosition == 4) {
+                document.getElementById("audiobutton").style.backgroundColor = 'initial';
+                document.getElementById("subbutton").style.backgroundColor = '#505050';
+                this.Player.menuPosition = 5;
+            } else if (this.Player.menuPosition == 5) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
                 document.getElementById("playpause").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 1;
@@ -1491,8 +1642,10 @@ ScenePlayerPage.prototype.handleUpKey = function()
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = 'initial';
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("audiobutton").style.backgroundColor = 'initial';
+                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
             } else if (this.Player.menuPosition == 4) {
+                document.getElementById("audiobutton").style.backgroundColor = 'initial';
+            } else if (this.Player.menuPosition == 5) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
             }
             document.getElementById("chevron").style.backgroundColor = '#505050';
@@ -1534,8 +1687,10 @@ ScenePlayerPage.prototype.handleDownKey = function()
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = '#505050';
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("audiobutton").style.backgroundColor = '#505050';
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
             } else if (this.Player.menuPosition == 4) {
+                document.getElementById("audiobutton").style.backgroundColor = '#505050';
+            } else if (this.Player.menuPosition == 5) {
                 document.getElementById("subbutton").style.backgroundColor = '#505050';
             }
         }
@@ -1719,6 +1874,7 @@ ScenePlayerPage.prototype.selectEmbeddedSubtitle = function(index) {
 };
 
 ScenePlayerPage.prototype.CheckDownload = function() {
+    var scene = this;
     if (window.getComputedStyle(document.getElementById("ProgressBar"), null).visibility == "hidden") {
         widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
         if (saveSettings['issubtitleenabled'] == "false") {
@@ -1737,6 +1893,7 @@ ScenePlayerPage.prototype.CheckDownload = function() {
         startTime: new Date().getTime(),
         success: function(moredata) {
             if (downloadprogress == true && moredata) {
+                scene.PerformanceOverlay.setTorrentStats(moredata);
                 //this.waiting = false;
                 //var progressBarWidth = roundpercent * 960 / 100;
                 if (new Date().getTime() - this.startTime >= 1000) {
@@ -1747,9 +1904,9 @@ ScenePlayerPage.prototype.CheckDownload = function() {
         },
         complete: function() {
             if (downloadprogress == true) {
-                this.CheckDownload();
+                scene.CheckDownload();
             }
-        }.bind(this)
+        }
     });    
 }
 
