@@ -39,17 +39,10 @@
     border-radius: 18px 18px 18px 18px;
 }
 
-#performancebutton {
-    position:absolute;
-    top: 22px;
-    left: 890px;
-    border-radius: 18px 18px 18px 18px;
-}
-
 #audiobutton {
     position:absolute;
     top: 22px;
-    left: 770px;
+    left: 830px;
     border-radius: 18px 18px 18px 18px;
 }
 
@@ -113,7 +106,7 @@
 #subbutton {
     position:absolute;
     top: 22px;
-    left: 830px;
+    left: 890px;
     border-radius: 18px 18px 18px 18px;
 }
 

@@ -144,6 +144,9 @@ SceneSubtitleMenu.prototype.handleKeyDown = function (keyCode) {
         	        }
                 }
     	        break;
+            case sf.key.BLUE:
+                sf.scene.get('PlayerPage').PerformanceOverlay.toggle();
+                break;
             case sf.key.RETURN:
             	sf.key.preventDefault();
             	sf.scene.hide('SubtitleMenu');

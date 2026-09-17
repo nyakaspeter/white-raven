@@ -27,6 +27,9 @@ SceneSubtitleSync.prototype.handleKeyDown = function (keyCode) {
     if (currentkeytime - lastkeytime > keytimeout) {
         lastkeytime = currentkeytime;
         switch (keyCode) {
+            case sf.key.BLUE:
+                sf.scene.get('PlayerPage').PerformanceOverlay.toggle();
+                break;
             case sf.key.RETURN:
             	sf.key.preventDefault();
             	sf.scene.hide('SubtitleSync');
