@@ -23,6 +23,7 @@ var needToDeleteKey = -1
 var memStats runtime.MemStats
 var setMaxCount = true
 var forceGC bool
+var lruStatusMutex sync.RWMutex
 var maintenanceLog = struct {
 	sync.Mutex
 	evictions int
@@ -30,7 +31,20 @@ var maintenanceLog = struct {
 	last      time.Time
 }{}
 
+// LRUStatus returns the number of cached torrent pieces and the current cache
+// capacity. A zero capacity means the memory storage backend is not active.
+func LRUStatus() (int, int) {
+	lruStatusMutex.RLock()
+	defer lruStatusMutex.RUnlock()
+	if lruStorage == nil {
+		return 0, 0
+	}
+	return lruStorage.Len(), maxCount
+}
+
 func SetMemorySize(memorySize int64, pieceLength int64, shouldForceGC bool) {
+	lruStatusMutex.Lock()
+	defer lruStatusMutex.Unlock()
 	maxMemorySize = memorySize
 	maxPieceLength = pieceLength
 	forceGC = shouldForceGC
@@ -79,10 +93,12 @@ func storageWriteAt(mt *memoryTorrent, key int, b []byte, off int64) (int, error
 		// 75% of max memory size for LRU cache will keep memory allocation approximately in the right bounds
 		elementCount := int(math.Floor(float64(maxMemorySize*megaByte) / float64(mt.pl) * 75 / 100))
 
+		lruStatusMutex.Lock()
 		if maxCount != elementCount {
 			lruStorage.Resize(elementCount)
 			maxCount = elementCount
 		}
+		lruStatusMutex.Unlock()
 
 		log.Printf("LRU cache size: %d", maxCount)
 

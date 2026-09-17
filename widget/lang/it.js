@@ -83,6 +83,7 @@ var splashText = { it: '</BR>VERSIONE: ' + version + '</BR>CREATED BY MURDOCK' }
 var subtitleSyncText = { it: 'RITARDO SOTTOTITOLI</BR>' };
 var audioStreamText = { it: ['AUDIO STREAM', 'SELECTED'] };
 var playerStateText = { it: ['RIPRODUZIONE', 'PAUSA', 'STOP', 'BUFFERING', 'ERRORE SERVER!', 'ERRORE DI RETE!'] };
+var performanceOverlayText = { it: ['INFO RIPRODUZIONE', 'STATO', 'VIDEO', 'AUDIO', 'SOTTOTITOLI', 'TORRENT', 'DOWNLOAD', 'DATI', 'PEER', 'LRU', 'DISATTIVATI', 'CARICAMENTO...'] };
 var enabledText = { it: 'ATTIVO' };
 var disabledText = { it: 'DISATTIVO' };
 var multipleSourcesText = { it: 'SORGENTI MULTIPLE' };

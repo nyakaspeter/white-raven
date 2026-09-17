@@ -83,6 +83,7 @@ var splashText = { sk: '</BR>VERZIA: ' + version + '</BR>VYTVORIL MURDOCK' };
 var subtitleSyncText = { sk: 'POSUN TITULKOV</BR>' };
 var audioStreamText = { sk: ['ZVUKOVÝ KANÁL', 'VYBRANÝ'] };
 var playerStateText = { sk: ['PREHRÁVAM', 'POZASTAVIŤ', 'ZASTAVIŤ', 'MEDZIPAMÄT', 'CHYBA SERVERA!', 'CHYBA SIETE!'] };
+var performanceOverlayText = { sk: ['INFORMÁCIE O PREHRÁVANÍ', 'STAV', 'VIDEO', 'ZVUK', 'TITULKY', 'TORRENT', 'SŤAHOVANIE', 'DÁTA', 'PEERY', 'LRU', 'VYPNUTÉ', 'NAČÍTAVANIE...'] };
 var enabledText = { sk: 'ENABLED' };
 var disabledText = { sk: 'DISABLED' };
 var multipleSourcesText = { sk: 'MULTIPLE SOURCE' };

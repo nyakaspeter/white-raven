@@ -11,6 +11,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gorilla/mux"
 	"github.com/nyakaspeter/white-raven/server/internal/torrentclient"
+	"github.com/nyakaspeter/white-raven/server/internal/torrentclient/memorystorage"
 )
 
 type TorrentStatsResponse struct {
@@ -20,6 +21,8 @@ type TorrentStatsResponse struct {
 	DownPercent string `json:"downpercent"`
 	FullData    string `json:"fulldata"`
 	Peers       string `json:"peers"`
+	LRUItems    int    `json:"lruitems"`
+	LRUCapacity int    `json:"lrucapacity"`
 }
 
 func GetTorrentStats() func(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +54,7 @@ func downloadStats(address string, torr *torrent.Torrent) string {
 	percent := humanize.FormatFloat("#.", float64(currentProgress)/float64(torr.Info().TotalLength())*100)
 	size := humanize.Bytes(uint64(torr.Info().TotalLength()))
 	peers := strconv.Itoa(torr.Stats().ActivePeers) + "/" + strconv.Itoa(torr.Stats().TotalPeers)
+	lruItems, lruCapacity := memorystorage.LRUStatus()
 
 	//log.Println("Download speed:", downloadSpeed, "Downloaded data:", complete, "Total length:", size)
 	//log.Println("Active peers:", torr.Stats().ActivePeers, "Total peers", torr.Stats().TotalPeers, "Percent:", percent)
@@ -62,6 +66,8 @@ func downloadStats(address string, torr *torrent.Torrent) string {
 		DownPercent: percent,
 		FullData:    size,
 		Peers:       peers,
+		LRUItems:    lruItems,
+		LRUCapacity: lruCapacity,
 	}
 
 	messageString, _ := json.Marshal(message)

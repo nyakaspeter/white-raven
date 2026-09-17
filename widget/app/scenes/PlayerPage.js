@@ -407,7 +407,7 @@ ScenePlayerPage.prototype.initialize = function () {
             document.getElementById("playpause").src = 'images\\pause.png';
             document.getElementById("playpause").style.backgroundColor = '#505050';
             document.getElementById("stop").style.backgroundColor = 'initial';
-            document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
+            document.getElementById("performancebutton").style.backgroundColor = 'initial';
             document.getElementById("audiobutton").style.backgroundColor = 'initial';
             document.getElementById("subbutton").style.backgroundColor = 'initial';
             Display.status(playerStateText[lang][0], 'images\\play.png');
@@ -443,7 +443,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("playpause").src = 'images\\play.png';
         document.getElementById("playpause").style.backgroundColor = '#505050';
         document.getElementById("stop").style.backgroundColor = 'initial';
-        document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
+        document.getElementById("performancebutton").style.backgroundColor = 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][1], 'images\\pause.png');
@@ -504,7 +504,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("playpause").src = 'images\\pause.png';
         document.getElementById("playpause").style.backgroundColor = '#505050';
         document.getElementById("stop").style.backgroundColor = 'initial';
-        document.getElementById("performancebutton").style.backgroundColor = PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
+        document.getElementById("performancebutton").style.backgroundColor = 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][0], 'images\\play.png');
@@ -1035,7 +1035,7 @@ ScenePlayerPage.prototype.initialize = function () {
         var selectedSubtitle = type === 'subtitle' && Player.tracks && Player.tracks.subtitleActive ? Player.tracks.subtitleIndex : -1;
         for (var i = 0; i < tracks.length; i++) {
             if (tracks[i].selected || tracks[i].index === selectedSubtitle) {
-                return type === 'audio' ? PlaybackAudioTrackLabel(tracks[i], 'UND') : PlaybackSubtitleTrackLabel(tracks[i]);
+                return type === 'audio' ? PlaybackAudioTrackLabel(tracks[i], audioStreamText[lang][0]) : PlaybackSubtitleTrackLabel(tracks[i]);
             }
         }
         if (type === 'subtitle' && Player.subtitleState === 1) {
@@ -1045,34 +1045,46 @@ ScenePlayerPage.prototype.initialize = function () {
                 title: external.subtitlename || external.releasename || ''
             });
         }
-        return type === 'audio' ? 'Unknown' : 'Off';
+        return type === 'audio' ? mediaPageText[lang][5] : performanceOverlayText[lang][10];
+    };
+
+    PerformanceOverlay.localize = function()
+    {
+        var text = performanceOverlayText[lang];
+        document.getElementById('performancetitle').textContent = text[0];
+        document.getElementById('performancestatuslabel').textContent = text[1];
+        document.getElementById('performancevideolabel').textContent = text[2];
+        document.getElementById('performanceaudiolabel').textContent = text[3];
+        document.getElementById('performancesubtitleslabel').textContent = text[4];
+        document.getElementById('performancetorrenttitle').textContent = text[5];
+        document.getElementById('performancedownloadlabel').textContent = text[6];
+        document.getElementById('performancedatalabel').textContent = text[7];
+        document.getElementById('performancepeerslabel').textContent = text[8];
+        document.getElementById('performancelrulabel').textContent = text[9];
     };
 
     PerformanceOverlay.render = function()
     {
         if (!this.isVisible) return;
-        var state = Player.isBuffering ? 'BUFFERING' :
-            (Player.getState() === Player.PLAYING ? 'PLAYING' :
-            (Player.getState() === Player.PAUSED ? 'PAUSED' : 'STOPPED'));
+        var state = Player.isBuffering ? playerStateText[lang][3] :
+            (Player.getState() === Player.PLAYING ? playerStateText[lang][0] :
+            (Player.getState() === Player.PAUSED ? playerStateText[lang][1] : playerStateText[lang][2]));
         var current = Display.timeToHTML(Display.currentTime || 0);
         var total = Display.timeToHTML(Display.totalTime || Player.totalTime || 0);
-        var resolution = this.value(function() { return Player.getResolution(); }, 'Unknown');
-        var bitrate = this.value(function() { return Player.getCurrentBitrate(); }, 'Unknown');
+        var resolution = this.value(function() { return Player.getResolution(); }, mediaPageText[lang][5]);
+        var bitrate = this.value(function() { return Player.getCurrentBitrate(); }, mediaPageText[lang][5]);
 
         document.getElementById('performancestatus').textContent = state + '  ' + current + ' / ' + total;
         document.getElementById('performancevideo').textContent = resolution + '  |  ' + bitrate;
         document.getElementById('performanceaudio').textContent = this.trackLabel('audio');
         document.getElementById('performancesubtitles').textContent = this.trackLabel('subtitle');
 
-        var torrent = document.getElementById('torrentperformance');
-        torrent.style.display = infoHash ? 'block' : 'none';
-        if (infoHash) {
-            var stats = this.torrentStats;
-            document.getElementById('performancedownload').textContent = stats ? stats.downspeed + '  |  ' + stats.downpercent + '%' : 'Loading...';
-            document.getElementById('performancedata').textContent = stats ? stats.downdata + ' / ' + stats.fulldata : '--';
-            document.getElementById('performancepeers').textContent = stats ? stats.peers : '--';
-            if (!downloadprogress) this.refreshTorrent();
-        }
+        var stats = this.torrentStats;
+        document.getElementById('performancedownload').textContent = stats ? stats.downspeed + '  |  ' + stats.downpercent + '%' : performanceOverlayText[lang][11];
+        document.getElementById('performancedata').textContent = stats ? stats.downdata + ' / ' + stats.fulldata : '--';
+        document.getElementById('performancepeers').textContent = stats ? stats.peers : '--';
+        document.getElementById('performancelru').textContent = stats && stats.lrucapacity ? stats.lruitems + ' / ' + stats.lrucapacity : '--';
+        if (!downloadprogress) this.refreshTorrent();
     };
 
     PerformanceOverlay.setTorrentStats = function(stats)
@@ -1108,8 +1120,8 @@ ScenePlayerPage.prototype.initialize = function () {
     PerformanceOverlay.show = function()
     {
         this.isVisible = 1;
+        this.localize();
         document.getElementById('performanceoverlay').style.visibility = 'visible';
-        document.getElementById('performancebutton').style.backgroundColor = '#09C3D2';
         this.render();
         if (this.timerID) clearInterval(this.timerID);
         this.timerID = setInterval(function() { PerformanceOverlay.render(); }, 1000);
@@ -1121,9 +1133,7 @@ ScenePlayerPage.prototype.initialize = function () {
         if (this.timerID) clearInterval(this.timerID);
         this.timerID = null;
         var overlay = document.getElementById('performanceoverlay');
-        var button = document.getElementById('performancebutton');
         if (overlay) overlay.style.visibility = 'hidden';
-        if (button) button.style.backgroundColor = 'initial';
     };
 
     PerformanceOverlay.reset = function()
@@ -1347,10 +1357,24 @@ ScenePlayerPage.prototype.handleKeyDown = function (keyCode) {
     } else if (this.Player.isSuccess == 1 && this.Player.isBuffering == 1) {
         switch (keyCode) {
             case sf.key.INFO:
-            case sf.key.ENTER:
                 if (this.Display.isVisible == 0) {
                     this.Display.show();
                 }
+                break;
+            case sf.key.LEFT:
+                this.handleLeftKey();
+                break;
+            case sf.key.RIGHT:
+                this.handleRightKey();
+                break;
+            case sf.key.UP:
+                this.handleUpKey();
+                break;
+            case sf.key.DOWN:
+                this.handleDownKey();
+                break;
+            case sf.key.ENTER:
+                this.handleEnterKey();
                 break;
             case sf.key.RETURN:
                 sf.key.preventDefault();
@@ -1456,13 +1480,10 @@ ScenePlayerPage.prototype.handleEnterKey = function()
                     } else if (this.Player.menuPosition == 2) {
                         this.handleStopKey();
                     } else if (this.Player.menuPosition == 3) {
-                        this.PerformanceOverlay.toggle();
-                        document.getElementById('performancebutton').style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : '#505050';
-                    } else if (this.Player.menuPosition == 4) {
                         sf.scene.show('AudioMenu', this.Player.AVPlayer.totalNumOfAudio);
                         sf.scene.focus('AudioMenu');
                         //this.Player.resumeVideo();
-                    } else if (this.Player.menuPosition == 5) {
+                    } else if (this.Player.menuPosition == 4) {
                         if (saveSettings['issubtitleenabled'] == "true" && this.getSubtitleChoices().length === 0) {
                             sf.scene.show('SubtitleSearch', {caller: "PlayerPage"});
                             sf.scene.focus('SubtitleSearch');
@@ -1470,6 +1491,8 @@ ScenePlayerPage.prototype.handleEnterKey = function()
                             sf.scene.show('SubtitleMenu');
                             sf.scene.focus('SubtitleMenu');
                         }
+                    } else if (this.Player.menuPosition == 5) {
+                        this.PerformanceOverlay.toggle();
                     }
                 } else {
                     var tipTime = document.getElementById("timetip").innerHTML.toMilliSeconds();
@@ -1517,15 +1540,15 @@ ScenePlayerPage.prototype.handleLeftKey = function()
     if (this.Display.isVisible == 1) {
         if (this.Player.isChevron == 0) {
             if (this.Player.menuPosition == 5) {
-                document.getElementById("subbutton").style.backgroundColor = 'initial';
-                document.getElementById("audiobutton").style.backgroundColor = '#505050';
+                document.getElementById("performancebutton").style.backgroundColor = 'initial';
+                document.getElementById("subbutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 4;
             } else if (this.Player.menuPosition == 4) {
-                document.getElementById("audiobutton").style.backgroundColor = 'initial';
-                document.getElementById("performancebutton").style.backgroundColor = '#505050';
+                document.getElementById("subbutton").style.backgroundColor = 'initial';
+                document.getElementById("audiobutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 3;
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
+                document.getElementById("audiobutton").style.backgroundColor = 'initial';
                 document.getElementById("stop").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 2;
             } else if (this.Player.menuPosition == 2) {
@@ -1534,7 +1557,7 @@ ScenePlayerPage.prototype.handleLeftKey = function()
                 this.Player.menuPosition = 1;
             } else if (this.Player.menuPosition == 1) {
                 document.getElementById("playpause").style.backgroundColor = 'initial';
-                document.getElementById("subbutton").style.backgroundColor = '#505050';
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 5;
             }
         } else {
@@ -1571,18 +1594,18 @@ ScenePlayerPage.prototype.handleRightKey = function()
                 this.Player.menuPosition = 2;
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = 'initial';
-                document.getElementById("performancebutton").style.backgroundColor = '#505050';
+                document.getElementById("audiobutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 3;
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
-                document.getElementById("audiobutton").style.backgroundColor = '#505050';
-                this.Player.menuPosition = 4;
-            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("audiobutton").style.backgroundColor = 'initial';
                 document.getElementById("subbutton").style.backgroundColor = '#505050';
+                this.Player.menuPosition = 4;
+            } else if (this.Player.menuPosition == 4) {
+                document.getElementById("subbutton").style.backgroundColor = 'initial';
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 5;
             } else if (this.Player.menuPosition == 5) {
-                document.getElementById("subbutton").style.backgroundColor = 'initial';
+                document.getElementById("performancebutton").style.backgroundColor = 'initial';
                 document.getElementById("playpause").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 1;
             }
@@ -1620,11 +1643,11 @@ ScenePlayerPage.prototype.handleUpKey = function()
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = 'initial';
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("performancebutton").style.backgroundColor = this.PerformanceOverlay.isVisible ? '#09C3D2' : 'initial';
-            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("audiobutton").style.backgroundColor = 'initial';
-            } else if (this.Player.menuPosition == 5) {
+            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
+            } else if (this.Player.menuPosition == 5) {
+                document.getElementById("performancebutton").style.backgroundColor = 'initial';
             }
             document.getElementById("chevron").style.backgroundColor = '#505050';
             document.getElementById("chevron").style.borderColor = '#505050';
@@ -1665,11 +1688,11 @@ ScenePlayerPage.prototype.handleDownKey = function()
             } else if (this.Player.menuPosition == 2) {
                 document.getElementById("stop").style.backgroundColor = '#505050';
             } else if (this.Player.menuPosition == 3) {
-                document.getElementById("performancebutton").style.backgroundColor = '#505050';
-            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("audiobutton").style.backgroundColor = '#505050';
-            } else if (this.Player.menuPosition == 5) {
+            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = '#505050';
+            } else if (this.Player.menuPosition == 5) {
+                document.getElementById("performancebutton").style.backgroundColor = '#505050';
             }
         }
     }

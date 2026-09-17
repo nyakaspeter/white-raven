@@ -83,6 +83,7 @@ var splashText = { bg: '</BR>ВЕРСИЯ: ' + version + '</BR>СЪЗДАДЕН�
 var subtitleSyncText = { bg: 'ИЗМЕСТВАНЕ НА СУБТИТРИ</BR>' };
 var audioStreamText = { bg: ['АУДИО ПОТОК', 'ИЗБРАН'] };
 var playerStateText = { bg: ['ВЪЗПРОИЗВЕЖДАНЕ', 'ПАУЗА', 'СПРЯН', 'ЗАРЕЖДАНЕ', 'ГРЕШНКА В СЪРВЪРА!', 'МРЕЖОВА ГРЕШКА!'] };
+var performanceOverlayText = { bg: ['ИНФОРМАЦИЯ ЗА ВЪЗПРОИЗВЕЖДАНЕ', 'СЪСТОЯНИЕ', 'ВИДЕО', 'ЗВУК', 'СУБТИТРИ', 'ТОРЕНТ', 'ИЗТЕГЛЯНЕ', 'ДАННИ', 'ПИЪРИ', 'LRU', 'ИЗКЛЮЧЕНИ', 'ЗАРЕЖДАНЕ...'] };
 var enabledText = { bg: 'ENABLED' };
 var disabledText = { bg: 'DISABLED' };
 var multipleSourcesText = { bg: 'MULTIPLE SOURCE' };

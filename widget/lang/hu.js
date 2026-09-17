@@ -83,6 +83,7 @@ var splashText = { hu: '</BR>VERZIÓ: ' + version + '</BR>KÉSZÍTETTE MURDOCK' 
 var subtitleSyncText = { hu: 'FELIRAT ELTOLÁS</BR>' };
 var audioStreamText = { hu: ['HANGSÁV', 'KIVÁLASZTVA'] };
 var playerStateText = { hu: ['LEJÁTSZÁS', 'SZÜNETELTETVE', 'MEGÁLLÍTVA', 'PUFFERELÉS', 'SZERVER HIBA!', 'HÁLÓZATI HIBA!'] };
+var performanceOverlayText = { hu: ['LEJÁTSZÁSI INFORMÁCIÓ', 'ÁLLAPOT', 'VIDEÓ', 'HANG', 'FELIRAT', 'TORRENT', 'LETÖLTÉS', 'ADAT', 'KAPCSOLATOK', 'LRU', 'KIKAPCSOLVA', 'BETÖLTÉS...'] };
 var enabledText = { hu: 'BEKAPCSOLVA' };
 var disabledText = { hu: 'KIKAPCSOLVA' };
 var multipleSourcesText = { hu: 'TÖBB FORRÁS' };

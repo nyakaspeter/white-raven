@@ -83,6 +83,7 @@ var splashText = { hr: '</BR>INAČICA: ' + version + '</BR>AUTOR MURDOCK' };
 var subtitleSyncText = { hr: 'POMAK PODNASLOVA</BR>' };
 var audioStreamText = { hr: ['ZVUČNI ZAPIS', 'ODABRANO'] };
 var playerStateText = { hr: ['REPRODUKCIJA', 'PAUZIRANO', 'ZAUSTAVLJENO', 'MEĐUSPREMANJE', 'GREŠKA POSLUŽITELJA!', 'GREŠKA MREŽE!'] };
+var performanceOverlayText = { hr: ['PODACI O REPRODUKCIJI', 'STATUS', 'VIDEO', 'ZVUK', 'TITLOVI', 'TORRENT', 'PREUZIMANJE', 'PODACI', 'PEEROVI', 'LRU', 'ISKLJUČENO', 'UČITAVANJE...'] };
 var enabledText = { hr: 'OMOGUĆEN' };
 var disabledText = { hr: 'ONEMOGUĆEN' };
 var multipleSourcesText = { hr: 'VIŠESTRUKI IZVOR' };

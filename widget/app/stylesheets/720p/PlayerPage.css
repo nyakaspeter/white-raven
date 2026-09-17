@@ -42,14 +42,14 @@
 #performancebutton {
     position:absolute;
     top: 22px;
-    left: 770px;
+    left: 890px;
     border-radius: 18px 18px 18px 18px;
 }
 
 #audiobutton {
     position:absolute;
     top: 22px;
-    left: 830px;
+    left: 770px;
     border-radius: 18px 18px 18px 18px;
 }
 
@@ -57,7 +57,7 @@
     position: absolute;
     top: 82px;
     right: 20px;
-    width: 320px;
+    width: 380px;
     padding: 12px 16px 14px 16px;
     box-sizing: border-box;
     border-radius: 4px;
@@ -93,13 +93,16 @@
 
 .performancerow span {
     float: left;
-    width: 82px;
+    width: 125px;
     color: #b9b9b9;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .performancerow strong {
     display: block;
-    margin-left: 82px;
+    margin-left: 125px;
     font-weight: normal;
     text-align: right;
     overflow: hidden;
@@ -110,7 +113,7 @@
 #subbutton {
     position:absolute;
     top: 22px;
-    left: 890px;
+    left: 830px;
     border-radius: 18px 18px 18px 18px;
 }
 
