@@ -662,7 +662,9 @@ ScenePlayerPage.prototype.initialize = function () {
     Player.onBufferingStart = function()
     {
         this.isBuffering = 1;
-        ScenePlayerPage.prototype.SetZIndex("visible", 5600);
+        // Keep playback menus usable while AVPlay buffers (track changes can
+        // trigger buffering themselves). The menus render at z-index 5500.
+        ScenePlayerPage.prototype.SetZIndex("visible", 5300);
         Display.status("..." + playerStateText[lang][3] + "...", 'images\\buffering.png');        
         switch(this.skipState)
         {
@@ -674,35 +676,11 @@ ScenePlayerPage.prototype.initialize = function () {
                 document.getElementById("playpause").src = 'images\\pause.png';
                 break;
         }
-        var focusedName = sf.scene.getFocused();
-        if (focusedName == 'LoadSubtitle') {
-            sf.scene.hide('LoadSubtitle', {caller: "PlayerPage"});
-            sf.scene.hide('SubtitleMenu');
-            sf.scene.focus('PlayerPage');
-        } else if (focusedName == 'SubtitleMenu') {
-            sf.scene.hide('SubtitleMenu');
-            sf.scene.focus('PlayerPage');
-        } else if (focusedName == 'AudioMenu') {
-            sf.scene.hide('AudioMenu');
-            sf.scene.focus('PlayerPage');
-        } else if (focusedName == 'SubtitleSync') {
-            sf.scene.hide('SubtitleSync');
-            sf.scene.hide('SubtitleMenu');
-            sf.scene.focus('PlayerPage');
-        } else if (focusedName == 'SubtitleStyle') {
-            sf.scene.hide('SubtitleStyle');
-            sf.scene.hide('SubtitleMenu');
-            sf.scene.focus('PlayerPage');
-        } else if (focusedName == 'SubtitleSearch') {
-            sf.scene.hide('SubtitleSearch');
-            sf.scene.hide('SubtitleMenu');
-            sf.scene.focus('PlayerPage');
-        }
     }
 
     Player.onBufferingProgress = function(percent)
     {
-        ScenePlayerPage.prototype.SetZIndex("visible", 5600);
+        ScenePlayerPage.prototype.SetZIndex("visible", 5300);
         Display.status(playerStateText[lang][3] + ": " + percent + "%", 'images\\buffering.png');
     }
 
