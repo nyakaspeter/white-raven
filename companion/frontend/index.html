@@ -180,7 +180,7 @@
 
       <section id="rooted-install" class="install-panel" hidden>
         <h2>SSH installation</h2>
-        <p>The latest rooted release and a newly generated <code>server.init</code> will be uploaded to the TV. The settings tab supplies all server options.</p>
+        <p>Install the latest release directly over SSH. You can include the TV-local server or use the rootless widget with a server elsewhere on your network.</p>
         <form id="ssh-settings">
           <label class="stacked-field"><span>TV IP address</span><input name="host" inputmode="decimal" placeholder="192.168.1.50" required /></label>
           <div class="split-fields">
@@ -188,6 +188,10 @@
             <label class="stacked-field"><span>SSH port</span><input name="port" type="number" value="22" min="1" max="65535" required /></label>
           </div>
           <label class="stacked-field"><span>SSH password</span><input name="password" type="password" autocomplete="current-password" /></label>
+          <label class="switch-row compact-switch">
+            <span><b>Install server on TV</b><small>Turn off to upload the rootless widget</small></span>
+            <input name="installServer" type="checkbox" role="switch" checked />
+          </label>
           <label class="switch-row compact-switch">
             <span><b>Reboot after install</b><small>Required before the widget appears</small></span>
             <input name="reboot" type="checkbox" role="switch" checked />

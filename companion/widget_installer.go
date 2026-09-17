@@ -33,12 +33,13 @@ const (
 )
 
 type RootedInstallRequest struct {
-	Host     string         `json:"host"`
-	Port     int            `json:"port"`
-	Username string         `json:"username"`
-	Password string         `json:"password"`
-	Reboot   bool           `json:"reboot"`
-	Config   runtime.Config `json:"config"`
+	Host          string         `json:"host"`
+	Port          int            `json:"port"`
+	Username      string         `json:"username"`
+	Password      string         `json:"password"`
+	InstallServer bool           `json:"installServer"`
+	Reboot        bool           `json:"reboot"`
+	Config        runtime.Config `json:"config"`
 }
 
 type WidgetStatus struct {
@@ -97,7 +98,11 @@ func (installer *widgetInstaller) InstallRooted(request RootedInstallRequest) (e
 	}
 	installer.status.Busy = true
 	installer.status.Mode = "rooted"
-	installer.status.Message = "Finding the latest rooted release…"
+	variant := "rootless"
+	if request.InstallServer {
+		variant = "rooted"
+	}
+	installer.status.Message = "Finding the latest " + variant + " release…"
 	installer.mu.Unlock()
 	defer func() {
 		installer.setStatus(func(status *WidgetStatus) {
@@ -123,7 +128,7 @@ func (installer *widgetInstaller) InstallRooted(request RootedInstallRequest) (e
 		request.Username = "root"
 	}
 
-	release, asset, err := installer.latestAsset(false)
+	release, asset, err := installer.latestAsset(!request.InstallServer)
 	if err != nil {
 		return err
 	}
@@ -155,16 +160,20 @@ func (installer *widgetInstaller) InstallRooted(request RootedInstallRequest) (e
 		return err
 	}
 	installer.setStatus(func(status *WidgetStatus) { status.Message = "Finalizing installation…" })
-	serverInit, err := renderServerInit(archive, request.Config)
-	if err != nil {
-		return err
+	finalizeCommand := "chown -R app:app " + shellQuote(widgetRoot)
+	if request.InstallServer {
+		serverInit, renderErr := renderServerInit(archive, request.Config)
+		if renderErr != nil {
+			return renderErr
+		}
+		if err := uploadBytes(sshClient, path.Join(widgetRoot, "server/server.init"), []byte(serverInit), 0755, nil); err != nil {
+			return fmt.Errorf("update server.init: %w", err)
+		}
+		finalizeCommand += " && chmod 755 " + shellQuote(path.Join(widgetRoot, "server/server.init")) +
+			" " + shellQuote(path.Join(widgetRoot, "server/wrserver"))
+	} else {
+		finalizeCommand = "rm -rf " + shellQuote(path.Join(widgetRoot, "server")) + " && " + finalizeCommand
 	}
-	if err := uploadBytes(sshClient, path.Join(widgetRoot, "server/server.init"), []byte(serverInit), 0755, nil); err != nil {
-		return fmt.Errorf("update server.init: %w", err)
-	}
-	finalizeCommand := "chown -R app:app " + shellQuote(widgetRoot) +
-		" && chmod 755 " + shellQuote(path.Join(widgetRoot, "server/server.init")) +
-		" " + shellQuote(path.Join(widgetRoot, "server/wrserver"))
 	if err := runSSHCommand(sshClient, finalizeCommand); err != nil {
 		return fmt.Errorf("set widget ownership and permissions: %w", err)
 	}

@@ -10,6 +10,7 @@ export interface RootedInstallRequest {
     "port": number;
     "username": string;
     "password": string;
+    "installServer": boolean;
     "reboot": boolean;
     "config": runtime$0.Config;
 }

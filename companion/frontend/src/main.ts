@@ -198,6 +198,7 @@ sshForm.addEventListener("submit", async event => {
       port: Number(data.get("port")),
       username: String(data.get("username") || "root"),
       password: String(data.get("password") || ""),
+      installServer: (sshForm.elements.namedItem("installServer") as HTMLInputElement).checked,
       reboot: (sshForm.elements.namedItem("reboot") as HTMLInputElement).checked,
       config: currentConfig,
     });
