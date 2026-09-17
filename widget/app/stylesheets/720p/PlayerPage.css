@@ -42,7 +42,7 @@
 #audiobutton {
     position:absolute;
     top: 22px;
-    left: 830px;
+    left: 770px;
     border-radius: 18px 18px 18px 18px;
 }
 
@@ -106,8 +106,28 @@
 #subbutton {
     position:absolute;
     top: 22px;
-    left: 890px;
+    left: 830px;
     border-radius: 18px 18px 18px 18px;
+}
+
+#threeDbutton {
+    position: absolute;
+    top: 20px;
+    left: 888px;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px 20px 20px 20px;
+    color: #ffffff;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 40px;
+    text-align: center;
+    display: none;
+}
+
+#threeDbutton.enabled {
+    color: #09C3D2;
 }
 
 #mediaprogressbar {

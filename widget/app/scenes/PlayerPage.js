@@ -58,6 +58,7 @@ ScenePlayerPage.prototype.initialize = function () {
         oncurrentplaytime: function (time) {
             //alert("playing time : " + time);
             Player.setCurTime(time);
+            if (ThreeD) ThreeD.sync();
             if (Player.isSuccess && !Player.defaultSubtitleSelected) sf.scene.get('PlayerPage').selectDefaultSubtitle();
         },
         onresolutionchanged: function (width, height) {
@@ -409,6 +410,7 @@ ScenePlayerPage.prototype.initialize = function () {
             document.getElementById("stop").style.backgroundColor = 'initial';
             document.getElementById("audiobutton").style.backgroundColor = 'initial';
             document.getElementById("subbutton").style.backgroundColor = 'initial';
+            document.getElementById("threeDbutton").style.backgroundColor = 'initial';
             Display.status(playerStateText[lang][0], 'images\\play.png');
             //this.setFullscreen();
             //this.plugin.Execute("Play",this.url );
@@ -444,6 +446,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("stop").style.backgroundColor = 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
+        document.getElementById("threeDbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][1], 'images\\pause.png');
         this.menuPosition = 1;
         Player.AVPlayer.pause();
@@ -463,6 +466,7 @@ ScenePlayerPage.prototype.initialize = function () {
             document.getElementById("stop").style.backgroundColor = '#505050';
             document.getElementById("audiobutton").style.backgroundColor = 'initial';
             document.getElementById("subbutton").style.backgroundColor = 'initial';
+            document.getElementById("threeDbutton").style.backgroundColor = 'initial';
             Display.status(playerStateText[lang][2], 'images\\stop.png');
             
             downloadprogress = false;
@@ -480,6 +484,7 @@ ScenePlayerPage.prototype.initialize = function () {
             SaveResumeToLocal(resume);
             this.resumetime = 0;
 
+            ThreeD.disable();
             Player.AVPlayer.stop();
             Display.setTime(0);
             
@@ -503,6 +508,7 @@ ScenePlayerPage.prototype.initialize = function () {
         document.getElementById("stop").style.backgroundColor = 'initial';
         document.getElementById("audiobutton").style.backgroundColor = 'initial';
         document.getElementById("subbutton").style.backgroundColor = 'initial';
+        document.getElementById("threeDbutton").style.backgroundColor = 'initial';
         Display.status(playerStateText[lang][0], 'images\\play.png');
         Player.AVPlayer.resume();
     }
@@ -1204,9 +1210,170 @@ ScenePlayerPage.prototype.initialize = function () {
         }
     }
 
+    /*************** 3D screen mode *******************/
+    var ThreeD =
+    {
+        plugin: null,
+        directPlugin: null,
+        supported: false,
+        changedByPlayer: false,
+        mode: 0,
+        OFF: 0,
+        TOP_BOTTOM: 1,
+        SIDE_BY_SIDE: 2,
+        MAX_MODE: 7
+    };
+
+    ThreeD.readMode = function()
+    {
+        var modes = [];
+
+        try {
+            if (this.directPlugin && typeof this.directPlugin.Get3DEffectMode == 'function') {
+                modes.push(this.directPlugin.Get3DEffectMode());
+            }
+        } catch (error) {}
+
+        try {
+            if (this.plugin) modes.push(this.plugin.Execute("Get3DEffectMode"));
+        } catch (error) {}
+
+        // Some TVs expose both Screen APIs but only one reports a mode that
+        // was selected automatically. Prefer any active result over OFF.
+        for (var i = 0; i < modes.length; i++) {
+            if (modes[i] > this.OFF && modes[i] <= this.MAX_MODE) return modes[i];
+        }
+        for (var j = 0; j < modes.length; j++) {
+            if (modes[j] == this.OFF) return this.OFF;
+        }
+        return -1;
+    };
+
+    ThreeD.init = function()
+    {
+        var button = document.getElementById("threeDbutton");
+        this.plugin = document.getElementById("pluginScreen1");
+        this.directPlugin = document.getElementById("pluginScreenDirect");
+        this.supported = false;
+        this.changedByPlayer = false;
+        this.mode = this.OFF;
+
+        try {
+            if (this.plugin) {
+                this.plugin.Open("Screen", "1.003", "Screen");
+                this.supported = this.plugin.Execute("Flag3DEffectSupport") > 0;
+            }
+        } catch (error) {
+            this.supported = false;
+        }
+
+        try {
+            if (this.directPlugin && typeof this.directPlugin.Flag3DEffectSupport == 'function' &&
+                this.directPlugin.Flag3DEffectSupport() > 0) {
+                this.supported = true;
+            }
+        } catch (error) {}
+
+        if (this.supported) {
+            var currentMode = this.readMode();
+            if (currentMode >= this.OFF) this.mode = currentMode;
+        }
+
+        button.style.display = this.supported ? 'block' : 'none';
+        this.render();
+        return this.supported;
+    };
+
+    ThreeD.render = function()
+    {
+        var button = document.getElementById("threeDbutton");
+        if (!button) return;
+
+        if (this.mode == this.SIDE_BY_SIDE) {
+            button.className = 'enabled';
+            button.textContent = 'SBS';
+            button.title = '3D: half side-by-side';
+        } else if (this.mode == this.TOP_BOTTOM) {
+            button.className = 'enabled';
+            button.textContent = 'TAB';
+            button.title = '3D: half top-and-bottom';
+        } else {
+            button.className = this.mode == this.OFF ? '' : 'enabled';
+            button.textContent = '3D';
+            button.title = this.mode == this.OFF ? '3D: off' : '3D: enabled';
+        }
+    };
+
+    ThreeD.sync = function()
+    {
+        if (!this.supported) return;
+
+        try {
+            var currentMode = this.readMode();
+            if (currentMode >= this.OFF && currentMode <= this.MAX_MODE && currentMode != this.mode) {
+                this.mode = currentMode;
+                this.render();
+            }
+        } catch (error) {}
+    };
+
+    ThreeD.setMode = function(mode)
+    {
+        if (!this.supported) return false;
+
+        try {
+            var changed = false;
+
+            // Some E/F/H firmware reports that the mode cannot be changed even
+            // though the native 3D menu can change it. Try the setters directly
+            // and support both the original Screen object and its SEF wrapper.
+            if (this.directPlugin && typeof this.directPlugin.Set3DEffectMode == 'function') {
+                changed = this.directPlugin.Set3DEffectMode(mode) > 0 || changed;
+            }
+            if (this.plugin) {
+                changed = this.plugin.Execute("Set3DEffectMode", mode) > 0 || changed;
+            }
+            if (!changed) return false;
+
+            this.mode = mode;
+            this.changedByPlayer = true;
+            this.render();
+            return true;
+        } catch (error) {
+            alert("Could not change 3D mode: " + error.message);
+            return false;
+        }
+    };
+
+    ThreeD.cycle = function()
+    {
+        this.sync();
+        if (this.mode == this.OFF) return this.setMode(this.SIDE_BY_SIDE);
+        if (this.mode == this.SIDE_BY_SIDE) return this.setMode(this.TOP_BOTTOM);
+        return this.setMode(this.OFF);
+    };
+
+    ThreeD.disable = function()
+    {
+        if (!this.changedByPlayer) return;
+
+        try {
+            if (this.directPlugin && typeof this.directPlugin.Set3DEffectMode == 'function') {
+                this.directPlugin.Set3DEffectMode(this.OFF);
+            }
+            if (this.plugin) this.plugin.Execute("Set3DEffectMode", this.OFF);
+        } catch (error) {
+            alert("Could not turn off 3D mode: " + error.message);
+        }
+        this.mode = this.OFF;
+        this.changedByPlayer = false;
+        this.render();
+    };
+
     this.Player = Player;
     this.Display = Display;
     this.Audio = Audio;
+    this.ThreeD = ThreeD;
     this.PerformanceOverlay = PerformanceOverlay;
 
     // Set subtitle styles
@@ -1221,6 +1388,7 @@ ScenePlayerPage.prototype.initialize = function () {
 
 ScenePlayerPage.prototype.handleShow = function (data) {
     this.PerformanceOverlay.reset();
+    this.ThreeD.init();
     downloadprogress = true;
     
     document.getElementById("ProgressBar").style.visibility = 'hidden';
@@ -1261,6 +1429,7 @@ ScenePlayerPage.prototype.handleShow = function (data) {
 
 ScenePlayerPage.prototype.handleHide = function () {
     this.PerformanceOverlay.hide();
+    this.ThreeD.disable();
     ScenePlayerPage.prototype.SetZIndex("hidden", 500);
     document.getElementById("ProgressBar").style.visibility = 'hidden';
     widgetAPI.putInnerHTML(document.getElementById("subtext"), "");
@@ -1496,6 +1665,8 @@ ScenePlayerPage.prototype.handleEnterKey = function()
                             sf.scene.show('SubtitleMenu');
                             sf.scene.focus('SubtitleMenu');
                         }
+                    } else if (this.Player.menuPosition == 5) {
+                        this.ThreeD.cycle();
                     }
                 } else {
                     var tipTime = document.getElementById("timetip").innerHTML.toMilliSeconds();
@@ -1542,7 +1713,11 @@ ScenePlayerPage.prototype.handleLeftKey = function()
 { 
     if (this.Display.isVisible == 1) {
         if (this.Player.isChevron == 0) {
-            if (this.Player.menuPosition == 4) {
+            if (this.Player.menuPosition == 5) {
+                document.getElementById("threeDbutton").style.backgroundColor = 'initial';
+                document.getElementById("subbutton").style.backgroundColor = '#505050';
+                this.Player.menuPosition = 4;
+            } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
                 document.getElementById("audiobutton").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 3;
@@ -1556,8 +1731,13 @@ ScenePlayerPage.prototype.handleLeftKey = function()
                 this.Player.menuPosition = 1;
             } else if (this.Player.menuPosition == 1) {
                 document.getElementById("playpause").style.backgroundColor = 'initial';
-                document.getElementById("subbutton").style.backgroundColor = '#505050';
-                this.Player.menuPosition = 4;
+                if (this.ThreeD.supported) {
+                    document.getElementById("threeDbutton").style.backgroundColor = '#505050';
+                    this.Player.menuPosition = 5;
+                } else {
+                    document.getElementById("subbutton").style.backgroundColor = '#505050';
+                    this.Player.menuPosition = 4;
+                }
             }
         } else {
             var chevronpos = parseFloat(document.getElementById("chevron").style.left);
@@ -1601,6 +1781,15 @@ ScenePlayerPage.prototype.handleRightKey = function()
                 this.Player.menuPosition = 4;
             } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
+                if (this.ThreeD.supported) {
+                    document.getElementById("threeDbutton").style.backgroundColor = '#505050';
+                    this.Player.menuPosition = 5;
+                } else {
+                    document.getElementById("playpause").style.backgroundColor = '#505050';
+                    this.Player.menuPosition = 1;
+                }
+            } else if (this.Player.menuPosition == 5) {
+                document.getElementById("threeDbutton").style.backgroundColor = 'initial';
                 document.getElementById("playpause").style.backgroundColor = '#505050';
                 this.Player.menuPosition = 1;
             }
@@ -1641,6 +1830,8 @@ ScenePlayerPage.prototype.handleUpKey = function()
                 document.getElementById("audiobutton").style.backgroundColor = 'initial';
             } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = 'initial';
+            } else if (this.Player.menuPosition == 5) {
+                document.getElementById("threeDbutton").style.backgroundColor = 'initial';
             }
             document.getElementById("chevron").style.backgroundColor = '#505050';
             document.getElementById("chevron").style.borderColor = '#505050';
@@ -1684,6 +1875,8 @@ ScenePlayerPage.prototype.handleDownKey = function()
                 document.getElementById("audiobutton").style.backgroundColor = '#505050';
             } else if (this.Player.menuPosition == 4) {
                 document.getElementById("subbutton").style.backgroundColor = '#505050';
+            } else if (this.Player.menuPosition == 5) {
+                document.getElementById("threeDbutton").style.backgroundColor = '#505050';
             }
         }
     }

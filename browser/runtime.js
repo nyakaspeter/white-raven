@@ -229,6 +229,29 @@
       window.webapis.avplay.setVolume(volume / 100, muted);
       return true;
     };
+
+    var threeDMode = 0;
+    var screen = document.getElementById("pluginScreen1");
+    screen.Open = function () { return true; };
+    screen.Execute = function (command, value) {
+      if (command === "Flag3DEffectSupport") return 1;
+      if (command === "Check3DEffectMode") return value >= 0 && value <= 2 ? 1 : 0;
+      if (command === "Get3DEffectMode") return threeDMode;
+      if (command === "Set3DEffectMode") {
+        threeDMode = value;
+        return 1;
+      }
+      return -1;
+    };
+
+    var directScreen = document.getElementById("pluginScreenDirect");
+    directScreen.Flag3DEffectSupport = function () { return 1; };
+    directScreen.Check3DEffectMode = function (mode) { return mode >= 0 && mode <= 2 ? 1 : 0; };
+    directScreen.Get3DEffectMode = function () { return threeDMode; };
+    directScreen.Set3DEffectMode = function (mode) {
+      threeDMode = mode;
+      return 1;
+    };
   }
 
 
