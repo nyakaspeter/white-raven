@@ -3,6 +3,7 @@ package subtitles
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,7 +28,10 @@ const (
 )
 
 var openSubtitlesHTTPClient = &http.Client{
-	Timeout: 30 * time.Second,
+	// Rooted legacy TVs commonly boot with an unset clock and an obsolete CA
+	// store. Use the same compatibility transport as the other HTTPS providers.
+	Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+	Timeout:   15 * time.Second,
 }
 
 var openSubtitlesSession = struct {
@@ -92,8 +96,8 @@ type openSubtitlesDownloadResponse struct {
 	ResetTimeUTC string `json:"reset_time_utc"`
 }
 
-func GetSubtitles(movie types.MediaParams, languages []string) []types.SubtitleFile {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func GetSubtitles(movie types.MediaParams, languages []string) ([]types.SubtitleFile, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	params := url.Values{}
@@ -113,18 +117,18 @@ func GetSubtitles(movie types.MediaParams, languages []string) []types.SubtitleF
 	items, err := searchOpenSubtitles(ctx, params)
 	if err != nil {
 		log.Println("OpenSubtitles movie search failed:", err)
-		return []types.SubtitleFile{}
+		return nil, err
 	}
 	if len(items) == 0 {
-		return []types.SubtitleFile{}
+		return []types.SubtitleFile{}, nil
 	}
 
 	preferredLanguage := firstPreferredLanguage(languages)
-	return subtitleFilesList(items, preferredLanguage)
+	return subtitleFilesList(items, preferredLanguage), nil
 }
 
-func GetSubtitlesForEpisode(show types.MediaParams, episode types.EpisodeParams, languages []string) []types.SubtitleFile {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+func GetSubtitlesForEpisode(show types.MediaParams, episode types.EpisodeParams, languages []string) ([]types.SubtitleFile, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	params := url.Values{}
@@ -145,14 +149,14 @@ func GetSubtitlesForEpisode(show types.MediaParams, episode types.EpisodeParams,
 	items, err := searchOpenSubtitles(ctx, params)
 	if err != nil {
 		log.Println("OpenSubtitles episode search failed:", err)
-		return []types.SubtitleFile{}
+		return nil, err
 	}
 	if len(items) == 0 {
-		return []types.SubtitleFile{}
+		return []types.SubtitleFile{}, nil
 	}
 
 	preferredLanguage := firstPreferredLanguage(languages)
-	return subtitleFilesList(items, preferredLanguage)
+	return subtitleFilesList(items, preferredLanguage), nil
 }
 
 func GetSubtitleContents(params types.SubtitleParams) types.SubtitleContents {
@@ -162,7 +166,7 @@ func GetSubtitleContents(params types.SubtitleParams) types.SubtitleContents {
 		return types.SubtitleContents{}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	download, err := getOpenSubtitlesDownload(ctx, fileID)

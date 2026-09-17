@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/nyakaspeter/white-raven/server/runtime"
@@ -361,6 +363,8 @@ func (installer *widgetInstaller) download(asset releaseAsset) ([]byte, error) {
 }
 
 func dialTV(request RootedInstallRequest) (*ssh.Client, error) {
+	address := net.JoinHostPort(request.Host, strconv.Itoa(request.Port))
+	log.Printf("Connecting to TV over SSH at %s", address)
 	config := &ssh.ClientConfig{
 		User:            request.Username,
 		Auth:            []ssh.AuthMethod{ssh.Password(request.Password)},
@@ -374,10 +378,18 @@ func dialTV(request RootedInstallRequest) (*ssh.Client, error) {
 			Ciphers:      []string{"aes128-ctr", "aes192-ctr", "aes256-ctr", "aes128-cbc", "3des-cbc"},
 		},
 	}
-	client, err := ssh.Dial("tcp", net.JoinHostPort(request.Host, strconv.Itoa(request.Port)), config)
+	client, err := ssh.Dial("tcp", address, config)
 	if err != nil {
+		log.Printf("SSH connection to %s failed: %v", address, err)
+		if errors.Is(err, syscall.EHOSTUNREACH) {
+			return nil, fmt.Errorf(
+				"connect to TV over SSH: macOS blocked local-network access to %s (no route to host); allow White Raven Companion in System Settings > Privacy & Security > Local Network, then fully quit and reopen the app",
+				address,
+			)
+		}
 		return nil, fmt.Errorf("connect to TV over SSH: %w", err)
 	}
+	log.Printf("SSH connection to %s established", address)
 	return client, nil
 }
 

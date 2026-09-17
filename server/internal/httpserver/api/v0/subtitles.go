@@ -41,17 +41,23 @@ func GetSubtitlesByImdb() func(w http.ResponseWriter, r *http.Request) {
 		langs := strings.Split(vars["lang"], ",")
 
 		var output []subtitlestypes.SubtitleFile
+		var searchErr error
 		if season == 0 && episode == 0 {
 			params := subtitlestypes.MediaParams{}
 			params.ImdbId = vars["imdb"]
-			output = subtitles.GetSubtitles(params, langs)
+			output, searchErr = subtitles.GetSubtitles(params, langs)
 		} else {
 			params := subtitlestypes.MediaParams{}
 			params.ImdbId = vars["imdb"]
 			epParams := subtitlestypes.EpisodeParams{}
 			epParams.Season = season
 			epParams.Episode = episode
-			output = subtitles.GetSubtitlesForEpisode(params, epParams, langs)
+			output, searchErr = subtitles.GetSubtitlesForEpisode(params, epParams, langs)
+		}
+
+		if searchErr != nil {
+			http.Error(w, subtitleSearchFailed(searchErr), http.StatusBadGateway)
+			return
 		}
 
 		if len(output) == 0 {
@@ -84,17 +90,23 @@ func GetSubtitlesByText() func(w http.ResponseWriter, r *http.Request) {
 		langs := strings.Split(vars["lang"], ",")
 
 		var output []subtitlestypes.SubtitleFile
+		var searchErr error
 		if season == 0 && episode == 0 {
 			params := subtitlestypes.MediaParams{}
 			params.Title = vars["text"]
-			output = subtitles.GetSubtitles(params, langs)
+			output, searchErr = subtitles.GetSubtitles(params, langs)
 		} else {
 			params := subtitlestypes.MediaParams{}
 			params.Title = vars["text"]
 			epParams := subtitlestypes.EpisodeParams{}
 			epParams.Season = season
 			epParams.Episode = episode
-			output = subtitles.GetSubtitlesForEpisode(params, epParams, langs)
+			output, searchErr = subtitles.GetSubtitlesForEpisode(params, epParams, langs)
+		}
+
+		if searchErr != nil {
+			http.Error(w, subtitleSearchFailed(searchErr), http.StatusBadGateway)
+			return
 		}
 
 		if len(output) == 0 {
@@ -134,7 +146,11 @@ func GetSubtitlesByFileHash() func(w http.ResponseWriter, r *http.Request) {
 				params := subtitlestypes.MediaParams{}
 				params.FileHash = fileHash
 				params.FileSize = fileSize
-				output := subtitles.GetSubtitles(params, langs)
+				output, searchErr := subtitles.GetSubtitles(params, langs)
+				if searchErr != nil {
+					http.Error(w, subtitleSearchFailed(searchErr), http.StatusBadGateway)
+					return
+				}
 
 				if len(output) == 0 {
 					http.Error(w, noSubtitlesFound(), http.StatusNotFound)
@@ -163,6 +179,21 @@ func noSubtitlesFound() string {
 
 	log.Println("No subtitles found.")
 
+	return string(messageString)
+}
+
+func subtitleSearchFailed(err error) string {
+	message := MessageResponse{
+		Success: false,
+		Message: "OpenSubtitles search failed: " + err.Error(),
+	}
+
+	messageString, marshalErr := json.Marshal(message)
+	if marshalErr != nil {
+		return `{"success":false,"message":"OpenSubtitles search failed."}`
+	}
+
+	log.Println(message.Message)
 	return string(messageString)
 }
 

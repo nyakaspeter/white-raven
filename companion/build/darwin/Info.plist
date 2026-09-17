@@ -21,6 +21,8 @@
             <string>12.0.0</string>
         <key>NSHighResolutionCapable</key>
             <string>true</string>
+        <key>NSLocalNetworkUsageDescription</key>
+            <string>White Raven connects to your TV over the local network to install the widget and stream media.</string>
         <key>NSHumanReadableCopyright</key>
             <string>White Raven contributors</string>
     </dict>
