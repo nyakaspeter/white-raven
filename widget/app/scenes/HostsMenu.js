@@ -25,12 +25,13 @@ SceneHostsMenu.prototype.handleShow = function () {
     thehostlist.style.top = 'initial';
     widgetAPI.putInnerHTML(thehostlist, "");
 
-    // Filter out x265 torrents, because the TV can't play them
+    // Filter out formats and resolutions the TV can't play reliably.
     var filteredlist = [];
     for(var i=0; i<torrenturls.length; i++) {
         if (torrenturls[i].title.toLowerCase().indexOf("hevc") == -1
             && torrenturls[i].title.toLowerCase().indexOf("h265") == -1
-            && torrenturls[i].title.toLowerCase().indexOf("x265") == -1) {
+            && torrenturls[i].title.toLowerCase().indexOf("x265") == -1
+            && torrenturls[i].title.toLowerCase().indexOf("2160p") == -1) {
             filteredlist.push(torrenturls[i]);
         }
     }
@@ -59,9 +60,14 @@ SceneHostsMenu.prototype.handleShow = function () {
         }
     }
 
-    // Display the sorted list if it's not empty (so not all torrents are x265), otherwise display all torrents
-    if (sortedlist.length != 0) {
-        torrenturls = sortedlist;
+    torrenturls = sortedlist;
+
+    if (torrenturls.length === 0) {
+        widgetAPI.putInnerHTML(document.getElementById("noConnection"), noTorrentText[lang]);
+        document.getElementById("noConnection").style.visibility = "visible";
+        widgetAPI.putInnerHTML(document.getElementById("SettingsText"), infoscreenText[lang]);
+        this.notorrent = true;
+        return;
     }
 
     for(var i=0; i<torrenturls.length; i++) {    
@@ -297,6 +303,12 @@ SceneHostsMenu.prototype.handleKeyDown = function (keyCode) {
                 } else if (this.waiting == false && this.notorrent == true) {
                     sf.key.preventDefault();
                     document.getElementById("noConnection").style.visibility = "hidden";
+
+                    if (torrenturls.length === 0) {
+                        sf.scene.hide('HostsMenu');
+                        sf.scene.focus('InfoPage');
+                        break;
+                    }
                     
                     document.getElementById('OverlayHostsMenu').style.visibility = "visible";
                     document.getElementById('OverlayMenuInfo').style.visibility = "visible";
