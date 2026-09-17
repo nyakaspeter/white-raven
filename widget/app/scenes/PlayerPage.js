@@ -345,24 +345,24 @@ ScenePlayerPage.prototype.initialize = function () {
         //Player.setFullscreen();
         Player.savedresumetime = 0;
 
-        // Calculate and set auto ratio for 16:9
+        // Fit the video inside the 16:9 frame without changing its aspect ratio.
+        // Wider videos need horizontal bars; narrower videos need vertical bars.
         var frame_left = 0,
             frame_top = 0,
             frame_width = 960,
             frame_height = 540,
             video_width = Player.AVPlayer.videoWidth,
             video_height = Player.AVPlayer.videoHeight,
-            nLeft, nTop, nWidth, nHeight, retValue, fnRound = Math.round,
-            computedArea = null;
+            nLeft, nTop, nWidth, nHeight, scale, fnRound = Math.round;
 
-        if (video_width / video_height > frame_width / frame_height) {
-            nHeight = fnRound((frame_width * video_height) / video_width);
-            nWidth = frame_width;
+        if (video_width > 0 && video_height > 0) {
+            scale = Math.min(frame_width / video_width, frame_height / video_height);
+            nWidth = fnRound(video_width * scale);
+            nHeight = fnRound(video_height * scale);
             nLeft = frame_left + fnRound((frame_width - nWidth) / 2);
             nTop = frame_top + fnRound((frame_height - nHeight) / 2);
-            computedArea = new SRect(nLeft, nTop, nWidth, nHeight);
-            
-            Player.AVPlayer.setDisplayArea(computedArea);
+
+            Player.AVPlayer.setDisplayArea(new SRect(nLeft, nTop, nWidth, nHeight));
         }
 
         document.getElementById("playerbox960x540").style.visibility = 'visible';
