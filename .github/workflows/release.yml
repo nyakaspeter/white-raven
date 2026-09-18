@@ -195,6 +195,13 @@ jobs:
       - name: Build universal macOS app
         working-directory: companion
         run: wails3 task darwin:package:universal
+      - name: Verify macOS app bundle
+        shell: bash
+        run: |
+          test -f companion/bin/white-raven-companion.app/Contents/Resources/icons.icns
+          test ! -f companion/bin/white-raven-companion.app/Contents/Resources/Assets.car
+          codesign --verify --deep --strict --verbose=2 \
+            companion/bin/white-raven-companion.app
       - name: Package macOS DMG
         working-directory: companion
         run: wails3 task darwin:create:dmg
