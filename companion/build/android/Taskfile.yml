@@ -51,8 +51,12 @@ tasks:
       - task: compile:go:shared
         vars:
           ARCH: '{{.ARCH | default .HOST_ARCH}}'
+          PRODUCTION:
+            ref: .PRODUCTION
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      # anet, pulled in by the torrent/WebRTC stack, uses linkname for Android
+      # network interfaces and requires this linker opt-out with Go 1.23+.
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
     env:
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
@@ -120,7 +124,9 @@ tasks:
         fi
         cp "$CXX_SHARED" build/android/app/src/main/jniLibs/$JNI_DIR/libc++_shared.so
     vars:
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l"{{end}}'
+      # See the build task above. Keep this here as compile:go:shared is also
+      # invoked directly by the fat APK/AAB tasks.
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
 
   compile:go:all-archs:
     summary: Compile Go code for all Android architectures (fat APK)
