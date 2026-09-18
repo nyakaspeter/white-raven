@@ -85,11 +85,10 @@ func GetStreamSnapshot(hash string) StreamSnapshot {
 
 type monitoredTorrentReader struct {
 	torrent.Reader
-	telemetry           *streamTelemetry
-	position            int64
-	contiguousReadStart int64
-	lastRateAt          time.Time
-	lastRateByte        int64
+	telemetry    *streamTelemetry
+	position     int64
+	lastRateAt   time.Time
+	lastRateByte int64
 }
 
 func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
@@ -98,7 +97,6 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 	elapsed := time.Since(started)
 	reader.position += int64(n)
 	reader.telemetry.position.Store(reader.position)
-	reader.telemetry.readahead.Store(reader.position - reader.contiguousReadStart)
 	served := reader.telemetry.servedBytes.Add(int64(n))
 	reader.telemetry.readWaitNS.Add(elapsed.Nanoseconds())
 	if elapsed >= slowStreamRead {
@@ -129,10 +127,6 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 func (reader *monitoredTorrentReader) Seek(offset int64, whence int) (int64, error) {
 	position, err := reader.Reader.Seek(offset, whence)
 	if err == nil {
-		if position != reader.position {
-			reader.contiguousReadStart = position
-			reader.telemetry.readahead.Store(0)
-		}
 		reader.position = position
 		reader.telemetry.position.Store(position)
 	}
@@ -244,6 +238,9 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	telemetry := telemetryFor(file.Torrent().InfoHash().String())
 	telemetry.fileOffset.Store(file.Offset())
 	telemetry.fileLength.Store(file.Length())
+	readahead := streamReadahead(file.Torrent().Info().PieceLength, memorystorage.Status().Capacity)
+	torrentReader.SetReadahead(readahead)
+	telemetry.readahead.Store(readahead)
 	torrentReader.SetResponsive()
 	reader := &monitoredTorrentReader{Reader: torrentReader, telemetry: telemetry}
 
@@ -256,6 +253,14 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	}
 
 	http.ServeContent(w, r, fname, time.Unix(0, 0), reader)
+}
+
+func streamReadahead(pieceLength, cacheCapacity int64) int64 {
+	readahead := cacheCapacity / 8
+	if readahead < pieceLength {
+		return pieceLength
+	}
+	return readahead
 }
 
 func GetActiveTorrents() []types.TorrentInfo {
