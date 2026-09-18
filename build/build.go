@@ -156,7 +156,11 @@ func minifyFile(path string, buildRootless bool) ([]byte, error) {
 			r = bytes.NewBuffer(content)
 		}
 
-		err = js.Minify(m, &buff, r, nil)
+		// Legacy Samsung TVs use a pre-ES2015 browser. Newer minify releases
+		// otherwise emit syntax such as template literals even when the source
+		// itself is ES5-compatible, causing the widget to fail during parsing.
+		legacyJSMinifier := &js.Minifier{Version: 2014}
+		err = legacyJSMinifier.Minify(m, &buff, r, nil)
 		if err != nil {
 			return []byte{}, err
 		}
