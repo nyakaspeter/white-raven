@@ -214,11 +214,11 @@ func GetSubtitleContents(params types.SubtitleParams) types.SubtitleContents {
 
 	switch params.TargetType {
 	case "srt":
-		contents.Text = subtitle.RemoveAds().AsSRT()
+		contents.Text = subtitle.RemoveAds("", false).AsSRT()
 		contents.ContentType = "text/plain; charset=utf-8"
 		contents.ContentDisposition = "filename=subtitle.srt"
 	case "vtt":
-		contents.Text = subtitle.RemoveAds().AsVTT()
+		contents.Text = subtitle.RemoveAds("", false).AsVTT()
 		contents.ContentType = "text/vtt; charset=utf-8"
 		contents.ContentDisposition = "filename=subtitle.vtt"
 	default:

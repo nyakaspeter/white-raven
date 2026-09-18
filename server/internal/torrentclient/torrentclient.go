@@ -240,6 +240,7 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 
 	torrentReader := file.NewReader()
 	defer torrentReader.Close()
+	torrentReader.SetContext(r.Context())
 	telemetry := telemetryFor(file.Torrent().InfoHash().String())
 	telemetry.fileOffset.Store(file.Offset())
 	telemetry.fileLength.Store(file.Length())

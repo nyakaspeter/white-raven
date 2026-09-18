@@ -1,6 +1,8 @@
 package memorystorage
 
 import (
+	"context"
+
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/storage"
 )
@@ -39,7 +41,7 @@ func (me *memoryClient) Close() error {
 	return nil
 }
 
-func (me *memoryClient) OpenTorrent(info *metainfo.Info, infoHash metainfo.Hash) (storage.TorrentImpl, error) {
+func (me *memoryClient) OpenTorrent(_ context.Context, info *metainfo.Info, infoHash metainfo.Hash) (storage.TorrentImpl, error) {
 	torrent := &memoryTorrent{
 		cl: me,
 		pl: info.PieceLength,
