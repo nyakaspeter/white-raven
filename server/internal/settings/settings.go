@@ -34,7 +34,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		Port: 9000, DlnaPort: 3500, DownloadDir: "data", MaxConnections: 50,
-		DisableIPv6: true, DisableUTP: true,
+		DisableIPv6: true, DisableUTP: false,
 		EnableLog: true, EnableReceiver: true, StorageType: "memory", MemorySize: 128,
 		CORS: true, TMDBKey: "a4d9ad8d2d072c50dc998cc0d1a508fa",
 	}
@@ -121,7 +121,7 @@ func Init() {
 	MaxConnections = flag.Int("maxconn", 50, "max connections per torrent")
 	NoDHT = flag.Bool("nodht", false, "disable dht")
 	DisableIPv6 = flag.Bool("noipv6", false, "disable IPv6 torrent sockets")
-	DisableUTP = flag.Bool("noutp", true, "disable uTP torrent sockets")
+	DisableUTP = flag.Bool("noutp", false, "disable uTP torrent sockets")
 	EnableLog = flag.Bool("log", false, "enable log messages")
 	EnableReceiver = flag.Bool("receiver", true, "enable torrent receiver page")
 	StorageType = flag.String("storagetype", "memory", "select storage type (must be set to \"memory\" or \"file\")")

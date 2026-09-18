@@ -85,10 +85,11 @@ func GetStreamSnapshot(hash string) StreamSnapshot {
 
 type monitoredTorrentReader struct {
 	torrent.Reader
-	telemetry    *streamTelemetry
-	position     int64
-	lastRateAt   time.Time
-	lastRateByte int64
+	telemetry           *streamTelemetry
+	position            int64
+	contiguousReadStart int64
+	lastRateAt          time.Time
+	lastRateByte        int64
 }
 
 func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
@@ -97,6 +98,7 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 	elapsed := time.Since(started)
 	reader.position += int64(n)
 	reader.telemetry.position.Store(reader.position)
+	reader.telemetry.readahead.Store(reader.position - reader.contiguousReadStart)
 	served := reader.telemetry.servedBytes.Add(int64(n))
 	reader.telemetry.readWaitNS.Add(elapsed.Nanoseconds())
 	if elapsed >= slowStreamRead {
@@ -127,6 +129,10 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 func (reader *monitoredTorrentReader) Seek(offset int64, whence int) (int64, error) {
 	position, err := reader.Reader.Seek(offset, whence)
 	if err == nil {
+		if position != reader.position {
+			reader.contiguousReadStart = position
+			reader.telemetry.readahead.Store(0)
+		}
 		reader.position = position
 		reader.telemetry.position.Store(position)
 	}
@@ -237,18 +243,6 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	telemetry := telemetryFor(file.Torrent().InfoHash().String())
 	telemetry.fileOffset.Store(file.Offset())
 	telemetry.fileLength.Store(file.Length())
-	maximumReadahead := int64(*settings.MemorySize) * megaByte / 3
-	torrentReader.SetReadaheadFunc(func(torrent.ReadaheadContext) int64 {
-		// Aim to keep roughly 45 seconds of recently observed HTTP consumption
-		// ready. Start at the current read position and grow the priority window
-		// only after the player has actually consumed data.
-		target := telemetry.rate.Load() * 45
-		if target > maximumReadahead {
-			target = maximumReadahead
-		}
-		telemetry.readahead.Store(target)
-		return target
-	})
 	torrentReader.SetResponsive()
 	reader := &monitoredTorrentReader{Reader: torrentReader, telemetry: telemetry}
 
