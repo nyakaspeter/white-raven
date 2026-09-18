@@ -256,7 +256,7 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 }
 
 func streamReadahead(pieceLength, cacheCapacity int64) int64 {
-	readahead := cacheCapacity / 8
+	readahead := cacheCapacity / 4
 	if readahead < pieceLength {
 		return pieceLength
 	}
