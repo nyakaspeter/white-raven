@@ -173,6 +173,45 @@ jobs:
           path: release-assets/
           if-no-files-found: error
 
+  companion-macos:
+    needs: prepare
+    if: needs.prepare.outputs.release == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: companion/frontend/package-lock.json
+      - name: Install Wails
+        run: go install "github.com/wailsapp/wails/v3/cmd/wails3@$WAILS_VERSION"
+      - name: Set companion version
+        run: bash .github/scripts/set-companion-version.sh "${{ needs.prepare.outputs.version }}"
+      - name: Build universal macOS app
+        working-directory: companion
+        run: wails3 task darwin:package:universal
+      - name: Package macOS DMG
+        working-directory: companion
+        run: wails3 task darwin:create:dmg
+      - name: Collect macOS DMG
+        shell: bash
+        run: |
+          dmg="$(find companion/bin -maxdepth 1 -type f -name '*.dmg' -print -quit)"
+          test -n "$dmg"
+          mkdir -p release-assets
+          cp "$dmg" \
+            "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-macos-universal.dmg"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: companion-macos
+          path: release-assets/
+          if-no-files-found: error
+
   companion-android:
     needs: prepare
     if: needs.prepare.outputs.release == 'true'
@@ -247,6 +286,7 @@ jobs:
       - widgets
       - companion-windows
       - companion-linux
+      - companion-macos
       - companion-android
     if: needs.prepare.outputs.release == 'true'
     runs-on: ubuntu-latest
