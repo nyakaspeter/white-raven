@@ -12,7 +12,6 @@ export interface Config {
     "noDHT": boolean;
     "disableIPv6": boolean;
     "disableUTP": boolean;
-    "forceGC": boolean;
     "storageType": string;
     "memorySize": number;
     "tmdbKey": string;

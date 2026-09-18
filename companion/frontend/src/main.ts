@@ -46,7 +46,6 @@ function getForm(): any {
   data.noDHT = field("noDHT").checked;
   data.disableIPv6 = field("disableIPv6").checked;
   data.disableUTP = field("disableUTP").checked;
-  data.forceGC = field("forceGC").checked;
   return data;
 }
 

@@ -108,7 +108,6 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X gi
 - `-nodht`: disable DHT
 - `-noipv6`: disable IPv6 torrent sockets
 - `-noutp`: disable uTP torrent sockets; default `true`
-- `-forcegc`: force garbage collection when memory storage evicts data; default `true`
 - `-jackettaddress` and `-jackettkey`: Jackett connection
 - `-ncoreuser` and `-ncorepassword`: nCore credentials
 - `-insaneuser` and `-insanepassword`: iNSANE credentials

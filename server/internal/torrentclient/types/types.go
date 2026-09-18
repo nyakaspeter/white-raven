@@ -1,6 +1,7 @@
 package types
 
 import (
+	"sync"
 	"time"
 
 	"github.com/anacrolix/torrent"
@@ -12,6 +13,12 @@ type TorrentLeaf struct {
 	Progress    int64          // Downoad stats measurement
 	Prevtime    time.Time      // Previous time for progress calculation
 	FileClients map[string]int // Count active connections
+	StatsMutex  sync.Mutex
+	PrevUseful  int64
+	PrevServed  int64
+	PrevWaitNS  int64
+	PrevSlow    int64
+	PrevEvicted uint64
 }
 
 type TorrentFile struct {

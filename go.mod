@@ -10,7 +10,6 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/hashicorp/golang-lru v0.5.5-0.20210104140557-80c98217689d
 	github.com/koron/go-ssdp v0.0.3
 	github.com/martinlindhe/subtitles v0.0.0-20210301100346-9aa635346c86
 	github.com/tdewolff/minify/v2 v2.9.13

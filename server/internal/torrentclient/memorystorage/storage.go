@@ -1,228 +1,196 @@
 package memorystorage
 
 import (
-	//"fmt"
+	"container/list"
 	"io"
-	"log"
-	"math"
-	"runtime"
 	"sync"
-	"time"
 
 	"github.com/anacrolix/torrent/metainfo"
-	lru "github.com/hashicorp/golang-lru"
 )
 
 const megaByte = 1024 * 1024
 
-var maxMemorySize int64  // Maximum memory size in MByte
-var maxPieceLength int64 // Maximum piece length in MByte
-var maxCount int         // Number of pieces that LRU cache can hold
-var lruStorage *lru.Cache
-var needToDeleteKey = -1
-var memStats runtime.MemStats
-var setMaxCount = true
-var forceGC bool
-var lruStatusMutex sync.RWMutex
-var maintenanceLog = struct {
-	sync.Mutex
-	evictions int
-	gcTime    time.Duration
-	last      time.Time
-}{}
-
-// LRUStatus returns the number of cached torrent pieces and the current cache
-// capacity. A zero capacity means the memory storage backend is not active.
-func LRUStatus() (int, int) {
-	lruStatusMutex.RLock()
-	defer lruStatusMutex.RUnlock()
-	if lruStorage == nil {
-		return 0, 0
-	}
-	return lruStorage.Len(), maxCount
+type CacheStatus struct {
+	Items       int
+	Bytes       int64
+	Capacity    int64
+	Evictions   uint64
+	Allocations uint64
+	Reuses      uint64
 }
 
-func SetMemorySize(memorySize int64, pieceLength int64, shouldForceGC bool) {
-	lruStatusMutex.Lock()
-	defer lruStatusMutex.Unlock()
-	maxMemorySize = memorySize
-	maxPieceLength = pieceLength
-	forceGC = shouldForceGC
-	maintenanceLog.Lock()
-	maintenanceLog.evictions = 0
-	maintenanceLog.gcTime = 0
-	maintenanceLog.last = time.Time{}
-	maintenanceLog.Unlock()
-	maxCount = int(maxMemorySize / pieceLength)
-	lruStorage, _ = lru.NewWithEvict(maxCount, onEvicted)
+type cacheEntry struct {
+	key  metainfo.PieceKey
+	data []byte
+	elem *list.Element
 }
 
-func FreeMemoryPercent(mt *memoryTorrent, threshold uint64, percent int) {
-	runtime.ReadMemStats(&memStats)
+// pieceCache is byte bounded rather than item bounded: torrents with different
+// piece sizes can safely share it. Evicted buffers are retained and reused, so
+// sequential playback stops allocating once the cache has warmed up.
+type pieceCache struct {
+	mu sync.Mutex
 
-	if (memStats.Alloc / megaByte) > threshold {
-		var deleteCount = (maxCount * percent) / 100
+	capacity    int64
+	resident    int64
+	active      int64
+	entries     map[metainfo.PieceKey]*cacheEntry
+	lru         *list.List
+	recycled    [][]byte
+	evictions   uint64
+	allocations uint64
+	reuses      uint64
+	completion  func(metainfo.PieceKey, bool)
+}
 
-		if deleteCount == 0 {
-			deleteCount++
-		}
+var cache *pieceCache
 
-		log.Printf("Freeing up memory, currently allocated: %v MB\n", (memStats.Alloc / megaByte))
-
-		for i := 0; i < deleteCount; i++ {
-			key, _, ok := lruStorage.RemoveOldest()
-			if ok == true {
-				if needToDeleteKey > -1 {
-					mt.cl.pc.Set(metainfo.PieceKey{mt.ih, key.(int)}, false)
-				}
-			}
-		}
-
-		needToDeleteKey = -1
-
-		collectGarbage()
+func SetMemorySize(memorySize int64, _ int64) {
+	cache = &pieceCache{
+		// Keep the previous 75% cache budget, leaving room for the Go runtime,
+		// torrent bookkeeping, the HTTP server and the widget.
+		capacity: memorySize * megaByte * 75 / 100,
+		entries:  make(map[metainfo.PieceKey]*cacheEntry),
+		lru:      list.New(),
 	}
 }
 
-// Restricting all I/O through a single mutex, which would stop simultanious read/writes.
-func storageWriteAt(mt *memoryTorrent, key int, b []byte, off int64) (int, error) {
-	mt.storageMutex.Lock()
-	defer mt.storageMutex.Unlock()
-
-	if setMaxCount == true {
-		// 75% of max memory size for LRU cache will keep memory allocation approximately in the right bounds
-		elementCount := int(math.Floor(float64(maxMemorySize*megaByte) / float64(mt.pl) * 75 / 100))
-
-		lruStatusMutex.Lock()
-		if maxCount != elementCount {
-			lruStorage.Resize(elementCount)
-			maxCount = elementCount
-		}
-		lruStatusMutex.Unlock()
-
-		log.Printf("LRU cache size: %d", maxCount)
-
-		setMaxCount = false
-	}
-
-	newPiece := false
-
-	dataInterface, present := lruStorage.Get(key)
-	if present == false {
-		newPiece = true
-		dataInterface = []byte{}
-	}
-
-	ioff := int(off)
-	iend := ioff + len(b)
-	if len(dataInterface.([]byte)) < iend {
-		if len(dataInterface.([]byte)) == ioff {
-			if lruStorage.Add(key, append(dataInterface.([]byte), b...)) == true {
-				if needToDeleteKey > -1 {
-					mt.cl.pc.Set(metainfo.PieceKey{mt.ih, needToDeleteKey}, false)
-				}
-			}
-			return len(b), nil
-		}
-		// Add zero bytes to the end of data
-		if lruStorage.Add(key, append(dataInterface.([]byte), make([]byte, iend-len(dataInterface.([]byte)))...)) == true {
-			if needToDeleteKey > -1 {
-				mt.cl.pc.Set(metainfo.PieceKey{mt.ih, needToDeleteKey}, false)
-			}
-		}
-	}
-
-	dataInterface, present = lruStorage.Get(key)
-	if present == false {
-		dataInterface = []byte{}
-	}
-
-	copy(dataInterface.([]byte)[ioff:], b)
-	if lruStorage.Add(key, dataInterface.([]byte)) == true {
-		if needToDeleteKey > -1 {
-			mt.cl.pc.Set(metainfo.PieceKey{mt.ih, needToDeleteKey}, false)
-		}
-	}
-
-	if newPiece {
-		//log.Printf("Added new piece to LRU: %d, LRU space: %d/%d", key, lruStorage.Len(), maxCount)
-		//runtime.GC()
-		logMemStats()
-	}
-
-	// Before return check if need to free up some memory
-	//FreeMemoryPercent(mt, uint64(maxMemorySize), 15)
-
-	return len(b), nil
+func setCompletionCallback(callback func(metainfo.PieceKey, bool)) {
+	cache.mu.Lock()
+	cache.completion = callback
+	cache.mu.Unlock()
 }
 
-func storageReadAt(mu *sync.Mutex, key int, b []byte, off int64) (int, error) {
-	dataInterface, present := lruStorage.Get(key)
-	if present == false {
-		dataInterface = []byte{}
+func Status() CacheStatus {
+	if cache == nil {
+		return CacheStatus{}
 	}
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+	return CacheStatus{
+		Items:       len(cache.entries),
+		Bytes:       cache.active,
+		Capacity:    cache.capacity,
+		Evictions:   cache.evictions,
+		Allocations: cache.allocations,
+		Reuses:      cache.reuses,
+	}
+}
 
-	ioff := int(off)
-	if len(dataInterface.([]byte)) <= ioff {
+func (c *pieceCache) read(key metainfo.PieceKey, b []byte, off int64) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	entry := c.entries[key]
+	if entry == nil || off >= int64(len(entry.data)) {
 		return 0, io.EOF
 	}
-
-	n := copy(b, dataInterface.([]byte)[ioff:])
+	c.lru.MoveToFront(entry.elem)
+	n := copy(b, entry.data[off:])
 	if n != len(b) {
 		return n, io.EOF
 	}
+	return n, nil
+}
 
+func (c *pieceCache) write(key metainfo.PieceKey, pieceLength int64, b []byte, off int64) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	entry := c.entries[key]
+	if entry == nil {
+		buffer := c.acquire(int(pieceLength))
+		entry = &cacheEntry{key: key, data: buffer[:pieceLength]}
+		entry.elem = c.lru.PushFront(entry)
+		c.entries[key] = entry
+		c.active += int64(cap(buffer))
+	} else {
+		c.lru.MoveToFront(entry.elem)
+	}
+	if off < 0 || off+int64(len(b)) > int64(len(entry.data)) {
+		return 0, io.ErrShortWrite
+	}
+	copy(entry.data[off:], b)
 	return len(b), nil
 }
 
-func storageDelete(mu *sync.Mutex) {
-	mu.Lock()
-	defer mu.Unlock()
+func (c *pieceCache) acquire(size int) []byte {
+	for {
+		best := -1
+		for i, buffer := range c.recycled {
+			if cap(buffer) >= size && (best == -1 || cap(buffer) < cap(c.recycled[best])) {
+				best = i
+			}
+		}
+		if best >= 0 {
+			buffer := c.recycled[best]
+			c.recycled[best] = c.recycled[len(c.recycled)-1]
+			c.recycled = c.recycled[:len(c.recycled)-1]
+			c.reuses++
+			return buffer[:size]
+		}
 
-	setMaxCount = true
+		if c.resident+int64(size) <= c.capacity {
+			c.resident += int64(size)
+			c.allocations++
+			return make([]byte, size)
+		}
 
-	lruStorage.Purge()
+		if c.lru.Len() != 0 {
+			c.evictOldest(true)
+			continue
+		}
 
-	needToDeleteKey = -1
-
-	collectGarbage()
-}
-
-func onEvicted(key interface{}, value interface{}) {
-	needToDeleteKey = key.(int)
-	gcDuration := collectGarbage()
-	logMemoryMaintenance(gcDuration)
-	//log.Printf("Removed piece from LRU: %d, LRU space: %d/%d", needToDeleteKey, lruStorage.Len(), maxCount)
-}
-
-func collectGarbage() time.Duration {
-	if forceGC {
-		started := time.Now()
-		runtime.GC()
-		return time.Since(started)
+		// Retained buffers can have incompatible sizes when more than one
+		// torrent is active. Drop one before allocating a correctly sized one.
+		buffer := c.recycled[len(c.recycled)-1]
+		c.recycled = c.recycled[:len(c.recycled)-1]
+		c.resident -= int64(cap(buffer))
 	}
-	return 0
 }
 
-func logMemoryMaintenance(gcDuration time.Duration) {
-	maintenanceLog.Lock()
-	defer maintenanceLog.Unlock()
-	maintenanceLog.evictions++
-	maintenanceLog.gcTime += gcDuration
-	now := time.Now()
-	if !maintenanceLog.last.IsZero() && now.Sub(maintenanceLog.last) < 10*time.Second {
+func (c *pieceCache) evictOldest(recycle bool) {
+	elem := c.lru.Back()
+	if elem == nil {
 		return
 	}
-	log.Printf(
-		"Memory cache maintenance: evictions=%d force_gc=%t gc_time=%s",
-		maintenanceLog.evictions, forceGC, maintenanceLog.gcTime.Round(time.Millisecond),
-	)
-	maintenanceLog.evictions = 0
-	maintenanceLog.gcTime = 0
-	maintenanceLog.last = now
+	entry := elem.Value.(*cacheEntry)
+	c.lru.Remove(elem)
+	delete(c.entries, entry.key)
+	c.active -= int64(cap(entry.data))
+	c.evictions++
+	if c.completion != nil {
+		c.completion(entry.key, false)
+	}
+	if recycle {
+		c.recycled = append(c.recycled, entry.data[:cap(entry.data)])
+	} else {
+		c.resident -= int64(cap(entry.data))
+	}
 }
 
-func logMemStats() {
-	runtime.ReadMemStats(&memStats)
-	log.Printf("Memory storage allocated memory: %v MB, NumGC: %v, LRU: %v/%v", (memStats.Alloc / megaByte), memStats.NumGC, lruStorage.Len(), maxCount)
+func (c *pieceCache) deleteTorrent(infoHash metainfo.Hash) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for elem := c.lru.Back(); elem != nil; {
+		previous := elem.Prev()
+		entry := elem.Value.(*cacheEntry)
+		if entry.key.InfoHash == infoHash {
+			c.lru.Remove(elem)
+			delete(c.entries, entry.key)
+			c.active -= int64(cap(entry.data))
+			c.resident -= int64(cap(entry.data))
+		}
+		elem = previous
+	}
+}
+
+func storageWriteAt(key metainfo.PieceKey, pieceLength int64, b []byte, off int64) (int, error) {
+	return cache.write(key, pieceLength, b, off)
+}
+
+func storageReadAt(key metainfo.PieceKey, b []byte, off int64) (int, error) {
+	return cache.read(key, b, off)
+}
+
+func storageDelete(infoHash metainfo.Hash) {
+	cache.deleteTorrent(infoHash)
 }

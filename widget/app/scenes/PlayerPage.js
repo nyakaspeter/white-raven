@@ -1016,6 +1016,7 @@ ScenePlayerPage.prototype.initialize = function () {
         timerID: null,
         torrentPending: 0,
         torrentRequestID: 0,
+        torrentNextAt: 0,
         torrentStats: null
     };
 
@@ -1096,7 +1097,9 @@ ScenePlayerPage.prototype.initialize = function () {
 
     PerformanceOverlay.refreshTorrent = function()
     {
-        if (!infoHash || this.torrentPending) return;
+        var now = new Date().getTime();
+        if (!infoHash || this.torrentPending || now < this.torrentNextAt) return;
+        this.torrentNextAt = now + 1000;
         var requestedURL = infoHash;
         var requestID = ++this.torrentRequestID;
         this.torrentPending = requestID;
@@ -1142,6 +1145,7 @@ ScenePlayerPage.prototype.initialize = function () {
     {
         this.torrentRequestID++;
         this.torrentPending = 0;
+        this.torrentNextAt = 0;
         this.torrentStats = null;
         this.hide();
     };
@@ -2053,21 +2057,16 @@ ScenePlayerPage.prototype.CheckDownload = function() {
         type: "GET",
         dataType: "json",
         timeout: 25000,
-        startTime: new Date().getTime(),
         success: function(moredata) {
             if (downloadprogress == true && moredata) {
                 scene.PerformanceOverlay.setTorrentStats(moredata);
-                //this.waiting = false;
-                //var progressBarWidth = roundpercent * 960 / 100;
-                if (new Date().getTime() - this.startTime >= 1000) {
-                    $("#ProgressPercent").animate({ width: (moredata.downpercent * 960 / 100) }, 500);
-                    widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), downloadSpeedText[lang] + moredata.downspeed.replace("E","").replace("P", "") + downloadBufferText[lang] + moredata.downdata + " ( " + moredata.downpercent + "% )" + downloadPeersText[lang] + moredata.peers);
-                }
+                $("#ProgressPercent").animate({ width: (moredata.downpercent * 960 / 100) }, 500);
+                widgetAPI.putInnerHTML(document.getElementById("ProgressBarText"), downloadSpeedText[lang] + moredata.downspeed.replace("E","").replace("P", "") + downloadBufferText[lang] + moredata.downdata + " ( " + moredata.downpercent + "% )" + downloadPeersText[lang] + moredata.peers);
             }
         },
         complete: function() {
             if (downloadprogress == true) {
-                scene.CheckDownload();
+                setTimeout(function() { scene.CheckDownload(); }, 1000);
             }
         }
     });    

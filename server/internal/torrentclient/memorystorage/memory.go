@@ -1,9 +1,6 @@
 package memorystorage
 
 import (
-	"fmt"
-	"sync"
-
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/storage"
 )
@@ -18,8 +15,6 @@ type memoryTorrent struct {
 	pl int64
 	ih metainfo.Hash
 	np int // Just to set pieces UnComplete
-
-	storageMutex *sync.Mutex
 }
 
 type memoryPiece struct {
@@ -32,6 +27,9 @@ func NewMemoryStorage() storage.ClientImpl {
 	ret := &memoryClient{
 		pc: storage.NewMapPieceCompletion(),
 	}
+	setCompletionCallback(func(key metainfo.PieceKey, complete bool) {
+		_ = ret.pc.Set(key, complete)
+	})
 
 	return ret
 }
@@ -47,8 +45,6 @@ func (me *memoryClient) OpenTorrent(info *metainfo.Info, infoHash metainfo.Hash)
 		pl: info.PieceLength,
 		ih: infoHash,
 		np: info.NumPieces(),
-
-		storageMutex: &sync.Mutex{},
 	}
 
 	return storage.TorrentImpl{
@@ -67,10 +63,10 @@ func (me *memoryTorrent) Piece(p metainfo.Piece) storage.PieceImpl {
 func (me *memoryTorrent) Close() error {
 	// Set all pieces UnComplete
 	for key := 0; key < me.np; key++ {
-		me.cl.pc.Set(metainfo.PieceKey{me.ih, key}, false)
+		me.cl.pc.Set(metainfo.PieceKey{InfoHash: me.ih, Index: key}, false)
 	}
 
-	storageDelete(me.storageMutex)
+	storageDelete(me.ih)
 
 	return nil
 }
@@ -102,10 +98,9 @@ func (sp *memoryPiece) ReadAt(b []byte, off int64) (n int, err error) {
 		} else {
 			rLen = int(bToRead)
 		}
-		_b := make([]byte, rLen)
-		i, rerr := storageReadAt(sp.trt.storageMutex, int(ci), _b, off)
+		i, rerr := storageReadAt(metainfo.PieceKey{InfoHash: sp.trt.ih, Index: ci}, b[:rLen], off)
 		//log.Printf("Doing read for chunk (%d) offset (%d) for (%d) bytes and got (%d) bytes.", ci, off, rLen, i)
-		n1 := copy(b, _b[:i])
+		n1 := i
 		off = 0
 		ci++
 		b = b[n1:]
@@ -131,7 +126,11 @@ func (sp *memoryPiece) WriteAt(b []byte, off int64) (n int, err error) {
 			btw = len(b)
 		}
 		//ck := sp.chunkKey(int(ci))
-		n1, werr := storageWriteAt(sp.trt, int(ci), b[:btw], off)
+		pieceLength := sp.trt.pl
+		if int(ci) == sp.trt.np-1 {
+			pieceLength = sp.p.Info.TotalLength() - int64(ci)*sp.trt.pl
+		}
+		n1, werr := storageWriteAt(metainfo.PieceKey{InfoHash: sp.trt.ih, Index: ci}, pieceLength, b[:btw], off)
 		//log.Printf("Writing (%d) bytes [confirm %d] to chunk (%d) - total bytes (%d) - offset (%d) - written (%d) bytes.", btw, len(b[:btw]), ci, len(b), off, n1)
 		if werr != nil {
 			//log.Printf("Error Writing During Write: %s", werr)
@@ -151,9 +150,5 @@ func (sp *memoryPiece) WriteAt(b []byte, off int64) (n int, err error) {
 }
 
 func (sp *memoryPiece) pieceKey() metainfo.PieceKey {
-	return metainfo.PieceKey{sp.trt.ih, sp.p.Index()}
-}
-
-func (sp *memoryPiece) chunkKey(index int) string {
-	return fmt.Sprintf("%d", index)
+	return metainfo.PieceKey{InfoHash: sp.trt.ih, Index: sp.p.Index()}
 }

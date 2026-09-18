@@ -10,8 +10,9 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"runtime"
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	alog "github.com/anacrolix/log"
@@ -34,14 +35,113 @@ var maxPieceLength int64 = 16
 
 var ActiveTorrents map[string]*types.TorrentLeaf
 
+const slowStreamRead = 100 * time.Millisecond
+
+type StreamSnapshot struct {
+	ServedBytes int64
+	ReadWait    time.Duration
+	SlowReads   int64
+	MaxRead     time.Duration
+	Position    int64
+	FileOffset  int64
+	FileLength  int64
+	Readahead   int64
+	Rate        int64
+}
+
+type streamTelemetry struct {
+	servedBytes atomic.Int64
+	readWaitNS  atomic.Int64
+	slowReads   atomic.Int64
+	maxReadNS   atomic.Int64
+	position    atomic.Int64
+	fileOffset  atomic.Int64
+	fileLength  atomic.Int64
+	readahead   atomic.Int64
+	rate        atomic.Int64
+}
+
+var streamTelemetryByHash sync.Map
+
+func telemetryFor(hash string) *streamTelemetry {
+	value, _ := streamTelemetryByHash.LoadOrStore(hash, &streamTelemetry{})
+	return value.(*streamTelemetry)
+}
+
+func GetStreamSnapshot(hash string) StreamSnapshot {
+	telemetry := telemetryFor(hash)
+	return StreamSnapshot{
+		ServedBytes: telemetry.servedBytes.Load(),
+		ReadWait:    time.Duration(telemetry.readWaitNS.Load()),
+		SlowReads:   telemetry.slowReads.Load(),
+		MaxRead:     time.Duration(telemetry.maxReadNS.Load()),
+		Position:    telemetry.position.Load(),
+		FileOffset:  telemetry.fileOffset.Load(),
+		FileLength:  telemetry.fileLength.Load(),
+		Readahead:   telemetry.readahead.Load(),
+		Rate:        telemetry.rate.Load(),
+	}
+}
+
+type monitoredTorrentReader struct {
+	torrent.Reader
+	telemetry    *streamTelemetry
+	position     int64
+	lastRateAt   time.Time
+	lastRateByte int64
+}
+
+func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
+	started := time.Now()
+	n, err := reader.Reader.Read(buffer)
+	elapsed := time.Since(started)
+	reader.position += int64(n)
+	reader.telemetry.position.Store(reader.position)
+	served := reader.telemetry.servedBytes.Add(int64(n))
+	reader.telemetry.readWaitNS.Add(elapsed.Nanoseconds())
+	if elapsed >= slowStreamRead {
+		reader.telemetry.slowReads.Add(1)
+	}
+	for {
+		previous := reader.telemetry.maxReadNS.Load()
+		if elapsed.Nanoseconds() <= previous || reader.telemetry.maxReadNS.CompareAndSwap(previous, elapsed.Nanoseconds()) {
+			break
+		}
+	}
+	if reader.lastRateAt.IsZero() {
+		reader.lastRateAt = started
+		reader.lastRateByte = served
+	} else if sampleTime := time.Since(reader.lastRateAt); sampleTime >= time.Second {
+		sampleRate := int64(float64(served-reader.lastRateByte) / sampleTime.Seconds())
+		previousRate := reader.telemetry.rate.Load()
+		if previousRate != 0 {
+			sampleRate = (previousRate*3 + sampleRate) / 4
+		}
+		reader.telemetry.rate.Store(sampleRate)
+		reader.lastRateAt = time.Now()
+		reader.lastRateByte = served
+	}
+	return n, err
+}
+
+func (reader *monitoredTorrentReader) Seek(offset int64, whence int) (int64, error) {
+	position, err := reader.Reader.Seek(offset, whence)
+	if err == nil {
+		reader.position = position
+		reader.telemetry.position.Store(position)
+	}
+	return position, err
+}
+
 func StartTorrentClient() (*torrent.Client, error) {
 	ActiveTorrents = make(map[string]*types.TorrentLeaf)
+	streamTelemetryByHash = sync.Map{}
 
 	cfg := torrent.NewDefaultClientConfig()
 
 	if *settings.StorageType == "memory" {
 		maxPieceLength = int64(math.Floor(float64(*settings.MemorySize) * 100 / 75 / 8))
-		memorystorage.SetMemorySize(*settings.MemorySize, maxPieceLength, *settings.ForceGC)
+		memorystorage.SetMemorySize(*settings.MemorySize, maxPieceLength)
 		cfg.DefaultStorage = memorystorage.NewMemoryStorage()
 	} else if *settings.StorageType == "file" {
 		cfg.DefaultStorage = storage.NewFileByInfoHash(*settings.DownloadDir)
@@ -79,8 +179,8 @@ func StartTorrentClient() (*torrent.Client, error) {
 	torrentClient, err = torrent.NewClient(cfg)
 	if err == nil {
 		log.Printf(
-			"Torrent client started: storage=%s memory=%dMB force_gc=%t max_connections=%d dht=%t ipv6=%t utp=%t download_limit_kbps=%d upload_limit_kbps=%d",
-			*settings.StorageType, *settings.MemorySize, *settings.ForceGC, *settings.MaxConnections,
+			"Torrent client started: storage=%s memory=%dMB max_connections=%d dht=%t ipv6=%t utp=%t download_limit_kbps=%d upload_limit_kbps=%d",
+			*settings.StorageType, *settings.MemorySize, *settings.MaxConnections,
 			!*settings.NoDHT, !*settings.DisableIPv6, !*settings.DisableUTP,
 			*settings.DownloadRate, *settings.UploadRate,
 		)
@@ -100,9 +200,6 @@ func StopTorrentClient() {
 	ActiveTorrents = nil
 	receivedTorrent = nil
 
-	if *settings.ForceGC {
-		runtime.GC()
-	}
 }
 
 func AddTorrent(uri string) types.TorrentInfo {
@@ -135,11 +232,29 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	w.Header().Set("TransferMode.DLNA.ORG", "Streaming")
 	w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000")
 
-	reader := file.NewReader()
-	defer reader.Close()
-	// Never set a smaller buffer than the maximum torrent piece length!
-	reader.SetReadahead(maxPieceLength * megaByte)
-	reader.SetResponsive()
+	torrentReader := file.NewReader()
+	defer torrentReader.Close()
+	telemetry := telemetryFor(file.Torrent().InfoHash().String())
+	telemetry.fileOffset.Store(file.Offset())
+	telemetry.fileLength.Store(file.Length())
+	pieceLength := file.Torrent().Info().PieceLength
+	minimumReadahead := maxInt64(8*megaByte, 2*pieceLength)
+	maximumReadahead := maxInt64(minimumReadahead, int64(*settings.MemorySize)*megaByte/3)
+	torrentReader.SetReadaheadFunc(func(torrent.ReadaheadContext) int64 {
+		// Aim to keep roughly 45 seconds of recently observed HTTP consumption
+		// ready, with conservative bounds for a memory-constrained TV.
+		target := telemetry.rate.Load() * 45
+		if target < minimumReadahead {
+			target = minimumReadahead
+		}
+		if target > maximumReadahead {
+			target = maximumReadahead
+		}
+		telemetry.readahead.Store(target)
+		return target
+	})
+	torrentReader.SetResponsive()
+	reader := &monitoredTorrentReader{Reader: torrentReader, telemetry: telemetry}
 
 	path := file.FileInfo().Path
 	fname := ""
@@ -150,6 +265,13 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	}
 
 	http.ServeContent(w, r, fname, time.Unix(0, 0), reader)
+}
+
+func maxInt64(left, right int64) int64 {
+	if left > right {
+		return left
+	}
+	return right
 }
 
 func GetActiveTorrents() []types.TorrentInfo {
@@ -184,6 +306,7 @@ func RemoveTorrent(hash string) error {
 		}
 		t.Torrent.Drop()
 		delete(ActiveTorrents, hash)
+		streamTelemetryByHash.Delete(hash)
 		return nil
 	}
 

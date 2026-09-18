@@ -35,20 +35,17 @@ MEMORYSIZE='128'
 DOWNSPEED="${2:-0}"
 UPSPEED="${3:-0}"
 
-# Maximum connections per torrent
+# Maximum established peer connections per torrent
 MAXCONNECTIONS='50'
 
-# Set to '-nodht' to disable DHT
-NODHT=''
+# Set to 'true' to disable DHT
+NODHT='false'
 
-# Set to '-noipv6' to disable IPv6
-NOIPV6='-noipv6'
+# Set to 'true' to disable IPv6 torrent sockets
+NOIPV6='true'
 
-# Set to '-noutp' to disable UDP
-NOUTP='-noutp'
-
-# Set to '-forcegc' to force garbage collection when memory storage evicts data
-FORCEGC='-forcegc'
+# Set to 'true' to disable uTP peer connections
+NOUTP='true'
 
 SERVERDIR='/mtd_rwcommon/widgets/user/WhiteRaven/server'
 SERVERPATH='/mtd_rwcommon/widgets/user/WhiteRaven/server/wrserver'
@@ -82,10 +79,9 @@ start_wrserver() {
 			-downrate "$DOWNSPEED" \
 			-uprate "$UPSPEED" \
 			-maxconn "$MAXCONNECTIONS" \
-			$NODHT \
-			$NOIPV6 \
-			$NOUTP \
-			$FORCEGC \
+			-nodht="$NODHT" \
+			-noipv6="$NOIPV6" \
+			-noutp="$NOUTP" \
 			-tmdbkey "$TMDBKEY" \
 			-osuser "$OPENSUBTITLESUSER" \
 			-ospassword "$OPENSUBTITLESPASSWORD" \

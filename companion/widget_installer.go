@@ -656,22 +656,6 @@ func renderServerInit(archive []byte, config runtime.Config) (string, error) {
 		return "", errors.New("rooted widget ZIP does not contain server/server.init")
 	}
 
-	noDHT := ""
-	if config.NoDHT {
-		noDHT = "-nodht"
-	}
-	noIPv6 := "-noipv6=false"
-	if config.DisableIPv6 {
-		noIPv6 = "-noipv6"
-	}
-	noUTP := "-noutp=false"
-	if config.DisableUTP {
-		noUTP = "-noutp"
-	}
-	forceGC := "-forcegc=false"
-	if config.ForceGC {
-		forceGC = "-forcegc"
-	}
 	settings := []struct {
 		name  string
 		value string
@@ -690,10 +674,9 @@ func renderServerInit(archive []byte, config runtime.Config) (string, error) {
 		{"DOWNSPEED", fmt.Sprintf(`"${2:-%d}"`, config.DownloadRate)},
 		{"UPSPEED", fmt.Sprintf(`"${3:-%d}"`, config.UploadRate)},
 		{"MAXCONNECTIONS", shellQuote(strconv.Itoa(config.MaxConnections))},
-		{"NODHT", shellQuote(noDHT)},
-		{"NOIPV6", shellQuote(noIPv6)},
-		{"NOUTP", shellQuote(noUTP)},
-		{"FORCEGC", shellQuote(forceGC)},
+		{"NODHT", shellQuote(strconv.FormatBool(config.NoDHT))},
+		{"NOIPV6", shellQuote(strconv.FormatBool(config.DisableIPv6))},
+		{"NOUTP", shellQuote(strconv.FormatBool(config.DisableUTP))},
 	}
 	for _, setting := range settings {
 		script, err = replaceShellAssignment(script, setting.name, setting.value)
