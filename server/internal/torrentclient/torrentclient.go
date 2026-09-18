@@ -237,16 +237,12 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	telemetry := telemetryFor(file.Torrent().InfoHash().String())
 	telemetry.fileOffset.Store(file.Offset())
 	telemetry.fileLength.Store(file.Length())
-	pieceLength := file.Torrent().Info().PieceLength
-	minimumReadahead := maxInt64(8*megaByte, 2*pieceLength)
-	maximumReadahead := maxInt64(minimumReadahead, int64(*settings.MemorySize)*megaByte/3)
+	maximumReadahead := int64(*settings.MemorySize) * megaByte / 3
 	torrentReader.SetReadaheadFunc(func(torrent.ReadaheadContext) int64 {
 		// Aim to keep roughly 45 seconds of recently observed HTTP consumption
-		// ready, with conservative bounds for a memory-constrained TV.
+		// ready. Start at the current read position and grow the priority window
+		// only after the player has actually consumed data.
 		target := telemetry.rate.Load() * 45
-		if target < minimumReadahead {
-			target = minimumReadahead
-		}
 		if target > maximumReadahead {
 			target = maximumReadahead
 		}
@@ -265,13 +261,6 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	}
 
 	http.ServeContent(w, r, fname, time.Unix(0, 0), reader)
-}
-
-func maxInt64(left, right int64) int64 {
-	if left > right {
-		return left
-	}
-	return right
 }
 
 func GetActiveTorrents() []types.TorrentInfo {
