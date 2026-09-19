@@ -10,7 +10,9 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -46,7 +48,6 @@ type StreamSnapshot struct {
 	FileOffset  int64
 	FileLength  int64
 	Readahead   int64
-	Rate        int64
 }
 
 type streamTelemetry struct {
@@ -58,7 +59,6 @@ type streamTelemetry struct {
 	fileOffset  atomic.Int64
 	fileLength  atomic.Int64
 	readahead   atomic.Int64
-	rate        atomic.Int64
 }
 
 var streamTelemetryByHash sync.Map
@@ -79,16 +79,13 @@ func GetStreamSnapshot(hash string) StreamSnapshot {
 		FileOffset:  telemetry.fileOffset.Load(),
 		FileLength:  telemetry.fileLength.Load(),
 		Readahead:   telemetry.readahead.Load(),
-		Rate:        telemetry.rate.Load(),
 	}
 }
 
 type monitoredTorrentReader struct {
 	torrent.Reader
-	telemetry    *streamTelemetry
-	position     int64
-	lastRateAt   time.Time
-	lastRateByte int64
+	telemetry *streamTelemetry
+	position  int64
 }
 
 func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
@@ -97,7 +94,7 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 	elapsed := time.Since(started)
 	reader.position += int64(n)
 	reader.telemetry.position.Store(reader.position)
-	served := reader.telemetry.servedBytes.Add(int64(n))
+	reader.telemetry.servedBytes.Add(int64(n))
 	reader.telemetry.readWaitNS.Add(elapsed.Nanoseconds())
 	if elapsed >= slowStreamRead {
 		reader.telemetry.slowReads.Add(1)
@@ -107,19 +104,6 @@ func (reader *monitoredTorrentReader) Read(buffer []byte) (int, error) {
 		if elapsed.Nanoseconds() <= previous || reader.telemetry.maxReadNS.CompareAndSwap(previous, elapsed.Nanoseconds()) {
 			break
 		}
-	}
-	if reader.lastRateAt.IsZero() {
-		reader.lastRateAt = started
-		reader.lastRateByte = served
-	} else if sampleTime := time.Since(reader.lastRateAt); sampleTime >= time.Second {
-		sampleRate := int64(float64(served-reader.lastRateByte) / sampleTime.Seconds())
-		previousRate := reader.telemetry.rate.Load()
-		if previousRate != 0 {
-			sampleRate = (previousRate*3 + sampleRate) / 4
-		}
-		reader.telemetry.rate.Store(sampleRate)
-		reader.lastRateAt = time.Now()
-		reader.lastRateByte = served
 	}
 	return n, err
 }
@@ -141,7 +125,7 @@ func StartTorrentClient() (*torrent.Client, error) {
 
 	if *settings.StorageType == "memory" {
 		maxPieceLength = int64(math.Floor(float64(*settings.MemorySize) * 100 / 75 / 8))
-		memorystorage.SetMemorySize(*settings.MemorySize, maxPieceLength)
+		memorystorage.SetMemorySize(*settings.MemorySize)
 		cfg.DefaultStorage = memorystorage.NewMemoryStorage()
 	} else if *settings.StorageType == "file" {
 		cfg.DefaultStorage = storage.NewFileByInfoHash(*settings.DownloadDir)
@@ -251,8 +235,55 @@ func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File
 	} else {
 		fname = path[len(path)-1]
 	}
-
+	w.Header().Set("Content-Type", mediaContentType(fname))
 	http.ServeContent(w, r, fname, time.Unix(0, 0), reader)
+}
+
+func mediaContentType(name string) string {
+	switch strings.ToLower(filepath.Ext(name)) {
+	case ".mkv", ".mk3d":
+		return "video/x-matroska"
+	case ".mp4", ".m4v":
+		return "video/mp4"
+	case ".webm":
+		return "video/webm"
+	case ".avi", ".divx":
+		return "video/x-msvideo"
+	case ".mov":
+		return "video/quicktime"
+	case ".wmv":
+		return "video/x-ms-wmv"
+	case ".asf":
+		return "video/x-ms-asf"
+	case ".ts", ".m2ts", ".mts":
+		return "video/mp2t"
+	case ".mpg", ".mpeg", ".mpe", ".vob":
+		return "video/mpeg"
+	case ".ogv":
+		return "video/ogg"
+	case ".3gp":
+		return "video/3gpp"
+	case ".3g2":
+		return "video/3gpp2"
+	case ".flv":
+		return "video/x-flv"
+	case ".mp3":
+		return "audio/mpeg"
+	case ".m4a":
+		return "audio/mp4"
+	case ".aac":
+		return "audio/aac"
+	case ".flac":
+		return "audio/flac"
+	case ".ogg", ".oga", ".opus":
+		return "audio/ogg"
+	case ".wav":
+		return "audio/wav"
+	case ".wma":
+		return "audio/x-ms-wma"
+	default:
+		return "application/octet-stream"
+	}
 }
 
 func streamReadahead(pieceLength, cacheCapacity int64) int64 {

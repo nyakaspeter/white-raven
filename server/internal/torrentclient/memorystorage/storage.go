@@ -45,7 +45,7 @@ type pieceCache struct {
 
 var cache *pieceCache
 
-func SetMemorySize(memorySize int64, _ int64) {
+func SetMemorySize(memorySize int64) {
 	cache = &pieceCache{
 		// Keep the previous 75% cache budget, leaving room for the Go runtime,
 		// torrent bookkeeping, the HTTP server and the widget.

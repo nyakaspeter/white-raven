@@ -2,6 +2,9 @@ module github.com/nyakaspeter/white-raven
 
 go 1.27.0
 
+// Includes request-scheduler and reader-lock fixes that prevent streaming stalls.
+replace github.com/anacrolix/torrent => github.com/nyakaspeter/torrent v1.61.0-streaming-request-contention
+
 require (
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/anacrolix/log v0.17.1-0.20251118025802-918f1157b7bb

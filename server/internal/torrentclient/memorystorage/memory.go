@@ -2,6 +2,7 @@ package memorystorage
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/storage"
@@ -47,6 +48,15 @@ func (me *memoryClient) OpenTorrent(_ context.Context, info *metainfo.Info, info
 		pl: info.PieceLength,
 		ih: infoHash,
 		np: info.NumPieces(),
+	}
+	// RAM storage always starts empty. Record that explicitly so a cold seek
+	// can request its pieces immediately instead of waiting for asynchronous
+	// completion checks against storage that cannot contain prior data.
+	for index := 0; index < torrent.np; index++ {
+		key := metainfo.PieceKey{InfoHash: infoHash, Index: index}
+		if err := me.pc.Set(key, false); err != nil {
+			return storage.TorrentImpl{}, fmt.Errorf("initialize piece %d completion: %w", index, err)
+		}
 	}
 
 	return storage.TorrentImpl{
