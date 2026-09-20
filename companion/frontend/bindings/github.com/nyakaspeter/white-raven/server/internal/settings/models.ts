@@ -4,7 +4,6 @@
 export interface Config {
     "host": string;
     "port": number;
-    "dlnaPort": number;
     "downloadDir": string;
     "downloadRate": number;
     "uploadRate": number;

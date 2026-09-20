@@ -126,9 +126,6 @@ func validate(config Config) error {
 	if config.Port < 1 || config.Port > 65535 {
 		return errors.New("server port must be between 1 and 65535")
 	}
-	if config.DlnaPort < 1 || config.DlnaPort > 65535 {
-		return errors.New("DLNA port must be between 1 and 65535")
-	}
 	if config.StorageType != "memory" && config.StorageType != "file" {
 		return errors.New("storage type must be memory or file")
 	}

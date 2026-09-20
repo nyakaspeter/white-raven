@@ -16,7 +16,7 @@ The project is a fork of the original [White Raven](https://github.com/silentmur
 - Automatic subtitle search by IMDb ID, title, or file hash
 - Movie and TV metadata discovery
 - Torrent receiver page
-- DLNA casting and local media player integration
+- Local media player integration
 - Rooted and rootless Samsung TV packages
 - Browser harness for development without a TV
 
@@ -98,7 +98,6 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X gi
 
 - `-host`: interface/IP to listen on
 - `-port`: HTTP port; default `9000`
-- `-dlnaport`: DLNA server port; default `3500`
 - `-storagetype`: `memory` or `file`; default `memory`
 - `-memorysize`: memory storage size in MB; minimum `64`, default `128`
 - `-dir`: download directory for file storage; default `data`

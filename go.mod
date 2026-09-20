@@ -17,7 +17,6 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.3
-	github.com/koron/go-ssdp v0.9.1
 	github.com/martinlindhe/subtitles v0.0.0-20251112120457-6c58d9eae08c
 	github.com/tdewolff/minify/v2 v2.9.13
 	github.com/wailsapp/wails/v3 v3.0.0-beta.23

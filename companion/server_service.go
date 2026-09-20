@@ -219,7 +219,6 @@ func localAddress(port int) string {
 func normalized(config runtime.Config) runtime.Config {
 	config.Host = ""
 	config.Port = 9000
-	config.DlnaPort = 3500
 	config.StorageType = "memory"
 	config.DownloadDir = "data"
 	config.EnableLog = true

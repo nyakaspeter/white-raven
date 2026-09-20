@@ -213,9 +213,6 @@ func AddTorrent(uri string) types.TorrentInfo {
 }
 
 func ServeTorrentFile(w http.ResponseWriter, r *http.Request, file *torrent.File) {
-	w.Header().Set("TransferMode.DLNA.ORG", "Streaming")
-	w.Header().Set("contentFeatures.dlna.org", "DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000")
-
 	torrentReader := file.NewReader()
 	defer torrentReader.Close()
 	torrentReader.SetContext(r.Context())

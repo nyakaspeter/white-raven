@@ -24,7 +24,6 @@ func (feeds *torznabFeedList) Set(value string) error {
 type Config struct {
 	Host                  string        `json:"host"`
 	Port                  int           `json:"port"`
-	DlnaPort              int           `json:"dlnaPort"`
 	DownloadDir           string        `json:"downloadDir"`
 	DownloadRate          int           `json:"downloadRate"`
 	UploadRate            int           `json:"uploadRate"`
@@ -51,7 +50,7 @@ type Config struct {
 
 func DefaultConfig() Config {
 	return Config{
-		Port: 9000, DlnaPort: 3500, DownloadDir: "data", MaxConnections: 50,
+		Port: 9000, DownloadDir: "data", MaxConnections: 50,
 		DisableIPv6: true, DisableUTP: false,
 		EnableLog: true, EnableReceiver: true, StorageType: "memory", MemorySize: 128,
 		CORS: true, TMDBKey: "a4d9ad8d2d072c50dc998cc0d1a508fa",
@@ -61,7 +60,6 @@ func DefaultConfig() Config {
 func Apply(config Config) {
 	Host = &config.Host
 	Port = &config.Port
-	DlnaPort = &config.DlnaPort
 	DownloadDir = &config.DownloadDir
 	DownloadRate = &config.DownloadRate
 	UploadRate = &config.UploadRate
@@ -89,7 +87,7 @@ func Apply(config Config) {
 
 func Current() Config {
 	return Config{
-		Host: *Host, Port: *Port, DlnaPort: *DlnaPort, DownloadDir: *DownloadDir,
+		Host: *Host, Port: *Port, DownloadDir: *DownloadDir,
 		DownloadRate: *DownloadRate, UploadRate: *UploadRate, MaxConnections: *MaxConnections,
 		NoDHT: *NoDHT, DisableIPv6: *DisableIPv6, DisableUTP: *DisableUTP,
 		EnableLog: *EnableLog, EnableReceiver: *EnableReceiver,
@@ -104,7 +102,6 @@ func Current() Config {
 
 var Host *string
 var Port *int
-var DlnaPort *int
 var DownloadDir *string
 var DownloadRate *int
 var UploadRate *int
@@ -131,7 +128,6 @@ var InsanePassword *string
 func Init() {
 	Host = flag.String("host", "", "listening server ip")
 	Port = flag.Int("port", 9000, "listening port")
-	DlnaPort = flag.Int("dlnaport", 3500, "DLNA server port")
 	DownloadDir = flag.String("dir", "data", "specify the directory where files will be downloaded to if storagetype is set to \"file\"")
 	DownloadRate = flag.Int("downrate", 0, "download speed rate in Kbps")
 	UploadRate = flag.Int("uprate", 0, "upload speed rate in Kbps")
