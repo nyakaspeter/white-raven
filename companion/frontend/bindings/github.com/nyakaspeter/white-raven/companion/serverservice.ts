@@ -13,12 +13,24 @@ import * as runtime$0 from "../server/runtime/models.js";
 // @ts-ignore: Unused imports
 import * as $models from "./models.js";
 
+export function ClearHarbrrLogs(): $CancellablePromise<void> {
+    return $Call.ByID(1379419759);
+}
+
 export function ClearLogs(): $CancellablePromise<void> {
     return $Call.ByID(1494630468);
 }
 
 export function DefaultConfig(): $CancellablePromise<runtime$0.Config> {
     return $Call.ByID(682358145);
+}
+
+export function HarbrrLogs(): $CancellablePromise<string> {
+    return $Call.ByID(3747868754);
+}
+
+export function HarbrrStatus(): $CancellablePromise<runtime$0.Status> {
+    return $Call.ByID(1636319435);
 }
 
 export function InstallRooted(request: $models.RootedInstallRequest): $CancellablePromise<void> {
@@ -45,6 +57,10 @@ export function StartAppSync(): $CancellablePromise<void> {
     return $Call.ByID(1128248954);
 }
 
+export function StartHarbrr(): $CancellablePromise<void> {
+    return $Call.ByID(1617155929);
+}
+
 export function StartServer(config: runtime$0.Config): $CancellablePromise<void> {
     return $Call.ByID(1233440937, config);
 }
@@ -55,6 +71,10 @@ export function Status(): $CancellablePromise<runtime$0.Status> {
 
 export function StopAppSync(): $CancellablePromise<void> {
     return $Call.ByID(1941000114);
+}
+
+export function StopHarbrr(): $CancellablePromise<void> {
+    return $Call.ByID(2419729393);
 }
 
 export function StopServer(): $CancellablePromise<void> {

@@ -33,6 +33,10 @@ func stopPlatformBackground(reason string) {
 		startPlatformForegroundService(message)
 		return
 	}
+	if message, ok := platformBackground.reasons["harbrr"]; ok {
+		startPlatformForegroundService(message)
+		return
+	}
 	application.Android.StopForegroundService()
 }
 

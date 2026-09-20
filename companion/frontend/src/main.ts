@@ -10,6 +10,14 @@ const logs = document.querySelector<HTMLElement>("#logs")!;
 const copy = document.querySelector<HTMLButtonElement>("#copy")!;
 const copyStatus = document.querySelector<HTMLElement>("#copy-status")!;
 const error = document.querySelector<HTMLElement>("#error")!;
+const harbrrToggle = document.querySelector<HTMLButtonElement>("#harbrr-toggle")!;
+const harbrrControl = document.querySelector<HTMLElement>("#harbrr-control")!;
+const harbrrState = document.querySelector<HTMLElement>("#harbrr-state")!;
+const harbrrHint = document.querySelector<HTMLAnchorElement>("#harbrr-hint")!;
+const harbrrLogs = document.querySelector<HTMLElement>("#harbrr-logs")!;
+const harbrrCopy = document.querySelector<HTMLButtonElement>("#harbrr-copy")!;
+const harbrrCopyStatus = document.querySelector<HTMLElement>("#harbrr-copy-status")!;
+const harbrrError = document.querySelector<HTMLElement>("#harbrr-error")!;
 const sshForm = document.querySelector<HTMLFormElement>("#ssh-settings")!;
 const installRooted = document.querySelector<HTMLButtonElement>("#install-rooted")!;
 const appSyncToggle = document.querySelector<HTMLButtonElement>("#app-sync-toggle")!;
@@ -22,6 +30,8 @@ const addTorznabFeedButton = document.querySelector<HTMLButtonElement>("#add-tor
 let running = false;
 let currentConfig: any = {};
 let currentLogs = "";
+let harbrrRunning = false;
+let currentHarbrrLogs = "";
 let saveTimer: number | undefined;
 let saveRevision = 0;
 let saveQueue = Promise.resolve();
@@ -129,6 +139,32 @@ async function refresh() {
   }
 }
 
+async function refreshHarbrr() {
+  try {
+    const next = await ServerService.HarbrrStatus();
+    harbrrRunning = next.running;
+    harbrrControl.classList.toggle("running", harbrrRunning);
+    harbrrState.textContent = harbrrRunning ? "Harbrr running" : "Harbrr stopped";
+    harbrrHint.hidden = !harbrrRunning;
+    harbrrHint.textContent = harbrrRunning ? next.address : "";
+    harbrrHint.href = harbrrRunning ? next.address : "";
+    const toggleAction = harbrrRunning ? "Stop Harbrr" : "Start Harbrr";
+    harbrrToggle.setAttribute("aria-label", toggleAction);
+    harbrrToggle.title = toggleAction;
+    const nextLogs = await ServerService.HarbrrLogs();
+    const displayLogs = nextLogs || (harbrrRunning ? "No log entries yet." : "Harbrr is stopped.");
+    currentHarbrrLogs = nextLogs;
+    harbrrCopy.disabled = !currentHarbrrLogs;
+    if (harbrrLogs.textContent !== displayLogs) {
+      const atBottom = harbrrLogs.scrollHeight - harbrrLogs.scrollTop - harbrrLogs.clientHeight < 35;
+      harbrrLogs.textContent = displayLogs;
+      if (atBottom) harbrrLogs.scrollTop = harbrrLogs.scrollHeight;
+    }
+  } catch (cause) {
+    harbrrError.textContent = String(cause);
+  }
+}
+
 function selectInstallType(rooted: boolean) {
   document.querySelector<HTMLElement>("#unrooted-install")!.hidden = rooted;
   document.querySelector<HTMLElement>("#rooted-install")!.hidden = !rooted;
@@ -177,6 +213,20 @@ toggle.addEventListener("click", async () => {
   } finally {
     toggle.disabled = false;
     await refresh();
+  }
+});
+
+harbrrToggle.addEventListener("click", async () => {
+  harbrrToggle.disabled = true;
+  harbrrError.textContent = "";
+  try {
+    if (harbrrRunning) await ServerService.StopHarbrr();
+    else await ServerService.StartHarbrr();
+  } catch (cause) {
+    harbrrError.textContent = String(cause);
+  } finally {
+    harbrrToggle.disabled = false;
+    await refreshHarbrr();
   }
 });
 
@@ -255,30 +305,50 @@ hint.addEventListener("click", event => {
   if (hint.href) void Browser.OpenURL(hint.href);
 });
 
+harbrrHint.addEventListener("click", event => {
+  event.preventDefault();
+  if (harbrrHint.href) void Browser.OpenURL(harbrrHint.href);
+});
+
 document.querySelector("#clear")!.addEventListener("click", async () => {
   await ServerService.ClearLogs();
   await refresh();
 });
 
-copy.addEventListener("click", async () => {
-  if (!currentLogs) return;
+document.querySelector("#harbrr-clear")!.addEventListener("click", async () => {
+  await ServerService.ClearHarbrrLogs();
+  await refreshHarbrr();
+});
+
+async function copyText(value: string, status: HTMLElement) {
   try {
-    await navigator.clipboard.writeText(currentLogs);
-    copyStatus.textContent = "Copied";
+    await navigator.clipboard.writeText(value);
   } catch {
     const helper = document.createElement("textarea");
-    helper.value = currentLogs;
+    helper.value = value;
     document.body.appendChild(helper);
     helper.select();
     document.execCommand("copy");
     helper.remove();
-    copyStatus.textContent = "Copied";
   }
-  setTimeout(() => copyStatus.textContent = "", 1600);
+  status.textContent = "Copied";
+  setTimeout(() => status.textContent = "", 1600);
+}
+
+copy.addEventListener("click", async () => {
+  if (!currentLogs) return;
+  await copyText(currentLogs, copyStatus);
+});
+
+harbrrCopy.addEventListener("click", async () => {
+  if (!currentHarbrrLogs) return;
+  await copyText(currentHarbrrLogs, harbrrCopyStatus);
 });
 
 setForm(await ServerService.LoadConfig());
 await refresh();
+await refreshHarbrr();
 await refreshWidgetStatus();
 setInterval(refresh, 750);
+setInterval(refreshHarbrr, 750);
 setInterval(refreshWidgetStatus, 750);
