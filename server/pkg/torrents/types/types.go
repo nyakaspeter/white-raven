@@ -41,16 +41,14 @@ type ShowParams struct {
 }
 
 type SourceParams struct {
-	Jackett   JackettParams   `json:"jackett"`
+	Torznab   TorznabParams   `json:"torznab"`
 	Ncore     NcoreParams     `json:"ncore"`
 	Insane    InsaneParams    `json:"insane"`
 	Torrentio TorrentioParams `json:"torrentio"`
 }
 
-type JackettParams struct {
-	Enabled bool   `json:"enabled"`
-	Address string `json:"apiAddress"`
-	ApiKey  string `json:"apiKey"`
+type TorznabParams struct {
+	Enabled bool `json:"enabled"`
 }
 
 type NcoreParams struct {

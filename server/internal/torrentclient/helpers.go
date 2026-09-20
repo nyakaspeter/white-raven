@@ -39,7 +39,7 @@ func addTorrentFromUri(uri string) *torrent.Torrent {
 		} else {
 			urlError, isUrlError := e.(*url.Error)
 			if isUrlError && strings.HasPrefix(urlError.URL, "magnet:") {
-				// If Jackett redirected to a magnet link
+				// If a Torznab download endpoint redirected to a magnet link
 				uri = urlError.URL
 				spec, err = torrent.TorrentSpecFromMagnetUri(uri)
 				receivedTorrent = nil

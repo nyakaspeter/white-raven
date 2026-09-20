@@ -16,9 +16,8 @@ OPENSUBTITLESKEY=''
 OPENSUBTITLESUSER=''
 OPENSUBTITLESPASSWORD=''
 
-# Jackett API address and key
-JACKETTADDRESS=''
-JACKETTKEY=''
+# Torznab feeds as a JSON array of url and apiKey objects
+TORZNABFEEDS='[]'
 
 # nCore credentials
 NCOREUSER=''
@@ -86,8 +85,7 @@ start_wrserver() {
 			-osuser "$OPENSUBTITLESUSER" \
 			-ospassword "$OPENSUBTITLESPASSWORD" \
 			-osapikey "$OPENSUBTITLESKEY" \
-			-jackettaddress "$JACKETTADDRESS" \
-			-jackettkey "$JACKETTKEY" \
+			-torznabfeeds "$TORZNABFEEDS" \
 			-ncoreuser "$NCOREUSER" \
 			-ncorepassword "$NCOREPASSWORD" \
 			-insaneuser "$INSANEUSER" \

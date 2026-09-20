@@ -1,34 +1,52 @@
 package settings
 
-import "flag"
+import (
+	"encoding/json"
+	"flag"
+)
+
+type TorznabFeed struct {
+	URL    string `json:"url"`
+	APIKey string `json:"apiKey"`
+}
+
+type torznabFeedList []TorznabFeed
+
+func (feeds *torznabFeedList) String() string {
+	data, _ := json.Marshal(feeds)
+	return string(data)
+}
+
+func (feeds *torznabFeedList) Set(value string) error {
+	return json.Unmarshal([]byte(value), feeds)
+}
 
 type Config struct {
-	Host                  string `json:"host"`
-	Port                  int    `json:"port"`
-	DlnaPort              int    `json:"dlnaPort"`
-	DownloadDir           string `json:"downloadDir"`
-	DownloadRate          int    `json:"downloadRate"`
-	UploadRate            int    `json:"uploadRate"`
-	MaxConnections        int    `json:"maxConnections"`
-	NoDHT                 bool   `json:"noDHT"`
-	DisableIPv6           bool   `json:"disableIPv6"`
-	DisableUTP            bool   `json:"disableUTP"`
-	EnableLog             bool   `json:"-"`
-	EnableReceiver        bool   `json:"-"`
-	StorageType           string `json:"storageType"`
-	MemorySize            int64  `json:"memorySize"`
-	Background            bool   `json:"-"`
-	CORS                  bool   `json:"-"`
-	TMDBKey               string `json:"tmdbKey"`
-	OpenSubtitlesUser     string `json:"openSubtitlesUser"`
-	OpenSubtitlesPassword string `json:"openSubtitlesPassword"`
-	OpenSubtitlesKey      string `json:"openSubtitlesKey"`
-	JackettAddress        string `json:"jackettAddress"`
-	JackettKey            string `json:"jackettKey"`
-	NcoreUser             string `json:"ncoreUser"`
-	NcorePassword         string `json:"ncorePassword"`
-	InsaneUser            string `json:"insaneUser"`
-	InsanePassword        string `json:"insanePassword"`
+	Host                  string        `json:"host"`
+	Port                  int           `json:"port"`
+	DlnaPort              int           `json:"dlnaPort"`
+	DownloadDir           string        `json:"downloadDir"`
+	DownloadRate          int           `json:"downloadRate"`
+	UploadRate            int           `json:"uploadRate"`
+	MaxConnections        int           `json:"maxConnections"`
+	NoDHT                 bool          `json:"noDHT"`
+	DisableIPv6           bool          `json:"disableIPv6"`
+	DisableUTP            bool          `json:"disableUTP"`
+	EnableLog             bool          `json:"-"`
+	EnableReceiver        bool          `json:"-"`
+	StorageType           string        `json:"storageType"`
+	MemorySize            int64         `json:"memorySize"`
+	Background            bool          `json:"-"`
+	CORS                  bool          `json:"-"`
+	TMDBKey               string        `json:"tmdbKey"`
+	OpenSubtitlesUser     string        `json:"openSubtitlesUser"`
+	OpenSubtitlesPassword string        `json:"openSubtitlesPassword"`
+	OpenSubtitlesKey      string        `json:"openSubtitlesKey"`
+	TorznabFeeds          []TorznabFeed `json:"torznabFeeds"`
+	NcoreUser             string        `json:"ncoreUser"`
+	NcorePassword         string        `json:"ncorePassword"`
+	InsaneUser            string        `json:"insaneUser"`
+	InsanePassword        string        `json:"insanePassword"`
 }
 
 func DefaultConfig() Config {
@@ -61,8 +79,8 @@ func Apply(config Config) {
 	OpenSubtitlesUser = &config.OpenSubtitlesUser
 	OpenSubtitlesPassword = &config.OpenSubtitlesPassword
 	OpenSubtitlesKey = &config.OpenSubtitlesKey
-	JackettAddress = &config.JackettAddress
-	JackettKey = &config.JackettKey
+	feeds := torznabFeedList(config.TorznabFeeds)
+	TorznabFeeds = &feeds
 	NcoreUser = &config.NcoreUser
 	NcorePassword = &config.NcorePassword
 	InsaneUser = &config.InsaneUser
@@ -78,8 +96,8 @@ func Current() Config {
 		StorageType: *StorageType, MemorySize: *MemorySize, Background: *Background, CORS: *CORS,
 		TMDBKey: *TMDBKey, OpenSubtitlesUser: *OpenSubtitlesUser,
 		OpenSubtitlesPassword: *OpenSubtitlesPassword, OpenSubtitlesKey: *OpenSubtitlesKey,
-		JackettAddress: *JackettAddress, JackettKey: *JackettKey,
-		NcoreUser: *NcoreUser, NcorePassword: *NcorePassword,
+		TorznabFeeds: append([]TorznabFeed(nil), (*TorznabFeeds)...),
+		NcoreUser:    *NcoreUser, NcorePassword: *NcorePassword,
 		InsaneUser: *InsaneUser, InsanePassword: *InsanePassword,
 	}
 }
@@ -104,8 +122,7 @@ var TMDBKey *string
 var OpenSubtitlesUser *string
 var OpenSubtitlesPassword *string
 var OpenSubtitlesKey *string
-var JackettAddress *string
-var JackettKey *string
+var TorznabFeeds *torznabFeedList
 var NcoreUser *string
 var NcorePassword *string
 var InsaneUser *string
@@ -129,8 +146,9 @@ func Init() {
 	CORS = flag.Bool("cors", true, "enable CORS")
 	MemorySize = flag.Int64("memorysize", 128, "specify the storage memory size in MB if storagetype is set to \"memory\" (minimum 64)") // 64MB is optimal for TVs
 	TMDBKey = flag.String("tmdbkey", "a4d9ad8d2d072c50dc998cc0d1a508fa", "set external TMDB API key")
-	JackettAddress = flag.String("jackettaddress", "", "set external Jackett API address")
-	JackettKey = flag.String("jackettkey", "", "set external Jackett API key")
+	feeds := torznabFeedList{}
+	TorznabFeeds = &feeds
+	flag.Var(TorznabFeeds, "torznabfeeds", "set Torznab feeds as a JSON array of url and apiKey objects")
 	OpenSubtitlesKey = flag.String("osapikey", "", "set OpenSubtitles.com API key")
 	OpenSubtitlesUser = flag.String("osuser", "", "set optional OpenSubtitles.com username for authenticated subtitle downloads")
 	OpenSubtitlesPassword = flag.String("ospassword", "", "set optional OpenSubtitles.com password for authenticated subtitle downloads")

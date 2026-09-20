@@ -14,12 +14,8 @@ func getSourceParams(providers string) torrentsTypes.SourceParams {
 		sourceName, sourceArgs := getSourceArgs(source)
 
 		switch sourceName {
-		case "jackett":
-			sourceParams.Jackett.Enabled = true
-			if len(sourceArgs) == 2 {
-				sourceParams.Jackett.Address = sourceArgs[0]
-				sourceParams.Jackett.ApiKey = sourceArgs[1]
-			}
+		case "torznab":
+			sourceParams.Torznab.Enabled = true
 		case "ncore":
 			sourceParams.Ncore.Enabled = true
 			if len(sourceArgs) == 2 {

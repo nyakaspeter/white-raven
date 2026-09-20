@@ -79,7 +79,7 @@ SceneHostsMenu.prototype.handleShow = function () {
             aitem.className = "";
         }
         var torrentinfo = torrenturls[i].title + '</BR>'
-            + torrenturls[i].provider + ' | '
+            + String(torrenturls[i].provider || '').toUpperCase() + ' | '
             + (torrenturls[i].resolution ? torrenturls[i].resolution + " | " : "")
             + torrenturls[i].language;
 

@@ -18,10 +18,14 @@ export interface Config {
     "openSubtitlesUser": string;
     "openSubtitlesPassword": string;
     "openSubtitlesKey": string;
-    "jackettAddress": string;
-    "jackettKey": string;
+    "torznabFeeds": TorznabFeed[] | null;
     "ncoreUser": string;
     "ncorePassword": string;
     "insaneUser": string;
     "insanePassword": string;
+}
+
+export interface TorznabFeed {
+    "url": string;
+    "apiKey": string;
 }

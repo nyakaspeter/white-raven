@@ -171,10 +171,10 @@ var interfaceLangText = {};
 interfaceLangText['shortcode'] = ['auto', 'bg', 'hr', 'en', 'hu', 'es', 'sk', 'it'];
 
 var movieSourceListText = {};
-movieSourceListText['name'] = ['torrentio', 'jackett', 'ncore', 'insane'];
+movieSourceListText['name'] = ['torrentio', 'torznab', 'ncore', 'insane'];
 
 var tvSourceListText = {};
-tvSourceListText['name'] = ['torrentio', 'jackett', 'ncore', 'insane'];
+tvSourceListText['name'] = ['torrentio', 'torznab', 'ncore', 'insane'];
 
 var subtitleModeListText = {};
 subtitleModeListText['name'] = ['imdb', 'hash'];
@@ -791,11 +791,11 @@ function SaveDefaultTemp() {
         (lang == 'es') || (lang == 'sk') || (lang == 'it')) {
         saveSettings['interface'] = lang;
         saveSettings['database'] = lang;
-        saveSettings['moviesource_jackett'] = "true";
+        saveSettings['moviesource_torznab'] = "true";
         saveSettings['moviesource_ncore'] = "true";
         saveSettings['moviesource_insane'] = "true";
         saveSettings['moviesource_torrentio'] = "true";
-        saveSettings['tvsource_jackett'] = "true";
+        saveSettings['tvsource_torznab'] = "true";
         saveSettings['tvsource_ncore'] = "true";
         saveSettings['tvsource_insane'] = "true";
         saveSettings['tvsource_torrentio'] = "true";
@@ -815,11 +815,11 @@ function SaveDefaultTemp() {
     } else {
         saveSettings['interface'] = "en";
         saveSettings['database'] = "en";
-        saveSettings['moviesource_jackett'] = "true";
+        saveSettings['moviesource_torznab'] = "true";
         saveSettings['moviesource_ncore'] = "true";
         saveSettings['moviesource_insane'] = "true";
         saveSettings['moviesource_torrentio'] = "true";
-        saveSettings['tvsource_jackett'] = "true";
+        saveSettings['tvsource_torznab'] = "true";
         saveSettings['tvsource_ncore'] = "true";
         saveSettings['tvsource_insane'] = "true";
         saveSettings['tvsource_torrentio'] = "true";
@@ -861,11 +861,11 @@ function CreateOrLoadTemp() {
     } else {
         saveSettings['interface'] = sf.core.localData('interface');
         saveSettings['database'] = sf.core.localData('database');
-        saveSettings['moviesource_jackett'] = sf.core.localData('moviesource_jackett');
+        saveSettings['moviesource_torznab'] = sf.core.localData('moviesource_torznab');
         saveSettings['moviesource_ncore'] = sf.core.localData('moviesource_ncore');
         saveSettings['moviesource_insane'] = sf.core.localData('moviesource_insane');
         saveSettings['moviesource_torrentio'] = sf.core.localData('moviesource_torrentio');
-        saveSettings['tvsource_jackett'] = sf.core.localData('tvsource_jackett');
+        saveSettings['tvsource_torznab'] = sf.core.localData('tvsource_torznab');
         saveSettings['tvsource_ncore'] = sf.core.localData('tvsource_ncore');
         saveSettings['tvsource_insane'] = sf.core.localData('tvsource_insane');
         saveSettings['tvsource_torrentio'] = sf.core.localData('tvsource_torrentio');
@@ -912,11 +912,11 @@ function SaveTemp() {
         fileSystemObj.createCommonDir(curWidget.id);
         sf.core.localData('interface', saveSettings['interface']);
         sf.core.localData('database', saveSettings['database']);
-        sf.core.localData('moviesource_jackett', saveSettings['moviesource_jackett']);
+        sf.core.localData('moviesource_torznab', saveSettings['moviesource_torznab']);
         sf.core.localData('moviesource_ncore', saveSettings['moviesource_ncore']);
         sf.core.localData('moviesource_insane', saveSettings['moviesource_insane']);
         sf.core.localData('moviesource_torrentio', saveSettings['moviesource_torrentio']);
-        sf.core.localData('tvsource_jackett', saveSettings['tvsource_jackett']);
+        sf.core.localData('tvsource_torznab', saveSettings['tvsource_torznab']);
         sf.core.localData('tvsource_ncore', saveSettings['tvsource_ncore']);
         sf.core.localData('tvsource_insane', saveSettings['tvsource_insane']);
         sf.core.localData('tvsource_torrentio', saveSettings['tvsource_torrentio']);
@@ -936,11 +936,11 @@ function SaveTemp() {
     } else {
         sf.core.localData('interface', saveSettings['interface']);
         sf.core.localData('database', saveSettings['database']);
-        sf.core.localData('moviesource_jackett', saveSettings['moviesource_jackett']);
+        sf.core.localData('moviesource_torznab', saveSettings['moviesource_torznab']);
         sf.core.localData('moviesource_ncore', saveSettings['moviesource_ncore']);
         sf.core.localData('moviesource_insane', saveSettings['moviesource_insane']);
         sf.core.localData('moviesource_torrentio', saveSettings['moviesource_torrentio']);
-        sf.core.localData('tvsource_jackett', saveSettings['tvsource_jackett']);
+        sf.core.localData('tvsource_torznab', saveSettings['tvsource_torznab']);
         sf.core.localData('tvsource_ncore', saveSettings['tvsource_ncore']);
         sf.core.localData('tvsource_insane', saveSettings['tvsource_insane']);
         sf.core.localData('tvsource_torrentio', saveSettings['tvsource_torrentio']);
@@ -973,11 +973,11 @@ function RestoreDefaultTemp() {
             (lang == 'es') || (lang == 'sk') || (lang == 'it')) {
             saveSettings['interface'] = lang;
             saveSettings['database'] = lang;
-            saveSettings['moviesource_jackett'] = "true";
+            saveSettings['moviesource_torznab'] = "true";
             saveSettings['moviesource_ncore'] = "true";
             saveSettings['moviesource_insane'] = "true";
             saveSettings['moviesource_torrentio'] = "true";
-            saveSettings['tvsource_jackett'] = "true";
+            saveSettings['tvsource_torznab'] = "true";
             saveSettings['tvsource_ncore'] = "true";
             saveSettings['tvsource_insane'] = "true";
             saveSettings['tvsource_torrentio'] = "true";
@@ -997,11 +997,11 @@ function RestoreDefaultTemp() {
         } else {
             saveSettings['interface'] = "en";
             saveSettings['database'] = "en";
-            saveSettings['moviesource_jackett'] = "true";
+            saveSettings['moviesource_torznab'] = "true";
             saveSettings['moviesource_ncore'] = "true";
             saveSettings['moviesource_insane'] = "true";
             saveSettings['moviesource_torrentio'] = "true";
-            saveSettings['tvsource_jackett'] = "true";
+            saveSettings['tvsource_torznab'] = "true";
             saveSettings['tvsource_ncore'] = "true";
             saveSettings['tvsource_insane'] = "true";
             saveSettings['tvsource_torrentio'] = "true";

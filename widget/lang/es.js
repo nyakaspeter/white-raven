@@ -95,8 +95,8 @@ languageListText['es'] = ['AUTOMÁTICO',
                         'LITUANO', 'NORUEGO', 'PERSA', 'POLACO', 'PORTUGUÉS', 'PORTUGUÉS ( BR )', 'RUMANO', 'RUSO', 'SERBIO',
                         'ESLOVACO', 'ESPAÑOL', 'SUAJILI', 'SUECO', 'TAILANDÉS', 'TURCO', 'URDU', 'VIETNAMITA'];                      
 interfaceLangText['es'] = ['AUTOMÁTICO', 'BÚLGARO', 'CROATA', 'INGLÉS', 'HÚNGARO', 'ESPAÑOL', 'ESLOVACO', 'ITALIANO'];
-movieSourceListText['es'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
-tvSourceListText['es'] = ['TORRENTIO', 'JACKETT', 'NCORE', 'INSANE'];
+movieSourceListText['es'] = ['TORRENTIO', 'TORZNAB', 'NCORE', 'INSANE'];
+tvSourceListText['es'] = ['TORRENTIO', 'TORZNAB', 'NCORE', 'INSANE'];
 subtitleModeListText['es'] = ['IMDB ID', 'HASH DEL FICHERO'];
 downSpeedListText['es'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'ILIMITADO'];
 upSpeedListText['es'] = ['256 KB/s', '512 KB/s', '1 MB/s', '2 MB/s', '4 MB/s', '6 MB/s', '8 MB/s', 'DISCAPACITADA'];

@@ -655,6 +655,10 @@ func renderServerInit(archive []byte, config runtime.Config) (string, error) {
 	if script == "" {
 		return "", errors.New("rooted widget ZIP does not contain server/server.init")
 	}
+	torznabFeeds, err := json.Marshal(config.TorznabFeeds)
+	if err != nil {
+		return "", fmt.Errorf("encode Torznab feeds: %w", err)
+	}
 
 	settings := []struct {
 		name  string
@@ -664,8 +668,7 @@ func renderServerInit(archive []byte, config runtime.Config) (string, error) {
 		{"OPENSUBTITLESKEY", shellQuote(config.OpenSubtitlesKey)},
 		{"OPENSUBTITLESUSER", shellQuote(config.OpenSubtitlesUser)},
 		{"OPENSUBTITLESPASSWORD", shellQuote(config.OpenSubtitlesPassword)},
-		{"JACKETTADDRESS", shellQuote(config.JackettAddress)},
-		{"JACKETTKEY", shellQuote(config.JackettKey)},
+		{"TORZNABFEEDS", shellQuote(string(torznabFeeds))},
 		{"NCOREUSER", shellQuote(config.NcoreUser)},
 		{"NCOREPASSWORD", shellQuote(config.NcorePassword)},
 		{"INSANEUSER", shellQuote(config.InsaneUser)},

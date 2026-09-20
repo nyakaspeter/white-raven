@@ -94,12 +94,6 @@
           <label class="stacked-field"><span>Password</span><input name="openSubtitlesPassword" type="password" autocomplete="off" /></label>
         </section>
 
-        <h2 class="group-title provider-title">Jackett</h2>
-        <section class="provider-group">
-          <label class="stacked-field"><span>Address</span><input name="jackettAddress" type="url" inputmode="url" /></label>
-          <label class="stacked-field"><span>API key</span><input name="jackettKey" type="password" autocomplete="off" /></label>
-        </section>
-
         <h2 class="group-title provider-title">nCore</h2>
         <section class="provider-group">
           <label class="stacked-field"><span>Username</span><input name="ncoreUser" autocomplete="off" /></label>
@@ -111,6 +105,16 @@
           <label class="stacked-field"><span>Username</span><input name="insaneUser" autocomplete="off" /></label>
           <label class="stacked-field"><span>Password</span><input name="insanePassword" type="password" autocomplete="off" /></label>
         </section>
+
+        <div class="provider-heading">
+          <h2 class="group-title provider-title">Torznab feeds</h2>
+          <button id="add-torznab-feed" class="feed-action-button" type="button" aria-label="Add Torznab feed" title="Add feed">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add feed</span>
+          </button>
+        </div>
+        <section id="torznab-feeds" class="feed-list"></section>
+        <p class="provider-help">Enter the complete Torznab API endpoint. Jackett, Prowlarr, Harbrr, and other compatible feeds can be combined.</p>
 
       </form>
     </section>

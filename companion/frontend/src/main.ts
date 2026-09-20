@@ -17,6 +17,8 @@ const syncInstructions = document.querySelector<HTMLElement>("#sync-instructions
 const syncAddresses = document.querySelectorAll<HTMLElement>(".sync-address");
 const syncStatus = document.querySelector<HTMLElement>("#sync-status")!;
 const rootedStatus = document.querySelector<HTMLElement>("#rooted-status")!;
+const torznabFeeds = document.querySelector<HTMLElement>("#torznab-feeds")!;
+const addTorznabFeedButton = document.querySelector<HTMLButtonElement>("#add-torznab-feed")!;
 let running = false;
 let currentConfig: any = {};
 let currentLogs = "";
@@ -30,6 +32,7 @@ function field(name: string): HTMLInputElement {
 
 function setForm(config: any) {
   currentConfig = { ...config };
+  renderTorznabFeeds(Array.isArray(config.torznabFeeds) ? config.torznabFeeds : []);
   for (const [name, value] of Object.entries(config)) {
     const element = form.elements.namedItem(name) as HTMLInputElement | null;
     if (!element) continue;
@@ -46,7 +49,39 @@ function getForm(): any {
   data.noDHT = field("noDHT").checked;
   data.disableIPv6 = field("disableIPv6").checked;
   data.disableUTP = field("disableUTP").checked;
+  data.torznabFeeds = Array.from(torznabFeeds.querySelectorAll<HTMLElement>(".torznab-feed"))
+    .map(feed => ({
+      url: feed.querySelector<HTMLInputElement>('[data-field="url"]')!.value.trim(),
+      apiKey: feed.querySelector<HTMLInputElement>('[data-field="apiKey"]')!.value.trim(),
+    }))
+    .filter(feed => feed.url !== "");
   return data;
+}
+
+function renderTorznabFeeds(feeds: any[]) {
+  torznabFeeds.replaceChildren();
+  feeds.forEach(addTorznabFeed);
+}
+
+function addTorznabFeed(feed: any = {}) {
+  const container = document.createElement("article");
+  container.className = "torznab-feed";
+  container.innerHTML = `
+    <label class="stacked-field"><span>Torznab API endpoint</span><input data-field="url" type="url" inputmode="url" placeholder="http://host:port/path/to/api" /></label>
+    <label class="stacked-field"><span>API key</span><input data-field="apiKey" type="password" autocomplete="off" /></label>
+    <div class="feed-actions">
+      <button class="feed-action-button remove-feed-button" type="button" aria-label="Remove Torznab feed" title="Remove feed">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg>
+        <span>Remove feed</span>
+      </button>
+    </div>`;
+  container.querySelector<HTMLInputElement>('[data-field="url"]')!.value = String(feed.url || "");
+  container.querySelector<HTMLInputElement>('[data-field="apiKey"]')!.value = String(feed.apiKey || "");
+  container.querySelector<HTMLButtonElement>(".remove-feed-button")!.addEventListener("click", () => {
+    container.remove();
+    scheduleSave();
+  });
+  torznabFeeds.appendChild(container);
 }
 
 function showPage(pageID: string) {
@@ -63,6 +98,8 @@ function showPage(pageID: string) {
 
 function setSettingsDisabled(disabled: boolean) {
   form.querySelectorAll<HTMLInputElement>("input").forEach(input => input.disabled = disabled);
+  addTorznabFeedButton.disabled = disabled;
+  torznabFeeds.querySelectorAll<HTMLButtonElement>("button").forEach(button => button.disabled = disabled);
 }
 
 async function refresh() {
@@ -163,6 +200,10 @@ function scheduleSave() {
 
 form.addEventListener("input", scheduleSave);
 form.addEventListener("submit", event => event.preventDefault());
+addTorznabFeedButton.addEventListener("click", () => {
+  addTorznabFeed();
+  torznabFeeds.querySelector<HTMLInputElement>(".torznab-feed:last-child input")?.focus();
+});
 
 document.querySelectorAll<HTMLButtonElement>(".nav-item").forEach(item =>
   item.addEventListener("click", () => showPage(item.dataset.page!)));

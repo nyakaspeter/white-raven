@@ -71,6 +71,17 @@ input[type="checkbox"]:checked::before { transform: translateX(19px); background
 .provider-title { display: block; }
 .stacked-field { display: flex; flex-direction: column; gap: 7px; padding: 10px 0 12px; color: #aab4c2; font-size: .75rem; }
 .stacked-field input { width: 100%; min-height: 43px; }
+.provider-heading { display: flex; align-items: center; justify-content: space-between; margin: 14px 4px 1px; }
+.provider-heading .group-title { margin: 0; }
+.feed-action-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 9px; border: 0; border-radius: 9px; color: #e75d6b; background: transparent; font-size: .74rem; font-weight: 650; cursor: pointer; }
+.feed-action-button:hover, .feed-action-button:active { background: rgba(229, 29, 49, .1); }
+.feed-action-button:focus-visible { outline: 2px solid rgba(229, 29, 49, .45); outline-offset: 2px; }
+.feed-action-button:disabled { color: #596270; background: transparent; cursor: not-allowed; }
+.feed-action-button svg { width: 17px; height: 17px; }
+.feed-list { display: grid; gap: 10px; }
+.torznab-feed { padding: 0 15px 8px; border: 1px solid #272e38; border-radius: 14px; background: #161b22; }
+.feed-actions { display: flex; justify-content: flex-end; padding-top: 5px; border-top: 1px solid #272e38; }
+.provider-help { margin: 0 4px 5px; color: #778291; font-size: .7rem; line-height: 1.45; }
 .install-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 18px; }
 .choice-button { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 13px; border: 1px solid #272e38; border-radius: 13px; color: #939ead; background: #161b22; text-align: left; cursor: pointer; }
 .choice-button svg { width: 27px; min-width: 27px; }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -139,6 +140,12 @@ func validate(config Config) error {
 	}
 	if config.DownloadRate < 0 || config.UploadRate < 0 || config.MaxConnections < 1 {
 		return errors.New("rate limits cannot be negative and maximum connections must be positive")
+	}
+	for _, feed := range config.TorznabFeeds {
+		endpoint, err := url.Parse(strings.TrimSpace(feed.URL))
+		if err != nil || (endpoint.Scheme != "http" && endpoint.Scheme != "https") || endpoint.Host == "" {
+			return fmt.Errorf("Torznab feed has an invalid endpoint URL")
+		}
 	}
 	return nil
 }

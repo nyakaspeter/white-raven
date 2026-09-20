@@ -12,7 +12,7 @@ The project is a fork of the original [White Raven](https://github.com/silentmur
 ## Features
 
 - Torrent streaming from memory or disk
-- Torrentio, Jackett, nCore, and iNSANE torrent search
+- Torrentio, Torznab, nCore, and iNSANE torrent search
 - Automatic subtitle search by IMDb ID, title, or file hash
 - Movie and TV metadata discovery
 - Torrent receiver page
@@ -108,7 +108,7 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X gi
 - `-nodht`: disable DHT
 - `-noipv6`: disable IPv6 torrent sockets
 - `-noutp`: disable uTP torrent sockets; default `false`
-- `-jackettaddress` and `-jackettkey`: Jackett connection
+- `-torznabfeeds`: Torznab feeds as a JSON array containing `url` and `apiKey`
 - `-ncoreuser` and `-ncorepassword`: nCore credentials
 - `-insaneuser` and `-insanepassword`: iNSANE credentials
 - `-osapikey`: OpenSubtitles.com API key
@@ -125,10 +125,10 @@ Example using file storage:
 ./build/wrserver -storagetype file -dir downloads
 ```
 
-Example using Jackett:
+Example using multiple Torznab feeds:
 
 ```sh
-./build/wrserver -jackettaddress http://192.168.0.2:9117 -jackettkey YOUR_API_KEY
+./build/wrserver -torznabfeeds '[{"url":"http://192.168.0.2:9117/api/v2.0/indexers/all/results/torznab/api","apiKey":"YOUR_API_KEY"},{"url":"http://192.168.0.2:9696/1/api","apiKey":"YOUR_API_KEY"}]'
 ```
 
 ## Companion app

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/nyakaspeter/white-raven/server/pkg/torrents/insane"
-	"github.com/nyakaspeter/white-raven/server/pkg/torrents/jackett"
 	"github.com/nyakaspeter/white-raven/server/pkg/torrents/ncore"
 	"github.com/nyakaspeter/white-raven/server/pkg/torrents/torrentio"
+	"github.com/nyakaspeter/white-raven/server/pkg/torrents/torznab"
 	"github.com/nyakaspeter/white-raven/server/pkg/torrents/types"
 )
 
@@ -18,8 +18,8 @@ func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []typ
 
 	count := 0
 	if movie.SearchText != "" {
-		if sources.Jackett.Enabled {
-			go jackett.GetMovieTorrentsByText(movie.SearchText, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+		if sources.Torznab.Enabled {
+			go torznab.GetMovieTorrentsByText(movie.SearchText, ch)
 			count++
 		}
 		if sources.Ncore.Enabled {
@@ -37,8 +37,8 @@ func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []typ
 			count++
 		}
 
-		if sources.Jackett.Enabled {
-			go jackett.GetMovieTorrentsByImdbId(movie.ImdbId, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+		if sources.Torznab.Enabled {
+			go torznab.GetMovieTorrentsByImdbId(movie.ImdbId, ch)
 			count++
 		}
 		if sources.Ncore.Enabled {
@@ -57,7 +57,7 @@ func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []typ
 			duplicate := false
 			for _, outResult := range output {
 				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
-					(outResult.Torrent != "" && outResult.Provider == result.Provider && outResult.Title == result.Title) {
+					(outResult.Torrent != "" && outResult.Torrent == result.Torrent) {
 					duplicate = true
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size
@@ -89,8 +89,8 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 
 	count := 0
 	if show.SearchText != "" {
-		if sources.Jackett.Enabled {
-			go jackett.GetShowTorrentsByText(show.SearchText, show.Season, show.Episode, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+		if sources.Torznab.Enabled {
+			go torznab.GetShowTorrentsByText(show.SearchText, show.Season, show.Episode, ch)
 			count++
 		}
 		if sources.Ncore.Enabled {
@@ -108,8 +108,8 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 			count++
 		}
 
-		if sources.Jackett.Enabled {
-			go jackett.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, sources.Jackett.Address, sources.Jackett.ApiKey, ch)
+		if sources.Torznab.Enabled {
+			go torznab.GetShowTorrentsByImdbId(show.ImdbId, show.Season, show.Episode, ch)
 			count++
 		}
 		if sources.Ncore.Enabled {
@@ -128,7 +128,7 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 			duplicate := false
 			for _, outResult := range output {
 				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
-					(outResult.Torrent != "" && outResult.Provider == result.Provider && outResult.Title == result.Title) {
+					(outResult.Torrent != "" && outResult.Torrent == result.Torrent) {
 					duplicate = true
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size

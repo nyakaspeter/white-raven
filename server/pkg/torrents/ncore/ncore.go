@@ -238,7 +238,7 @@ func parseMovieTorrents(resp *http.Response) ([]types.MovieTorrent, error) {
 
 		torrents = append(torrents, types.MovieTorrent{
 			Title:    name,
-			Provider: "NCORE",
+			Provider: "nCore",
 			Lang:     utils.GuessLanguageFromString(name),
 			Quality:  utils.GuessQualityFromString(name),
 			Size:     strconv.FormatInt(size, 10),
@@ -280,7 +280,7 @@ func parseShowTorrents(resp *http.Response) ([]types.ShowTorrent, error) {
 
 		torrents = append(torrents, types.ShowTorrent{
 			Title:    name,
-			Provider: "NCORE",
+			Provider: "nCore",
 			Lang:     utils.GuessLanguageFromString(name),
 			Quality:  utils.GuessQualityFromString(name),
 			Size:     strconv.FormatInt(size, 10),
