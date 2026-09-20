@@ -59,6 +59,7 @@ type attr struct {
 }
 
 type release struct {
+	DedupKey string
 	Title    string
 	Provider string
 	Size     string
@@ -128,6 +129,7 @@ func request(feed settings.TorznabFeed, params url.Values) ([]release, error) {
 	base := *endpoint
 	base.RawQuery = ""
 	base.Fragment = ""
+	feedIdentity := base.String()
 	results := make([]release, 0, len(wire.Channel.Items))
 	for _, entry := range wire.Channel.Items {
 		attrs := attributes(entry.Attrs)
@@ -151,9 +153,14 @@ func request(feed settings.TorznabFeed, params url.Values) ([]release, error) {
 		seeders := numericValue(attrs["seeders"])
 		peers := numericValue(firstNonEmpty(attrs["peers"], attrs["leechers"]))
 		torrent := firstDownloadURL(&base, entry.Enclosure.URL, entry.Link, entry.GUID)
+		guid := strings.TrimSpace(entry.GUID)
+		dedupKey := ""
+		if guid != "" {
+			dedupKey = feedIdentity + "\x00" + guid
+		}
 
 		results = append(results, release{
-			Title: strings.TrimSpace(entry.Title), Provider: provider, Size: size,
+			DedupKey: dedupKey, Title: strings.TrimSpace(entry.Title), Provider: provider, Size: size,
 			Seeders: seeders, Peers: peers, InfoHash: hash, Magnet: magnet, Torrent: torrent,
 		})
 	}
@@ -222,7 +229,7 @@ func movieTorrents(releases []release) []types.MovieTorrent {
 	output := make([]types.MovieTorrent, 0, len(releases))
 	for _, entry := range releases {
 		output = append(output, types.MovieTorrent{
-			Hash: entry.InfoHash, Quality: utils.GuessQualityFromString(entry.Title), Size: entry.Size,
+			DedupKey: entry.DedupKey, Hash: entry.InfoHash, Quality: utils.GuessQualityFromString(entry.Title), Size: entry.Size,
 			Provider: entry.Provider, Lang: utils.GuessLanguageFromString(entry.Title), Title: entry.Title,
 			Seeds: entry.Seeders, Peers: entry.Peers, Magnet: entry.Magnet, Torrent: entry.Torrent,
 		})
@@ -238,7 +245,7 @@ func showTorrents(releases []release, season string, episode string) []types.Sho
 			continue
 		}
 		output = append(output, types.ShowTorrent{
-			Hash: entry.InfoHash, Quality: utils.GuessQualityFromString(entry.Title),
+			DedupKey: entry.DedupKey, Hash: entry.InfoHash, Quality: utils.GuessQualityFromString(entry.Title),
 			Season: torrentSeason, Episode: torrentEpisode, Size: entry.Size, Provider: entry.Provider,
 			Lang: utils.GuessLanguageFromString(entry.Title), Title: entry.Title, Seeds: entry.Seeders,
 			Peers: entry.Peers, Magnet: entry.Magnet, Torrent: entry.Torrent,

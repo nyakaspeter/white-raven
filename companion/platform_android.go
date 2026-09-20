@@ -33,6 +33,10 @@ func stopPlatformBackground(reason string) {
 		startPlatformForegroundService(message)
 		return
 	}
+	if message, ok := platformBackground.reasons["harbrr"]; ok {
+		startPlatformForegroundService(message)
+		return
+	}
 	application.Android.StopForegroundService()
 }
 
@@ -42,4 +46,9 @@ func startPlatformForegroundService(message string) {
 		"text":  message,
 	})
 	application.Android.StartForegroundService(string(payload))
+}
+
+func platformOpenURL(url string) error {
+	application.Android.OpenURL(url)
+	return nil
 }

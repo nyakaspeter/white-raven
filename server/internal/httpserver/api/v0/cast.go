@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log"
@@ -22,13 +21,13 @@ func CastTorrentFile() func(w http.ResponseWriter, r *http.Request) {
 		media := dlnacasttypes.MediaParams{}
 		media.Title = "video"
 
-		location, err := base64.StdEncoding.DecodeString(vars["base64location"])
+		location, err := decodeURLBase64(vars["base64location"])
 		if err != nil {
 			http.Error(w, failedCastingToDevice(), http.StatusNotFound)
 			return
 		}
 
-		query, err := base64.StdEncoding.DecodeString(vars["base64query"])
+		query, err := decodeURLBase64(vars["base64query"])
 		if err != nil {
 			http.Error(w, failedCastingToDevice(), http.StatusNotFound)
 			return

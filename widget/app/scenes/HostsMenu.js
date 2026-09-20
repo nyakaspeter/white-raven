@@ -357,7 +357,7 @@ SceneHostsMenu.prototype.handleKeyDown = function (keyCode) {
                                 resume['index'] = -1;
                                 resume['time'] = 0;
                                 
-                                this.StartTorrentDownload(this.titletext, this.magneturl ? btoa(this.magneturl) : btoa(this.torrenturl));
+                                this.StartTorrentDownload(this.titletext, EncodeTorrentURI(this.magneturl ? this.magneturl : this.torrenturl));
                                 break;
                             }
                         }

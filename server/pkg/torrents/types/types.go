@@ -1,6 +1,7 @@
 package types
 
 type MovieTorrent struct {
+	DedupKey string `json:"-"`
 	Hash     string `json:"hash"`
 	Quality  string `json:"quality"`
 	Size     string `json:"size"`
@@ -14,6 +15,7 @@ type MovieTorrent struct {
 }
 
 type ShowTorrent struct {
+	DedupKey string `json:"-"`
 	Hash     string `json:"hash"`
 	Quality  string `json:"quality"`
 	Season   string `json:"season"`

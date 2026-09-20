@@ -28,6 +28,13 @@ function CSSPixels(value) {
     return value;
 }
 
+// Encode values placed in a URL path segment without the '/' and '+' characters
+// produced by standard Base64. Padding is unnecessary for Raw URL Base64 and is
+// restored by the server decoder when needed.
+function EncodeTorrentURI(value) {
+    return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 function TorrentStatsURL(fileURL) {
     var current = /^(https?:\/\/[^/]+)\/file\/([^/]+)\//.exec(fileURL);
     return current ? current[1] + "/api/v0/stats/" + current[2] : "";

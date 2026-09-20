@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log"
@@ -124,7 +123,7 @@ func GetSubtitlesByFileHash() func(w http.ResponseWriter, r *http.Request) {
 
 		log.Println("Searching subtitles:", vars)
 
-		if d, err := base64.StdEncoding.DecodeString(vars["base64path"]); err == nil {
+		if d, err := decodeURLBase64(vars["base64path"]); err == nil {
 			if t, ok := torrentclient.ActiveTorrents[vars["hash"]]; ok {
 				idx := torrentclient.GetFileIndexByPath(string(d), t.Torrent.Files())
 				file := t.Torrent.Files()[idx]

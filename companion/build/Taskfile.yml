@@ -7,6 +7,8 @@ tasks:
     # Universal/multi-arch builds invoke this concurrently from parallel deps;
     # two `go mod tidy` processes racing on go.mod can corrupt it (#4637).
     run: once
+    deps:
+      - task: build:harbrr
     cmds:
       - go mod tidy
 
@@ -15,6 +17,23 @@ tasks:
     run: once
     cmds:
       - task: install:frontend:deps:{{.PACKAGE_MANAGER}}
+
+  build:harbrr:
+    summary: Stage the pinned Harbrr source and build its embedded web UI
+    run: once
+    sources:
+      - harbrr.version
+      - build/harbrr/**/*.go
+    generates:
+      - harbrr-build/pkg/embedded/embedded.go
+      - harbrr-build/web/dist/index.html
+    preconditions:
+      - sh: git --version
+        msg: "Git is required to stage the pinned Harbrr source."
+      - sh: npx --version
+        msg: "Node.js and npm are required to build the Harbrr web UI."
+    cmds:
+      - go run ./build/harbrr
 
   install:frontend:deps:npm:
     dir: frontend
@@ -206,6 +225,7 @@ tasks:
   dev:frontend:
     summary: Runs the frontend in development mode
     deps:
+      - task: build:harbrr
       - task: install:frontend:deps
     cmds:
       - task: frontend:dev:{{.PACKAGE_MANAGER}}

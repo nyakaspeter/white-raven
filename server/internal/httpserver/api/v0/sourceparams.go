@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"encoding/base64"
 	"strings"
 
 	torrentsTypes "github.com/nyakaspeter/white-raven/server/pkg/torrents/types"
@@ -46,7 +45,7 @@ func getSourceArgs(source string) (string, []string) {
 			continue
 		}
 
-		decodedArg, err := base64.StdEncoding.DecodeString(split[i])
+		decodedArg, err := decodeURLBase64(split[i])
 		if err == nil {
 			decodedArgs = append(decodedArgs, string(decodedArg))
 		}

@@ -19,6 +19,7 @@ companion/frontend/dist/
 companion/frontend/node_modules/
 companion/frontend/frontend/
 companion/frontend/*.tsbuildinfo
+companion/harbrr-build/
 
 # Generated desktop packaging assets
 companion/build/darwin/Assets.car

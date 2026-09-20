@@ -56,8 +56,11 @@ func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []typ
 		for _, result := range results {
 			duplicate := false
 			for _, outResult := range output {
-				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
-					(outResult.Torrent != "" && outResult.Torrent == result.Torrent) {
+				if sameTorrentIdentity(
+					outResult.Hash, result.Hash,
+					outResult.DedupKey, result.DedupKey,
+					outResult.Torrent, result.Torrent,
+				) {
 					duplicate = true
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size
@@ -127,8 +130,11 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 		for _, result := range results {
 			duplicate := false
 			for _, outResult := range output {
-				if (outResult.Hash != "" && strings.EqualFold(outResult.Hash, result.Hash)) ||
-					(outResult.Torrent != "" && outResult.Torrent == result.Torrent) {
+				if sameTorrentIdentity(
+					outResult.Hash, result.Hash,
+					outResult.DedupKey, result.DedupKey,
+					outResult.Torrent, result.Torrent,
+				) {
 					duplicate = true
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size
@@ -152,4 +158,14 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 	})
 
 	return output
+}
+
+func sameTorrentIdentity(hashA, hashB, dedupKeyA, dedupKeyB, torrentA, torrentB string) bool {
+	if hashA != "" && hashB != "" {
+		return strings.EqualFold(hashA, hashB)
+	}
+	if dedupKeyA != "" && dedupKeyB != "" {
+		return dedupKeyA == dedupKeyB
+	}
+	return torrentA != "" && torrentA == torrentB
 }

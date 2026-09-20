@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log"
@@ -18,13 +17,13 @@ func StartMediaPlayer() func(w http.ResponseWriter, r *http.Request) {
 
 		log.Println("Starting media player:", vars)
 
-		path, err := base64.StdEncoding.DecodeString(vars["base64path"])
+		path, err := decodeURLBase64(vars["base64path"])
 		if err != nil {
 			http.Error(w, failedToOpenMediaPlayer(), http.StatusNotFound)
 			return
 		}
 
-		args, err := base64.StdEncoding.DecodeString(vars["base64args"])
+		args, err := decodeURLBase64(vars["base64args"])
 		if err != nil {
 			http.Error(w, failedToOpenMediaPlayer(), http.StatusNotFound)
 			return

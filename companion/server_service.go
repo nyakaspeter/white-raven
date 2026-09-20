@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/autobrr/harbrr/pkg/embedded"
 	"github.com/nyakaspeter/white-raven/server/runtime"
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -19,6 +22,11 @@ type ServerService struct {
 	configPath string
 	operation  sync.Mutex
 	installer  *widgetInstaller
+	harbrr     *embedded.Server
+	harbrrMu   sync.Mutex
+	harbrrLogs *runtime.LogBuffer
+	harbrrData string
+	harbrrPort int
 }
 
 func NewServerService() (*ServerService, error) {
@@ -31,12 +39,16 @@ func NewServerService() (*ServerService, error) {
 		}
 	}
 	logs := runtime.NewLogBuffer(1000)
+	harbrrLogs := runtime.NewLogBuffer(1000)
 	log.SetFlags(0)
 	log.SetOutput(io.MultiWriter(os.Stderr, logs))
 	return &ServerService{
 		logs:       logs,
 		configPath: filepath.Join(configRoot, "White Raven", "server.json"),
 		installer:  newWidgetInstaller(configRoot),
+		harbrrLogs: harbrrLogs,
+		harbrrData: filepath.Join(configRoot, "White Raven", "harbrr"),
+		harbrrPort: 7478,
 	}, nil
 }
 
@@ -100,9 +112,84 @@ func (service *ServerService) StopServer() {
 	stopPlatformBackground("server")
 }
 
-func (service *ServerService) Status() runtime.Status     { return service.controller.Status() }
-func (service *ServerService) Logs() string               { return service.logs.String() }
-func (service *ServerService) ClearLogs()                 { service.logs.Clear() }
+func (service *ServerService) Status() runtime.Status { return service.controller.Status() }
+func (service *ServerService) Logs() string           { return service.logs.String() }
+func (service *ServerService) ClearLogs()             { service.logs.Clear() }
+func (service *ServerService) StartHarbrr() error {
+	service.operation.Lock()
+	defer service.operation.Unlock()
+
+	service.harbrrMu.Lock()
+	if service.harbrr != nil {
+		service.harbrrMu.Unlock()
+		return fmt.Errorf("Harbrr is already running")
+	}
+	service.harbrrMu.Unlock()
+
+	service.harbrrLogs.Clear()
+	instance, err := embedded.Start(context.Background(), embedded.Options{
+		Host: "", Port: service.harbrrPort, DataDir: service.harbrrData,
+		Log: io.MultiWriter(os.Stderr, service.harbrrLogs),
+	})
+	if err != nil {
+		return err
+	}
+	service.harbrrMu.Lock()
+	service.harbrr = instance
+	service.harbrrMu.Unlock()
+	startPlatformBackground("harbrr", "Harbrr is running")
+	go service.waitForHarbrr(instance)
+	return nil
+}
+
+func (service *ServerService) waitForHarbrr(instance *embedded.Server) {
+	err := instance.Wait()
+	service.harbrrMu.Lock()
+	if service.harbrr == instance {
+		service.harbrr = nil
+	}
+	service.harbrrMu.Unlock()
+	if !embedded.IsStopped(err) {
+		_, _ = fmt.Fprintln(service.harbrrLogs, "Harbrr stopped:", err)
+	}
+	stopPlatformBackground("harbrr")
+}
+
+func (service *ServerService) StopHarbrr() {
+	service.operation.Lock()
+	defer service.operation.Unlock()
+	service.harbrrMu.Lock()
+	instance := service.harbrr
+	service.harbrrMu.Unlock()
+	if instance != nil {
+		_ = instance.Stop()
+		service.harbrrMu.Lock()
+		if service.harbrr == instance {
+			service.harbrr = nil
+		}
+		service.harbrrMu.Unlock()
+	}
+	stopPlatformBackground("harbrr")
+}
+
+func (service *ServerService) HarbrrStatus() runtime.Status {
+	service.harbrrMu.Lock()
+	running := service.harbrr != nil
+	service.harbrrMu.Unlock()
+	if !running {
+		return runtime.Status{}
+	}
+	return runtime.Status{Running: true, Address: localAddress(service.harbrrPort)}
+}
+
+func (service *ServerService) HarbrrLogs() string { return service.harbrrLogs.String() }
+func (service *ServerService) ClearHarbrrLogs()   { service.harbrrLogs.Clear() }
+func (service *ServerService) OpenServerWebUI() error {
+	return platformOpenURL("http://localhost:9000")
+}
+func (service *ServerService) OpenHarbrrWebUI() error {
+	return platformOpenURL("http://localhost:7478")
+}
 func (service *ServerService) WidgetStatus() WidgetStatus { return service.installer.Status() }
 func (service *ServerService) InstallRooted(request RootedInstallRequest) error {
 	request.Config = normalized(request.Config)
@@ -115,7 +202,18 @@ func (service *ServerService) StartAppSync() error { return service.installer.St
 func (service *ServerService) StopAppSync()        { service.installer.StopAppSync() }
 func (service *ServerService) Shutdown() {
 	service.installer.StopAppSync()
+	service.StopHarbrr()
 	service.StopServer()
+}
+
+func localAddress(port int) string {
+	host := "127.0.0.1"
+	connection, err := net.Dial("udp", "8.8.8.8:80")
+	if err == nil {
+		host = connection.LocalAddr().(*net.UDPAddr).IP.String()
+		_ = connection.Close()
+	}
+	return fmt.Sprintf("http://%s:%d", host, port)
 }
 
 func normalized(config runtime.Config) runtime.Config {

@@ -17,7 +17,7 @@ func ServeTorrentFile() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 
-		if d, err := base64.StdEncoding.DecodeString(vars["base64path"]); err == nil {
+		if d, err := base64.RawURLEncoding.DecodeString(vars["base64path"]); err == nil {
 			if t, ok := torrentclient.ActiveTorrents[vars["hash"]]; ok {
 
 				idx := torrentclient.GetFileIndexByPath(string(d), t.Torrent.Files())

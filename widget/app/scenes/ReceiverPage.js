@@ -127,7 +127,7 @@ SceneReceiverPage.prototype.CheckReceivedTorrent = function() {
                         resume['index'] = -1;
                         resume['time'] = 0;
 
-                        SceneReceiverPage.prototype.StartTorrentDownload("", btoa(data.received));
+                        SceneReceiverPage.prototype.StartTorrentDownload("", EncodeTorrentURI(data.received));
                     }, 4000);
                 }
             }

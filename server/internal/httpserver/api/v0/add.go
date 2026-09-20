@@ -1,7 +1,6 @@
 package v0
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"io"
 	"log"
@@ -26,7 +25,7 @@ func AddTorrent() func(w http.ResponseWriter, r *http.Request) {
 
 		base64uri := vars["base64uri"]
 
-		uri, err := base64.StdEncoding.DecodeString(base64uri)
+		uri, err := decodeURLBase64(base64uri)
 
 		if err != nil {
 			http.Error(w, failedToAddTorrent(), http.StatusNotFound)
