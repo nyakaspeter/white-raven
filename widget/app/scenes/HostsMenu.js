@@ -28,10 +28,15 @@ SceneHostsMenu.prototype.handleShow = function () {
     // Filter out formats and resolutions the TV can't play reliably.
     var filteredlist = [];
     for(var i=0; i<torrenturls.length; i++) {
-        if (torrenturls[i].title.toLowerCase().indexOf("hevc") == -1
-            && torrenturls[i].title.toLowerCase().indexOf("h265") == -1
-            && torrenturls[i].title.toLowerCase().indexOf("x265") == -1
-            && torrenturls[i].title.toLowerCase().indexOf("2160p") == -1) {
+        var torrenttitle = torrenturls[i].title.toLowerCase();
+        if (torrenttitle.indexOf("hevc") == -1
+            && torrenttitle.indexOf("h265") == -1
+            && torrenttitle.indexOf("h.265") == -1
+            && torrenttitle.indexOf("x265") == -1
+            && torrenttitle.indexOf("av1") == -1
+            && torrenttitle.indexOf("2160p") == -1
+            && torrenttitle.indexOf("bd25") == -1
+            && torrenttitle.indexOf("bd50") == -1) {
             filteredlist.push(torrenturls[i]);
         }
     }
