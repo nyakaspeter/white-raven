@@ -2,8 +2,8 @@ module github.com/nyakaspeter/white-raven
 
 go 1.27.0
 
-// Includes request-scheduler and reader-lock fixes that prevent streaming stalls.
-replace github.com/anacrolix/torrent => github.com/nyakaspeter/torrent v1.61.0-streaming-request-contention
+// Includes streaming contention fixes and synchronous listener shutdown.
+replace github.com/anacrolix/torrent => github.com/nyakaspeter/torrent v1.61.0-streaming-request-contention.1
 
 // Staged from the pinned fork and built with its web UI by the companion build.
 replace github.com/autobrr/harbrr => ./companion/harbrr-build

@@ -50,7 +50,7 @@ func routesHandler() http.Handler {
 	apiV0.HandleFunc("/delete/{hash}", v0.DeleteTorrent())
 	apiV0.HandleFunc("/deleteall", v0.DeleteAllTorrents())
 	apiV0.HandleFunc("/startplayer/{base64path}/{base64args}", v0.StartMediaPlayer())
-	apiV0.HandleFunc("/restart/downrate/{downrate}/uprate/{uprate}", v0.RestartTorrentClient(quitSignal))
+	apiV0.HandleFunc("/restart/downrate/{downrate}/uprate/{uprate}", v0.RestartTorrentClient())
 	apiV0.HandleFunc("/stop", v0.StopApplication(quitSignal))
 	apiV0.HandleFunc("/about", v0.About(version.Value))
 	apiV0.NotFoundHandler = v0.NotFound()

@@ -186,6 +186,12 @@ func StopTorrentClient() {
 
 }
 
+func RestartTorrentClient() error {
+	StopTorrentClient()
+	_, err := StartTorrentClient()
+	return err
+}
+
 func AddTorrent(uri string) types.TorrentInfo {
 	info := types.TorrentInfo{}
 	torrent := addTorrentFromUri(uri)
