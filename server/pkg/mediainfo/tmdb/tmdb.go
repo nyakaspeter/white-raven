@@ -15,6 +15,10 @@ import (
 )
 
 func DiscoverMovies(params types.MovieDiscoverParams, language string, page int) (types.MovieResults, error) {
+	if params.SortBy == "trending" {
+		return TrendingMovies(params, language, page)
+	}
+
 	requesturl := "https://api.themoviedb.org/3/discover/movie?api_key=" + *settings.TMDBKey +
 		"&with_original_language=en" +
 		"&region=US&with_release_type=5" +
@@ -72,6 +76,10 @@ func DiscoverMovies(params types.MovieDiscoverParams, language string, page int)
 }
 
 func DiscoverShows(params types.ShowDiscoverParams, language string, page int) (types.ShowResults, error) {
+	if params.SortBy == "trending" {
+		return TrendingShows(params, language, page)
+	}
+
 	requesturl := "https://api.themoviedb.org/3/discover/tv?api_key=" + *settings.TMDBKey +
 		"&with_original_language=en" +
 		"&language=" + language +
@@ -125,6 +133,85 @@ func DiscoverShows(params types.ShowDiscoverParams, language string, page int) (
 	}
 
 	return results, nil
+}
+
+func TrendingMovies(params types.MovieDiscoverParams, language string, page int) (types.MovieResults, error) {
+	requesturl := "https://api.themoviedb.org/3/trending/movie/week?api_key=" + *settings.TMDBKey +
+		"&language=" + language +
+		"&page=" + strconv.Itoa(page)
+
+	var results types.MovieResults
+	if err := getTMDB(requesturl, &results); err != nil {
+		return types.MovieResults{}, err
+	}
+
+	filtered := make([]types.Movie, 0, len(results.Results))
+	for _, movie := range results.Results {
+		if movie.OriginalLanguage != "en" {
+			continue
+		}
+		if params.MaxReleaseDate != "" && (movie.ReleaseDate == "" || movie.ReleaseDate > params.MaxReleaseDate) {
+			continue
+		}
+		if params.MinReleaseDate != "" && movie.ReleaseDate < params.MinReleaseDate {
+			continue
+		}
+		filtered = append(filtered, movie)
+	}
+	results.Results = filtered
+	return results, nil
+}
+
+func TrendingShows(params types.ShowDiscoverParams, language string, page int) (types.ShowResults, error) {
+	requesturl := "https://api.themoviedb.org/3/trending/tv/week?api_key=" + *settings.TMDBKey +
+		"&language=" + language +
+		"&page=" + strconv.Itoa(page)
+
+	var results types.ShowResults
+	if err := getTMDB(requesturl, &results); err != nil {
+		return types.ShowResults{}, err
+	}
+
+	filtered := make([]types.Show, 0, len(results.Results))
+	for _, show := range results.Results {
+		if show.OriginalLanguage != "en" {
+			continue
+		}
+		if params.MaxAirDate != "" && (show.FirstAirDate == "" || show.FirstAirDate > params.MaxAirDate) {
+			continue
+		}
+		if params.MinAirDate != "" && show.FirstAirDate < params.MinAirDate {
+			continue
+		}
+		filtered = append(filtered, show)
+	}
+	results.Results = filtered
+	return results, nil
+}
+
+func getTMDB(requesturl string, target interface{}) error {
+	req, err := http.NewRequest("GET", requesturl, nil)
+	if err != nil {
+		return err
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr, Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(body, target)
 }
 
 func SearchMovies(title string, language string, page int) (types.MovieResults, error) {

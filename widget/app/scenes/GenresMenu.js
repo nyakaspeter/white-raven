@@ -78,10 +78,16 @@ SceneGenresMenu.prototype.handleKeyDown = function (keyCode) {
                         sf.scene.hide('GenresMenu');
                         sf.scene.focus('Main');
 
+                        var selectedGenre = genresMenuText['genre'][i];
+                        var selectedSort = sortby;
+                        if (selectedGenre != 'all' && selectedSort == 'trending') {
+                            selectedSort = 'popularity.desc';
+                        }
+
                         if (querytype == "movie") {
-                            ShowMoviesMenu(genresMenuText['genre'][i], sortby);
+                            ShowMoviesMenu(selectedGenre, selectedSort);
                         } else if (querytype == "tv") {
-                            ShowShowsMenu(genresMenuText['genre'][i], sortby);
+                            ShowShowsMenu(selectedGenre, selectedSort);
                         }
                         break;
                     }

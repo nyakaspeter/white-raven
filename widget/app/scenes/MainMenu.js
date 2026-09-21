@@ -89,12 +89,12 @@ SceneMainMenu.prototype.handleKeyDown = function (keyCode) {
     	        	case "movies":
                         sf.scene.hide('MainMenu');
     	        		sf.scene.focus('Main');
-    		        	ShowMoviesMenu('all', 'popularity.desc');
+                        ShowMoviesMenu('all', 'trending');
     		        	break;
     	        	case "shows":
                         sf.scene.hide('MainMenu');
     	        		sf.scene.focus('Main');
-    		        	ShowShowsMenu('all', 'popularity.desc');
+                        ShowShowsMenu('all', 'trending');
     		        	break;
                     case "favourites":
                         sf.scene.hide('MainMenu');

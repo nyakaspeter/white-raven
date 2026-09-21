@@ -77,7 +77,7 @@ var faverror = false;
 var noTryAgain = false;
 
 var genretype = 'all';
-var sortby = 'popularity.desc';
+var sortby = 'trending';
 
 var type = '';
 
@@ -95,6 +95,7 @@ var totalpages = 1;
 var ssindex = 2;
 var episodeobject = [];
 var mccount = 0;
+var tmdbPagePending = false;
 
 // Save previous values in search session
 var save_mainWrap = "";
@@ -201,10 +202,10 @@ genresTVMenuText['genre'] = ['all', '10759', '16', '35', '80', '99', '18', '1075
 var genresMenuText = {};
 
 var sortMovieMenuText = {};
-sortMovieMenuText['name'] = ['popularity.desc', 'release_date.desc', 'vote_count.desc'];
+sortMovieMenuText['name'] = ['trending', 'popularity.desc', 'release_date.desc', 'vote_count.desc'];
 
 var sortTVMenuText = {};
-sortTVMenuText['name'] = ['popularity.desc', 'first_air_date.desc', 'vote_average.desc'];
+sortTVMenuText['name'] = ['trending', 'popularity.desc', 'first_air_date.desc', 'vote_average.desc'];
 
 var sortMenuText = {};
 
@@ -753,7 +754,7 @@ function RestartServer(state) {
       if (this.readyState == 4) {
         if (this.status == 200) {
             reqStartSuccess = true;
-            setTimeout(function(){ ShowMoviesMenu('all', 'popularity.desc'); }, 2000);
+            setTimeout(function(){ ShowMoviesMenu('all', 'trending'); }, 2000);
         }
       }
     });
@@ -765,7 +766,7 @@ function RestartServer(state) {
         if (!reqStartSuccess) {
             xhr.abort();
             reqStartSuccess = true;
-            ShowMoviesMenu('all', 'popularity.desc');
+            ShowMoviesMenu('all', 'trending');
         }
     }, 5000);
 }
@@ -1371,12 +1372,19 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
 
     xhr.addEventListener("readystatechange", function () {
       if (this.readyState == 4) {
+        if (qtype != "search" && type == "silent") {
+            tmdbPagePending = false;
+        }
         if (this.status == 200 || this.status == 404) {
             reqSuccess = true;
             alert("[White Raven] Tmdb data received");
 
             var response = JSON.parse(this.responseText.replace(/\"name\"/g,"\"title\""));
             var dataobject = response.results ? response.results : {};
+
+            if (dataobject.total_pages != undefined) {
+                totalpages = dataobject.total_pages;
+            }
             
             var maxIndex = 0;
             if (dataobject.results) {
@@ -1407,7 +1415,6 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
             }
 
             if (maxIndex > 0) {
-                totalpages = dataobject.total_pages;
                 for(var i=0; i<maxIndex; i++) {
                     var duplicated = false;
                     if (dataobject.results[i].poster_path != undefined) {
@@ -1463,17 +1470,7 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
                             mccount++;
 
                             if (mccount == 10) {
-                                setTimeout(function() {
-                                    StartOrStopWithLogo("stop");
-                                    document.getElementsByClassName('newwrap')[0].style.visibility = "visible";
-                                    SetWaitAndZIndex("hidden", 5);
-                                    document.getElementById("moviecards0").className = "mc_selected";
-                                    if (qtype == "search") {
-                                        widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsTextNoGenres[lang]);
-                                    } else {
-                                        widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsText[lang]);
-                                    }
-                                }.bind(this), 700);
+                                ShowTmdbGrid(qtype);
                             }
                             
                         }
@@ -1487,17 +1484,7 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
                     for (var m = mccount;m < 10;m++) {
                         movieCard[m].parentElement.style.visibility = "hidden";
                     }
-                    setTimeout(function() {
-                        StartOrStopWithLogo("stop");
-                        document.getElementsByClassName('newwrap')[0].style.visibility = "visible";
-                        SetWaitAndZIndex("hidden", 5);
-                        document.getElementById("moviecards0").className = "mc_selected";
-                        if (qtype == "search") {
-                            widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsTextNoGenres[lang]);
-                        } else {
-                            widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsText[lang]);
-                        }
-                    }.bind(this), 700);
+                    ShowTmdbGrid(qtype);
                 }
 
                 if (qtype == "search" && type == "first") {
@@ -1544,6 +1531,7 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
                     //alert("ERROR: NO ITEM!");
                 }
             }
+
         }
 
       }
@@ -1571,6 +1559,13 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
 
             reqSuccess = true;
 
+            if (qtype != "search" && type == "silent") {
+                tmdbPagePending = false;
+                if (page == cpage) {
+                    page = cpage - 1;
+                }
+            }
+
             if (type == "first") {    
                 IsTheServerStillRunning(function(stillrunning) {
                     isrunning = stillrunning;
@@ -1592,6 +1587,37 @@ function GetMovieInfo(qtype, type, cpage, typedtext) {
             //alert("ERROR: Timeout!")
         }
     }, 20000);
+}
+
+function LoadNextTmdbPage() {
+    if (querytype == "search" || tmdbPagePending || page >= totalpages) {
+        return;
+    }
+
+    tmdbPagePending = true;
+    page = page + 1;
+    GetMovieInfo(querytype, "silent", page, "");
+}
+
+function PrefetchTmdbRow() {
+    var currentRowStart = position - (position % 5);
+    if (wrapData.length < currentRowStart + 15) {
+        LoadNextTmdbPage();
+    }
+}
+
+function ShowTmdbGrid(qtype) {
+    setTimeout(function() {
+        StartOrStopWithLogo("stop");
+        document.getElementsByClassName('newwrap')[0].style.visibility = "visible";
+        SetWaitAndZIndex("hidden", 5);
+        document.getElementById("moviecards0").className = "mc_selected";
+        if (qtype == "search") {
+            widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsTextNoGenres[lang]);
+        } else {
+            widgetAPI.putInnerHTML(document.getElementById("SettingsText"), mainsettingsText[lang]);
+        }
+    }, 700);
 }
 
 function ImageExists(data) {
@@ -1736,6 +1762,7 @@ function ShowMoviesMenu(gen, sort) {
     page = 1;
     totalpages = 1;
     mccount = 0;
+    tmdbPagePending = false;
     document.getElementsByClassName('newwrap')[0].style.visibility = "hidden";
     if (document.getElementsByClassName('mc_selected')[0] != undefined) {
         document.getElementsByClassName('mc_selected')[0].className = "";
@@ -1768,6 +1795,7 @@ function ShowShowsMenu(gen, sort) {
     page = 1;
     totalpages = 1;
     mccount = 0;
+    tmdbPagePending = false;
     document.getElementsByClassName('newwrap')[0].style.visibility = "hidden";
     if (document.getElementsByClassName('mc_selected')[0] != undefined) {
         document.getElementsByClassName('mc_selected')[0].className = "";
@@ -1960,6 +1988,9 @@ SceneMain.prototype.handleKeyDown = function(keyCode){
                         var mcClass = document.getElementsByClassName("mc_selected")[0];
                         var wp = parseInt(mcClass.id.slice(-1));
                         var offset = (position % 5);
+
+                        // Keep one complete five-card row buffered ahead.
+                        PrefetchTmdbRow();
                         
                         if (wp < 5 && wrapData[position + 5] != undefined) {
                             wp = wp + 5;
@@ -1976,17 +2007,11 @@ SceneMain.prototype.handleKeyDown = function(keyCode){
                             waiting = false;
                         } else if (wp < 5 && wrapData[position + 5] == undefined) {
                             waiting = false;
-                        } else if (wp > 4 && wrapData[position - offset + 5] != undefined){
+                        } else if (wp > 4
+                            && wrapData[position - offset + 5] != undefined
+                            && (wrapData[position - offset + 9] != undefined
+                                || (!tmdbPagePending && page >= totalpages))) {
                             //var offset = (position % 5);
-                            if (wrapData[position - offset + 9 + 5] == undefined) {
-                                if (querytype != "search") {
-                                    if (page < totalpages) {
-                                        page = page + 1;
-                                        GetMovieInfo(querytype, "silent", page, "");
-                                    }
-                                }
-                            }
-
                             if (wrapData[position - offset + 5] != undefined) {
 
                                 // Card modifications from here                                
@@ -1996,13 +2021,15 @@ SceneMain.prototype.handleKeyDown = function(keyCode){
                                   document.getElementById("moviecards" + (m - 10)).style.top = "-191px";
                                   document.getElementById("moviecards" + (m - 5)).style.top = "43px";
 
+                                  var thisCard = document.getElementById("moviecards" + m);
                                   if (wrapData[position - offset + m - 10] != undefined) {
-                                    var thisCard = document.getElementById("moviecards" + m);
                                     thisCard.children[0].children[0].src = w185src + wrapData[position - offset + m - 10].poster_path;
                                     thisCard.children[0].children[1].textContent = wrapData[position - offset + m - 10].title;
                                     thisCard.style.visibility = "inherit";
                                     
                                     thisCard.style.top = "277px";
+                                  } else {
+                                    thisCard.style.visibility = "hidden";
                                   }
                                 }
 
@@ -2206,7 +2233,7 @@ SceneMain.prototype.handleKeyDown = function(keyCode){
                     } else if (querytype == 'favourites') {
                         if (faverror == true) {
                             faverror = false;
-                            ShowMoviesMenu('all', 'popularity.desc');
+                            ShowMoviesMenu('all', 'trending');
                         } else {
                             widgetAPI.putInnerHTML(document.getElementById("SettingsText"), favouritesettingsText[lang]);
                         }

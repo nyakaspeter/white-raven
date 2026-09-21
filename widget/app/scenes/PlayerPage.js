@@ -1230,6 +1230,8 @@ ScenePlayerPage.prototype.initialize = function () {
     ThreeD.init = function()
     {
         var button = document.getElementById("threeDbutton");
+        var audioButton = document.getElementById("audiobutton");
+        var subtitleButton = document.getElementById("subbutton");
         this.plugin = document.getElementById("pluginScreen1");
         this.directPlugin = document.getElementById("pluginScreenDirect");
         this.supported = false;
@@ -1256,6 +1258,8 @@ ScenePlayerPage.prototype.initialize = function () {
         } catch (error) {}
 
         button.style.display = this.supported ? 'block' : 'none';
+        audioButton.style.left = CSSPixels(this.supported ? 770 : 830);
+        subtitleButton.style.left = CSSPixels(this.supported ? 830 : 890);
         this.render();
         return this.supported;
     };
