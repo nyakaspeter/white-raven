@@ -2074,7 +2074,12 @@ SceneMain.prototype.handleKeyDown = function(keyCode){
                             }
                         } else if (wp > 4 && wrapData[position - offset + 5] == undefined) {
                             waiting = false;
-                        }                  
+                        } else {
+                            // Next row is only partially loaded. Release the key gate so
+                            // navigation stays responsive; the in-flight TMDB page fetch
+                            // completes the row and the next DOWN press scrolls.
+                            waiting = false;
+                        }
                     }
                 }
                 break;
