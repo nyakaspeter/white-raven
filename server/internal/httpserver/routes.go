@@ -32,6 +32,7 @@ func routesHandler() http.Handler {
 	apiV0.HandleFunc("/tmdbsearch/type/tv/lang/{lang}/page/{page}/text/{text}", v0.SearchShows())
 	apiV0.HandleFunc("/tmdbinfo/type/movie/tmdbid/{tmdbid}/lang/{lang}", v0.GetMovieInfo())
 	apiV0.HandleFunc("/tmdbinfo/type/tv/tmdbid/{tmdbid}/lang/{lang}", v0.GetShowInfo())
+	apiV0.HandleFunc("/tvmazeepisodes/tmdb/{tmdb}", v0.GetShowEpisodesByTmdb())
 	apiV0.HandleFunc("/tvmazeepisodes/tvdb/{tvdb}/imdb/{imdb}", v0.GetShowEpisodesByImdbAndTvdb())
 	apiV0.HandleFunc("/tvmazeepisodes/imdb/{imdb}", v0.GetShowEpisodesByImdb())
 	apiV0.HandleFunc("/tvmazeepisodes/tvdb/{tvdb}", v0.GetShowEpisodesByTvdb())

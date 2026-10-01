@@ -749,7 +749,7 @@ SceneInfoPage.prototype.GetSerieInfo = function(tmdbid) {
             widgetAPI.putInnerHTML(document.getElementById("episodemenu"), seasonText[lang] + "</br>");
 
             // Create season elements
-            this.GetTVMazeInfo(wrapData[position].tvdb_id, wrapData[position].imdb_id);
+            this.GetTVMazeInfo(wrapData[position].tvdb_id, wrapData[position].imdb_id, tmdbid);
 
             if (xhr.destroy) { xhr.destroy(); }
         }
@@ -777,7 +777,7 @@ SceneInfoPage.prototype.GetSerieInfo = function(tmdbid) {
     }.bind(this), 25000);
 }
 
-SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
+SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb, tmdb) {
     this.inforeturn = false;
     this.SetWaitAndZIndex("visible", 100);
 
@@ -993,6 +993,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb) {
     xhr.open("GET", "http://" + serverIP + ":9000/api/v0/tvmazeepisodes"
         + (tvdb ? "/tvdb/" + tvdb : "")
         + (imdb ? "/imdb/" + imdb : "")
+        + (!tvdb && !imdb && tmdb ? "/tmdb/" + tmdb : "")
     );
     xhr.send();
 

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -14,6 +15,17 @@ import (
 
 type tvmazeIdResponse struct {
 	Id int `json:"id"`
+}
+
+type tvmazeSearchResult struct {
+	Score float64          `json:"score"`
+	Show  tvmazeSearchShow `json:"show"`
+}
+
+type tvmazeSearchShow struct {
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	Premiered string `json:"premiered"`
 }
 
 func GetEpisodes(showId types.ShowIds) ([]types.TvMazeEpisode, error) {
@@ -29,7 +41,48 @@ func GetEpisodes(showId types.ShowIds) ([]types.TvMazeEpisode, error) {
 		return []types.TvMazeEpisode{}, errors.New("id not found")
 	}
 
-	requesturl := "https://api.tvmaze.com/shows/" + showId.TvMazeId + "/episodes"
+	return fetchEpisodes(showId.TvMazeId)
+}
+
+func SearchShows(title string) ([]tvmazeSearchResult, error) {
+	requesturl := "https://api.tvmaze.com/search/shows?q=" + url.QueryEscape(title)
+
+	req, err := http.NewRequest("GET", requesturl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr, Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var results []tvmazeSearchResult
+	err = json.Unmarshal(body, &results)
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func GetEpisodesByTvMazeId(tvMazeId string) ([]types.TvMazeEpisode, error) {
+	return fetchEpisodes(tvMazeId)
+}
+
+func fetchEpisodes(tvMazeId string) ([]types.TvMazeEpisode, error) {
+	requesturl := "https://api.tvmaze.com/shows/" + tvMazeId + "/episodes"
 
 	req, err := http.NewRequest("GET", requesturl, nil)
 	if err != nil {

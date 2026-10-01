@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/nyakaspeter/white-raven/server/pkg/mediainfo"
@@ -43,6 +44,27 @@ func GetShowEpisodesByTvdb() func(w http.ResponseWriter, r *http.Request) {
 		showIds.TvdbId = vars["tvdb"]
 
 		episodes := mediainfo.GetShowEpisodes(showIds)
+		if len(episodes) == 0 {
+			http.Error(w, noTvMazeDataFound(), http.StatusNotFound)
+			return
+		}
+
+		io.WriteString(w, showEpisodeList(episodes))
+	}
+}
+
+func GetShowEpisodesByTmdb() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		log.Println("Fetching show episodes by TMDB id:", vars)
+
+		tmdbid, err := strconv.Atoi(vars["tmdb"])
+		if err != nil {
+			http.Error(w, noTvMazeDataFound(), http.StatusNotFound)
+			return
+		}
+
+		episodes := mediainfo.GetShowEpisodesByTmdb(tmdbid)
 		if len(episodes) == 0 {
 			http.Error(w, noTvMazeDataFound(), http.StatusNotFound)
 			return
