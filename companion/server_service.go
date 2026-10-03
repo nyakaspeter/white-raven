@@ -19,6 +19,12 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
+// appLog writes companion-level diagnostics (installer, updater, settings)
+// to stderr only. The standard logger is routed into the server log buffer
+// shown in the UI (see NewServerService), so only wrserver's own output
+// should use it — everything else must use appLog.
+var appLog = log.New(os.Stderr, "", 0)
+
 type ServerService struct {
 	controller runtime.Controller
 	logs       *runtime.LogBuffer
@@ -83,11 +89,11 @@ func (service *ServerService) LoadConfig() runtime.Config {
 		return normalized(config)
 	}
 	if err != nil {
-		log.Println("Unable to read settings:", err)
+		appLog.Println("Unable to read settings:", err)
 		return normalized(config)
 	}
 	if err := json.Unmarshal(data, &config); err != nil {
-		log.Println("Unable to parse settings:", err)
+		appLog.Println("Unable to parse settings:", err)
 	}
 	return normalized(config)
 }
@@ -112,9 +118,9 @@ func (service *ServerService) StartServer(config runtime.Config) error {
 		return fmt.Errorf("save settings: %w", err)
 	}
 	service.logs.Clear()
-	log.Println("Starting White Raven Server.")
+	appLog.Println("Starting White Raven Server.")
 	if err := service.controller.Start(config); err != nil {
-		log.Println("Start failed:", err)
+		appLog.Println("Start failed:", err)
 		return err
 	}
 	startPlatformBackground("server", "Server is running")
@@ -302,7 +308,6 @@ func (service *ServerService) DownloadUpdate() (string, error) {
 	if pending == nil {
 		return "", errors.New("there is no pending update to download")
 	}
-	log.Println("Downloading update to", pending.Version)
 	return startUpdateDownload(service, pending)
 }
 

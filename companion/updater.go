@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"runtime"
 	"strings"
@@ -85,7 +84,6 @@ func setupAutoUpdater(app *application.App, service *ServerService) {
 		AssetMatcher: companionAssetMatcher,
 	})
 	if err != nil {
-		log.Println("Auto updater disabled:", err)
 		return
 	}
 	if err := app.Updater.Init(updater.Config{
@@ -93,7 +91,6 @@ func setupAutoUpdater(app *application.App, service *ServerService) {
 		Providers:      []updater.Provider{provider},
 		Window:         updater.WindowNone,
 	}); err != nil {
-		log.Println("Auto updater disabled:", err)
 		return
 	}
 	service.setUpdater(app)
@@ -107,5 +104,4 @@ func setupAutoUpdater(app *application.App, service *ServerService) {
 	// The check itself runs once on startup: the frontend calls
 	// ServerService.CheckForUpdates after it has registered its event
 	// listeners, so the "update available" popup can react to the result.
-	log.Printf("Auto updater enabled for version %s.", appVersion)
 }

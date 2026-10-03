@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"log"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
@@ -13,7 +12,7 @@ var assets embed.FS
 func main() {
 	service, err := NewServerService()
 	if err != nil {
-		log.Fatal(err)
+		appLog.Fatal(err)
 	}
 
 	app := application.New(application.Options{
@@ -33,6 +32,6 @@ func main() {
 		BackgroundColour: application.NewRGB(16, 20, 27), URL: "/",
 	})
 	if err := app.Run(); err != nil {
-		log.Fatal(err)
+		appLog.Fatal(err)
 	}
 }
