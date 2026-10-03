@@ -111,9 +111,15 @@ func startUpdateDownload(service *ServerService, release *updater.Release) (stri
 	}
 	reporter.final()
 
-	// ACTION_VIEW on a file URI resolves to the system package installer for
-	// .apk files; the user then installs (or cancels) as usual.
-	application.Android.OpenURL("file://" + target)
+	// Hand the APK to the system package installer through the FileProvider.
+	// Plain file:// URIs into the app's private storage are blocked for other
+	// apps on Android 7+, so the installer never launches; the content:// URI
+	// below (see file_paths.xml) shares the file with a read-permission grant.
+	rel, err := filepath.Rel(storage, target)
+	if err != nil {
+		return "", err
+	}
+	application.Android.OpenURL("content://com.whiteraven.server.fileprovider/" + rel)
 	return "Downloaded the APK and opened the system installer.", nil
 }
 

@@ -5,6 +5,15 @@ includes:
 
 vars:
   APP_ID: '{{.APP_ID | default "com.whiteraven.server"}}'
+  # APP_VERSION is read from build/config.yml at build time so the auto
+  # updater knows the running version. Must stay a top-level var (task-level
+  # sh vars in included Taskfiles do not evaluate). The grep pattern is
+  # deliberately free of quotes, parens, and backslashes: go-task mangles
+  # those when spawning the shell on Windows. Note: wails3 task
+  # common:update:build-assets regenerates this Taskfile and would drop
+  # this var; re-add it after running that task.
+  APP_VERSION:
+    sh: grep -m1 -oE '[0-9]+[.][0-9]+[.][0-9]+' build/config.yml
   MIN_SDK: '21'
   TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
@@ -56,7 +65,7 @@ tasks:
     vars:
       # anet, pulled in by the torrent/WebRTC stack, uses linkname for Android
       # network interfaces and requires this linker opt-out with Go 1.23+.
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0 -X main.appVersion={{.APP_VERSION}}"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
     env:
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
@@ -126,7 +135,7 @@ tasks:
     vars:
       # See the build task above. Keep this here as compile:go:shared is also
       # invoked directly by the fat APK/AAB tasks.
-      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
+      BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production,android -trimpath -buildvcs=false -ldflags="-w -s -checklinkname=0 -X main.appVersion={{.APP_VERSION}}"{{else}}-tags android,debug -buildvcs=false -gcflags=all="-l" -ldflags="-checklinkname=0"{{end}}'
 
   compile:go:all-archs:
     summary: Compile Go code for all Android architectures (fat APK)

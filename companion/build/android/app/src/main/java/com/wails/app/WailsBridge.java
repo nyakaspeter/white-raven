@@ -456,6 +456,10 @@ public class WailsBridge {
             try {
                 Intent view = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 view.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // Grant read access for FileProvider content:// URIs (e.g. the
+                // update APK handed to the system package installer). Ignored
+                // for non-content URIs.
+                view.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 activity.startActivity(view);
             } catch (Exception e) {
                 Log.e(TAG, "openURL failed", e);

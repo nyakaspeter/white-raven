@@ -3,4 +3,9 @@
     <!-- Camera captures are written here and shared with the camera app via the
          FileProvider. -->
     <cache-path name="captures" path="captures/" />
+
+    <!-- Update APKs are downloaded into <filesDir>/updates and handed to the
+         system package installer via FileProvider. Plain file:// URIs into the
+         app's private storage are inaccessible to other apps on Android 7+. -->
+    <files-path name="updates" path="updates/" />
 </paths>
