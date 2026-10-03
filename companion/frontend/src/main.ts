@@ -370,7 +370,6 @@ type UpdateView = "available" | "downloading" | "ready" | "error";
 const updateDialog = document.querySelector<HTMLElement>("#update-dialog")!;
 const updateTitle = document.querySelector<HTMLElement>("#update-title")!;
 const updateSummary = document.querySelector<HTMLElement>("#update-summary")!;
-const updateNotes = document.querySelector<HTMLElement>("#update-notes")!;
 const updateProgress = document.querySelector<HTMLElement>("#update-progress")!;
 const updateProgressFill = document.querySelector<HTMLElement>("#update-progress-fill")!;
 const updateProgressLabel = document.querySelector<HTMLElement>("#update-progress-label")!;
@@ -383,17 +382,11 @@ const updateDismiss = document.querySelector<HTMLButtonElement>("#update-dismiss
 const updateRetry = document.querySelector<HTMLButtonElement>("#update-retry")!;
 const updateClose = document.querySelector<HTMLButtonElement>("#update-close")!;
 const updateCloseReady = document.querySelector<HTMLButtonElement>("#update-close-ready")!;
-const updatesHeading = document.querySelector<HTMLElement>("#updates-heading")!;
-const updatesGroup = document.querySelector<HTMLElement>("#updates-group")!;
-const appVersionLabel = document.querySelector<HTMLElement>("#app-version")!;
-
 let updateView: UpdateView = "available";
 let updateEnabled = false;
 let updatePlatform = "";
 let currentVersion = "";
 let pendingVersion = "";
-let pendingNotes = "";
-
 function formatUpdateBytes(bytes: number): string {
   if (bytes <= 0) return "0 MB";
   const mb = bytes / (1024 * 1024);
@@ -404,7 +397,6 @@ function showUpdateView(view: UpdateView, message = "") {
   updateView = view;
   updateDialog.hidden = false;
   updateError.hidden = true;
-  updateNotes.hidden = true;
   updateProgress.hidden = true;
   updateActionsAvailable.hidden = true;
   updateActionsReady.hidden = true;
@@ -412,10 +404,6 @@ function showUpdateView(view: UpdateView, message = "") {
   if (view === "available") {
     updateTitle.textContent = "Update available";
     updateSummary.textContent = `Version ${pendingVersion} is available (you have ${currentVersion}).`;
-    if (pendingNotes) {
-      updateNotes.textContent = pendingNotes;
-      updateNotes.hidden = false;
-    }
     updateActionsAvailable.hidden = false;
   } else if (view === "downloading") {
     updateTitle.textContent = "Downloading update";
@@ -481,18 +469,14 @@ async function initUpdates() {
     updatePlatform = status.platform;
     currentVersion = status.currentVersion;
     if (!updateEnabled) {
-      // Development builds have no matching release, so hide the section.
-      updatesHeading.hidden = true;
-      updatesGroup.hidden = true;
+      // Development builds and unsupported platforms have no updater.
       return;
     }
-    appVersionLabel.textContent = `v${status.currentVersion}`;
 
     Events.On("wails:updater:update-available", (event) => {
-      const release = event.data as { version?: string; notes?: string } | null;
+      const release = event.data as { version?: string } | null;
       if (!release?.version) return;
       pendingVersion = release.version;
-      pendingNotes = release.notes ?? "";
       if (updateDialog.hidden || updateView === "error") {
         showUpdateView("available");
       }
@@ -552,8 +536,8 @@ async function initUpdates() {
     // Check once on startup, when the UI is ready to receive updater events.
     ServerService.CheckForUpdates().catch(() => undefined);
   } catch {
-    updatesHeading.hidden = true;
-    updatesGroup.hidden = true;
+    // UpdateStatus is unavailable (development build / iOS); the updater
+    // stays silently disabled.
   }
 }
 
