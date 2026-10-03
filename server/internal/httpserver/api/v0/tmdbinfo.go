@@ -87,3 +87,56 @@ func showInfo(result mediainfotypes.ShowInfo) string {
 	json, _ := json.Marshal(response)
 	return string(json)
 }
+
+type ShowEpisodesResponse struct {
+	Success         bool                            `json:"success"`
+	Results         []mediainfotypes.ShowEpisode    `json:"results"`
+	StreamReference *mediainfotypes.StreamReference `json:"stream_reference,omitempty"`
+}
+
+func GetShowEpisodes() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		log.Println("Fetching show episodes:", vars)
+
+		tmdbId, err := strconv.Atoi(vars["tmdb"])
+		if err != nil {
+			http.Error(w, noShowEpisodesFound(), http.StatusNotFound)
+			return
+		}
+
+		data, err := mediainfo.GetShowEpisodesByTmdb(tmdbId)
+		if err != nil || len(data.Episodes) == 0 {
+			http.Error(w, noShowEpisodesFound(), http.StatusNotFound)
+			return
+		}
+
+		io.WriteString(w, showEpisodeList(data))
+	}
+}
+
+func showEpisodeList(data mediainfo.ShowEpisodeData) string {
+	message := ShowEpisodesResponse{
+		Success:         true,
+		Results:         data.Episodes,
+		StreamReference: data.StreamReference,
+	}
+
+	log.Println("Found", len(data.Episodes), "episodes.")
+
+	output, _ := json.Marshal(message)
+	return string(output)
+}
+
+func noShowEpisodesFound() string {
+	message := MessageResponse{
+		Success: false,
+		Message: "No show episodes found.",
+	}
+
+	messageString, _ := json.Marshal(message)
+
+	log.Println("No show episodes found.")
+
+	return string(messageString)
+}

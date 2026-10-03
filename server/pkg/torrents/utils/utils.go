@@ -143,8 +143,12 @@ func ShowTorrentMatches(title string, torrentSeason string, torrentEpisode strin
 		return true
 	}
 
-	// Markerless complete-series releases contain every season and episode.
-	return torrentSeason == "" && strings.Contains(strings.ToLower(title), "complete")
+	if torrentSeason != "" {
+		return false
+	}
+
+	// A markerless release is treated as a complete series.
+	return true
 }
 
 var seasonRangeRegex = regexp.MustCompile(`(?i)s0*(\d{1,3})\s*-\s*s?0*(\d{1,3})`)

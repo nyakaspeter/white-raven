@@ -1,11 +1,10 @@
 package mediainfo
 
 import (
-	"strconv"
-	"strings"
+	"sort"
+	"sync"
 
 	"github.com/nyakaspeter/white-raven/server/pkg/mediainfo/tmdb"
-	"github.com/nyakaspeter/white-raven/server/pkg/mediainfo/tvmaze"
 	"github.com/nyakaspeter/white-raven/server/pkg/mediainfo/types"
 )
 
@@ -72,99 +71,86 @@ func GetShowSeason(tmdbId int, seasonNumber int, language string) types.SeasonIn
 	return output
 }
 
-func GetShowEpisodes(showId types.ShowIds) []types.TvMazeEpisode {
-	output, err := tvmaze.GetEpisodes(showId)
-	if err != nil {
-		return []types.TvMazeEpisode{}
-	}
-
-	return output
+type ShowEpisodeData struct {
+	Episodes        []types.ShowEpisode
+	StreamReference *types.StreamReference
 }
 
-func GetShowEpisodesByTmdb(tmdbId int) []types.TvMazeEpisode {
+func GetShowEpisodesByTmdb(tmdbId int) (ShowEpisodeData, error) {
 	info, err := tmdb.GetShowInfo(tmdbId, "en")
-	if err != nil || info.Id == 0 {
-		return []types.TvMazeEpisode{}
-	}
-
-	if info.ExternalIds.TvdbId != 0 || info.ExternalIds.ImdbId != "" {
-		showIds := types.ShowIds{ImdbId: info.ExternalIds.ImdbId}
-		if info.ExternalIds.TvdbId != 0 {
-			showIds.TvdbId = strconv.Itoa(info.ExternalIds.TvdbId)
-		}
-		return GetShowEpisodes(showIds)
-	}
-
-	year := parseYear(info.FirstAirDate)
-	bestId := ""
-	bestScore := 0.0
-	for _, title := range uniqueTitles(info.Title, info.OriginalTitle) {
-		results, err := tvmaze.SearchShows(title)
-		if err != nil {
-			continue
-		}
-		for _, result := range results {
-			if !premiereYearMatches(result.Show.Premiered, year) {
-				continue
-			}
-			if result.Score > bestScore {
-				bestScore = result.Score
-				bestId = strconv.Itoa(result.Show.Id)
-			}
-		}
-	}
-
-	if bestId == "" || bestScore < 1.0 {
-		return []types.TvMazeEpisode{}
-	}
-
-	episodes, err := tvmaze.GetEpisodesByTvMazeId(bestId)
 	if err != nil {
-		return []types.TvMazeEpisode{}
+		return ShowEpisodeData{}, err
 	}
 
-	return episodes
-}
+	seasons := append([]types.Season(nil), info.Seasons...)
+	sort.Slice(seasons, func(i, j int) bool {
+		return seasons[i].SeasonNumber < seasons[j].SeasonNumber
+	})
 
-func uniqueTitles(titles ...string) []string {
-	seen := make(map[string]struct{})
-	output := make([]string, 0, len(titles))
-	for _, title := range titles {
-		title = strings.TrimSpace(title)
-		if title == "" {
-			continue
+	targets := []types.Season{}
+	for _, season := range seasons {
+		if season.EpisodeCount > 0 && season.SeasonNumber >= 0 {
+			targets = append(targets, season)
 		}
-		if _, ok := seen[title]; ok {
-			continue
+	}
+
+	const maxConcurrentSeasons = 8
+	seasonInfos := make([]types.SeasonInfo, len(targets))
+	semaphore := make(chan struct{}, maxConcurrentSeasons)
+	var seasonGroup sync.WaitGroup
+	for i, season := range targets {
+		seasonGroup.Add(1)
+		semaphore <- struct{}{}
+		go func(index int, seasonNumber int) {
+			defer seasonGroup.Done()
+			defer func() { <-semaphore }()
+			seasonInfos[index], _ = tmdb.GetShowSeason(tmdbId, seasonNumber, "en")
+		}(i, season.SeasonNumber)
+	}
+	seasonGroup.Wait()
+
+	data := ShowEpisodeData{Episodes: []types.ShowEpisode{}}
+	seasonInputs := []SeasonEpisodes{}
+
+	for i, seasonInfo := range seasonInfos {
+		for _, episode := range seasonInfo.Episodes {
+			data.Episodes = append(data.Episodes, types.ShowEpisode{
+				Id:             episode.Id,
+				Title:          episode.Title,
+				SeasonNumber:   episode.SeasonNumber,
+				EpisodeNumber:  episode.EpisodeNumber,
+				AirDate:        episode.AirDate,
+				RuntimeMinutes: episode.RuntimeMinutes,
+				Description:    episode.Description,
+				Images:         episodeImages(episode.StillPath),
+			})
 		}
-		seen[title] = struct{}{}
-		output = append(output, title)
+
+		if info.ExternalIds.ImdbId == "" && targets[i].SeasonNumber > 0 {
+			seasonInputs = append(seasonInputs, SeasonEpisodes{
+				Number:   targets[i].SeasonNumber,
+				Episodes: seasonInfo.Episodes,
+			})
+		}
 	}
-	return output
+
+	if len(seasonInputs) > 0 {
+		name := info.OriginalTitle
+		if name == "" {
+			name = info.Title
+		}
+		data.StreamReference = ResolveStreamReferences(name, seasonInputs)
+	}
+
+	return data, nil
 }
 
-func parseYear(date string) int {
-	if len(date) < 4 {
-		return 0
+func episodeImages(stillPath string) types.EpisodeImages {
+	if stillPath == "" {
+		return types.EpisodeImages{}
 	}
-	year, err := strconv.Atoi(date[:4])
-	if err != nil {
-		return 0
+	return types.EpisodeImages{
+		MediumImageUrl:   "https://image.tmdb.org/t/p/w500" + stillPath,
+		OriginalImageUrl: "https://image.tmdb.org/t/p/original" + stillPath,
 	}
-	return year
-}
-
-func premiereYearMatches(premiered string, year int) bool {
-	if year == 0 {
-		return true
-	}
-	premiereYear := parseYear(premiered)
-	if premiereYear == 0 {
-		return true
-	}
-	diff := premiereYear - year
-	if diff < 0 {
-		diff = -diff
-	}
-	return diff <= 1
 }

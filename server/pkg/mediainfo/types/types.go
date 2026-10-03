@@ -206,37 +206,23 @@ type Language struct {
 	Name    string `json:"name"`
 }
 
-type ShowIds struct {
-	ImdbId   string `json:"imdbId"`
-	TvdbId   string `json:"tvdbId"`
-	TvMazeId string `json:"tvMazeId"`
+type ShowEpisode struct {
+	Id             int           `json:"id"`
+	Title          string        `json:"name"`
+	SeasonNumber   int           `json:"season"`
+	EpisodeNumber  int           `json:"number"`
+	AirDate        string        `json:"airdate"`
+	RuntimeMinutes int           `json:"runtime"`
+	Description    string        `json:"summary"`
+	Images         EpisodeImages `json:"image"`
 }
 
-type TvMazeEpisode struct {
-	TvMazeId        int           `json:"id"`
-	TvMazeUrl       string        `json:"url"`
-	Title           string        `json:"name"`
-	SeasonNumber    int           `json:"season"`
-	EpisodeNumber   int           `json:"number"`
-	Type            string        `json:"type"`
-	FirstAirDate    string        `json:"airdate"`
-	FirstAirTime    string        `json:"airtime"`
-	FirstAirDateUtc string        `json:"airstamp"`
-	RuntimeMinutes  int           `json:"runtime"`
-	Description     string        `json:"summary"`
-	Images          EpisodeImages `json:"image"`
-	Links           EpisodeLinks  `json:"_links"`
+type StreamReference struct {
+	ImdbId  string         `json:"imdbId"`
+	Seasons map[string]int `json:"seasons,omitempty"`
 }
 
 type EpisodeImages struct {
 	MediumImageUrl   string `json:"medium"`
 	OriginalImageUrl string `json:"original"`
-}
-
-type EpisodeLinks struct {
-	Self EpisodeLink `json:"self"`
-}
-
-type EpisodeLink struct {
-	Href string `json:"href"`
 }

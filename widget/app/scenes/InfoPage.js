@@ -168,7 +168,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                             if (this.year == 0) {
                                 this.year = 1900;
                             }
-                            this.GetResolverData(wrapData[position].imdb_id, "show", wrapData[position].original_name.toUpperCase(), this.year, parseInt(ss), parseInt(se), function(list, emessage) {
+                            this.GetResolverData(wrapData[position].imdb_id, "show", wrapData[position].original_name.toUpperCase(), this.year, parseInt(ss), parseInt(se), wrapData[position].id, function(list, emessage) {
                                 if (list.length > 0) {
                                     for(var i=0; i<list.length; i++) {
                                         torrenturls.push(list[i]);
@@ -197,7 +197,7 @@ SceneInfoPage.prototype.handleKeyDown = function (keyCode) {
                             if (this.year == 0) {
                                 this.year = 1900;
                             }
-                            this.GetResolverData(wrapData[position].imdb_id, "movie", wrapData[position].original_title.toUpperCase(), this.year, "", "", function(list, emessage) {
+                            this.GetResolverData(wrapData[position].imdb_id, "movie", wrapData[position].original_title.toUpperCase(), this.year, "", "", wrapData[position].id, function(list, emessage) {
                                 if (list.length > 0) {
                                     for(var i=0; i<list.length; i++) {
                                         torrenturls.push(list[i]);
@@ -749,7 +749,7 @@ SceneInfoPage.prototype.GetSerieInfo = function(tmdbid) {
             widgetAPI.putInnerHTML(document.getElementById("episodemenu"), seasonText[lang] + "</br>");
 
             // Create season elements
-            this.GetTVMazeInfo(wrapData[position].tvdb_id, wrapData[position].imdb_id, tmdbid);
+            this.GetShowEpisodesInfo(tmdbid);
 
             if (xhr.destroy) { xhr.destroy(); }
         }
@@ -777,7 +777,7 @@ SceneInfoPage.prototype.GetSerieInfo = function(tmdbid) {
     }.bind(this), 25000);
 }
 
-SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb, tmdb) {
+SceneInfoPage.prototype.GetShowEpisodesInfo = function(tmdb) {
     this.inforeturn = false;
     this.SetWaitAndZIndex("visible", 100);
 
@@ -990,11 +990,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb, tmdb) {
       }
     }.bind(this));
 
-    xhr.open("GET", "http://" + serverIP + ":9000/api/v0/tvmazeepisodes"
-        + (tvdb ? "/tvdb/" + tvdb : "")
-        + (imdb ? "/imdb/" + imdb : "")
-        + (!tvdb && !imdb && tmdb ? "/tmdb/" + tmdb : "")
-    );
+    xhr.open("GET", "http://" + serverIP + ":9000/api/v0/tmdbepisodes/" + tmdb);
     xhr.send();
 
     // No internet connection or connection timeout handling
@@ -1016,7 +1012,7 @@ SceneInfoPage.prototype.GetTVMazeInfo = function(tvdb, imdb, tmdb) {
     }.bind(this), 25000);
 }
 
-SceneInfoPage.prototype.GetResolverData = function(imdb, type, title, year, season, episode, fn) {
+SceneInfoPage.prototype.GetResolverData = function(imdb, type, title, year, season, episode, tmdb, fn) {
     var worklist = [];
     var message = noTorrentText[lang];
 
@@ -1027,11 +1023,28 @@ SceneInfoPage.prototype.GetResolverData = function(imdb, type, title, year, seas
     var xhr = new XMLHttpRequest();
     //xhr.withCredentials = true;
 
+    var tmdbRoute = false;
+    var tmdbRouteTried = false;
+
     xhr.addEventListener("readystatechange", function () {
       if (xhr.readyState == 4) {
+        if (xhr.status == 404 && tmdbRoute && !tmdbRouteTried) {
+            tmdbRouteTried = true;
+            var fallbackUrl = "http://" + serverIP + ":9000/api/v0/getshowmagnet";
+            if (imdb !== "") {
+                fallbackUrl += "/imdb/" + imdb;
+            }
+            if (query !== "") {
+                fallbackUrl += "/query/" + query;
+            }
+            fallbackUrl += "/season/" + season + "/episode/" + episode + "/providers/" + providers;
+            xhr.open("GET", fallbackUrl);
+            xhr.send();
+            return;
+        }
         if (xhr.status == 200) {
             reqTorrentSuccess = true;
-            
+
             var dataobject = JSON.parse(xhr.responseText).results;
             
             if (type == "movie") {
@@ -1142,17 +1155,23 @@ SceneInfoPage.prototype.GetResolverData = function(imdb, type, title, year, seas
         }
         providers = providers.slice(0, -1);
 
+        tmdbRoute = (tmdb != null && tmdb !== "");
+
         var url = "http://" + serverIP + ":9000/api/v0/getshowmagnet";
 
-        if (imdb !== "") {
-            url += "/imdb/" + imdb;
-        }
+        if (tmdbRoute) {
+            url += "/tmdb/" + tmdb + "/season/" + season + "/episode/" + episode + "/providers/" + providers;
+        } else {
+            if (imdb !== "") {
+                url += "/imdb/" + imdb;
+            }
 
-        if (query !== "") {
-            url += "/query/" + query;
-        }
+            if (query !== "") {
+                url += "/query/" + query;
+            }
 
-        url += "/season/" + season + "/episode/" + episode + "/providers/" + providers;
+            url += "/season/" + season + "/episode/" + episode + "/providers/" + providers;
+        }
 
         xhr.open("GET", url);
     }
