@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/nyakaspeter/white-raven/server/runtime"
@@ -389,12 +388,6 @@ func dialTV(request RootedInstallRequest) (*ssh.Client, error) {
 	client, err := ssh.Dial("tcp", address, config)
 	if err != nil {
 		appLog.Printf("SSH connection to %s failed: %v", address, err)
-		if errors.Is(err, syscall.EHOSTUNREACH) {
-			return nil, fmt.Errorf(
-				"connect to TV over SSH: macOS blocked local-network access to %s (no route to host); allow White Raven Companion in System Settings > Privacy & Security > Local Network, then fully quit and reopen the app",
-				address,
-			)
-		}
 		return nil, fmt.Errorf("connect to TV over SSH: %w", err)
 	}
 	appLog.Printf("SSH connection to %s established", address)
