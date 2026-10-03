@@ -12,6 +12,10 @@ raven*
 # macOS metadata
 .DS_Store
 
+# Go build/module caches (created inside the workspace for sandboxed builds)
+.gocache/
+.gomodcache/
+
 # Wails application build output
 companion/.task/
 companion/bin/

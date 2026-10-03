@@ -132,12 +132,12 @@ Example using multiple Torznab feeds:
 
 ## Companion app
 
-`companion/` contains the White Raven Companion, a small Wails application for Android, iOS, macOS, Windows, and Linux. It can run White Raven Server, modify configuration, and shows a live log. It can also install the widget on TV.
+`companion/` contains the White Raven Companion, a small Wails application for Android, macOS, Windows, and Linux. It can run White Raven Server, modify configuration, and shows a live log. It can also install the widget on TV.
 
 ### Install Wails v3 and build the desktop companion:
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.7
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.23
 cd companion
 wails3 build
 ```

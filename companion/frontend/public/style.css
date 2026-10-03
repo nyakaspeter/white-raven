@@ -116,6 +116,29 @@ code { color: #cbd2dc; font: .9em ui-monospace, SFMono-Regular, Menlo, monospace
 .nav-item.active { color: #e51d31; }
 .nav-item.active svg { stroke-width: 2.3; }
 
+.secondary-button { min-height: 46px; border: 1px solid #343d49; border-radius: 10px; padding: 10px 16px; color: #f0f3f6; background: #20262f; font-size: .84rem; font-weight: 600; cursor: pointer; }
+.secondary-button:active { background: #262d38; }
+.secondary-button:disabled { cursor: wait; opacity: .55; }
+
+.update-dialog { position: fixed; z-index: 40; inset: 0; display: grid; place-items: center; padding: 24px; background: rgba(4, 7, 11, .72); backdrop-filter: blur(6px); }
+.update-dialog[hidden] { display: none; }
+.update-card { display: flex; flex-direction: column; gap: 14px; width: min(440px, 100%); max-height: min(84vh, 640px); padding: 26px 24px 22px; border: 1px solid #2b3340; border-radius: 18px; background: #161b22; box-shadow: 0 24px 70px rgba(0, 0, 0, .5); }
+.update-icon { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid #343d49; border-radius: 14px; color: #e51d31; background: rgba(229, 29, 49, .1); }
+.update-icon svg { width: 26px; height: 26px; }
+.update-card h2 { margin: 0; font-size: 1.12rem; font-weight: 700; }
+.update-summary { margin: 0; color: #aab4c2; font-size: .88rem; line-height: 1.45; overflow-wrap: anywhere; }
+.update-notes { max-height: 150px; overflow: auto; padding: 12px 14px; border: 1px solid #272e38; border-radius: 12px; color: #b7c0cc; background: #080b10; font-size: .8rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.update-progress { display: flex; flex-direction: column; gap: 7px; }
+.update-progress[hidden] { display: none; }
+.progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: #232a35; }
+.progress-fill { height: 100%; width: 0%; border-radius: 999px; background: #e51d31; transition: width 220ms ease; }
+.progress-label { color: #aab4c2; font-size: .74rem; text-align: center; }
+.update-error { margin: 0; padding: 10px 12px; border-radius: 10px; color: #ff7b87; background: rgba(229, 29, 49, .1); font-size: .78rem; line-height: 1.4; overflow-wrap: anywhere; }
+.update-error[hidden] { display: none; }
+.update-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: auto; }
+.update-actions[hidden] { display: none; }
+.update-actions button { min-width: 118px; }
+
 @media (min-width: 700px) {
   main { padding-right: 28px; padding-left: 28px; }
 }

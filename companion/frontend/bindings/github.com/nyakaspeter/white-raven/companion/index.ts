@@ -8,5 +8,6 @@ export {
 
 export type {
     RootedInstallRequest,
+    UpdateStatus,
     WidgetStatus
 } from "./models.js";

@@ -25,6 +25,7 @@ func main() {
 		},
 		Mac: application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: true},
 	})
+	setupAutoUpdater(app, service)
 	app.OnShutdown(service.Shutdown)
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title: "White Raven Companion", Width: 760, Height: 720,

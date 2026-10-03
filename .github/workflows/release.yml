@@ -202,17 +202,13 @@ jobs:
           test ! -f companion/bin/white-raven-companion.app/Contents/Resources/Assets.car
           codesign --verify --deep --strict --verbose=2 \
             companion/bin/white-raven-companion.app
-      - name: Package macOS DMG
-        working-directory: companion
-        run: wails3 task darwin:create:dmg
-      - name: Collect macOS DMG
+      - name: Package macOS app bundle
         shell: bash
         run: |
-          dmg="$(find companion/bin -maxdepth 1 -type f -name '*.dmg' -print -quit)"
-          test -n "$dmg"
           mkdir -p release-assets
-          cp "$dmg" \
-            "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-macos-universal.dmg"
+          ditto -c -k --sequesterRsrc --keepParent \
+            companion/bin/white-raven-companion.app \
+            "release-assets/whiteraven-companion-${{ needs.prepare.outputs.version }}-macos-universal.zip"
       - uses: actions/upload-artifact@v6
         with:
           name: companion-macos

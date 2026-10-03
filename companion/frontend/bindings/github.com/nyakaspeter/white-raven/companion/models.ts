@@ -15,6 +15,20 @@ export interface RootedInstallRequest {
     "config": runtime$0.Config;
 }
 
+/**
+ * UpdateStatus describes the update flow state for the frontend: whether
+ * updates are available on this build, the running version, the platform
+ * (so the frontend can pick the right download flow), the updater's current
+ * lifecycle phase, and the pending release version (if any).
+ */
+export interface UpdateStatus {
+    "enabled": boolean;
+    "currentVersion": string;
+    "platform": string;
+    "state": string;
+    "version": string;
+}
+
 export interface WidgetStatus {
     "busy": boolean;
     "syncRunning": boolean;

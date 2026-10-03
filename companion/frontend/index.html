@@ -135,6 +135,14 @@
         <section id="torznab-feeds" class="feed-list"></section>
         <p class="provider-help">Enter the complete Torznab API endpoint. Jackett, Prowlarr, Harbrr, and other compatible feeds can be combined.</p>
 
+        <div class="provider-heading" id="updates-heading">
+          <h2 class="group-title">App</h2>
+        </div>
+        <section class="settings-group" id="updates-group">
+          <label class="field-row">
+            <span><b>Version</b><small id="app-version">Loading…</small></span>
+          </label>
+        </section>
       </form>
     </section>
 
@@ -219,6 +227,33 @@
       <p id="rooted-status" class="widget-status" role="status" aria-live="polite" hidden></p>
     </section>
   </main>
+
+  <div id="update-dialog" class="update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-title" hidden>
+    <div class="update-card">
+      <div class="update-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 19h16"/></svg>
+      </div>
+      <h2 id="update-title">Update available</h2>
+      <p id="update-summary" class="update-summary"></p>
+      <div id="update-notes" class="update-notes" hidden></div>
+      <div id="update-progress" class="update-progress" hidden>
+        <div class="progress-track" aria-hidden="true"><div id="update-progress-fill" class="progress-fill"></div></div>
+        <span id="update-progress-label" class="progress-label">Downloading…</span>
+      </div>
+      <p id="update-error" class="update-error" role="alert" hidden></p>
+      <div class="update-actions" id="update-actions-available">
+        <button id="update-dismiss" class="secondary-button" type="button">Remind me later</button>
+        <button id="update-download" class="primary-button" type="button">Download</button>
+      </div>
+      <div class="update-actions" id="update-actions-ready" hidden>
+        <button id="update-close-ready" class="primary-button" type="button">Close</button>
+      </div>
+      <div class="update-actions" id="update-actions-error" hidden>
+        <button id="update-retry" class="secondary-button" type="button">Try again</button>
+        <button id="update-close" class="primary-button" type="button">Close</button>
+      </div>
+    </div>
+  </div>
 
   <nav class="bottom-nav" aria-label="Main navigation">
     <button class="nav-item active" data-page="server-page" aria-current="page">

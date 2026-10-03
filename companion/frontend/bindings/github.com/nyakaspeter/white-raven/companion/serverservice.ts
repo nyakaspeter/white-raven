@@ -13,6 +13,16 @@ import * as runtime$0 from "../server/runtime/models.js";
 // @ts-ignore: Unused imports
 import * as $models from "./models.js";
 
+/**
+ * CheckForUpdates asks the update provider for the latest release. It returns
+ * the newer version when one is available (the frontend is also notified via
+ * the wails:updater:update-available event) and an empty string when the
+ * running version is current.
+ */
+export function CheckForUpdates(): $CancellablePromise<string> {
+    return $Call.ByID(2899309733);
+}
+
 export function ClearHarbrrLogs(): $CancellablePromise<void> {
     return $Call.ByID(1379419759);
 }
@@ -23,6 +33,24 @@ export function ClearLogs(): $CancellablePromise<void> {
 
 export function DefaultConfig(): $CancellablePromise<runtime$0.Config> {
     return $Call.ByID(682358145);
+}
+
+/**
+ * DismissUpdate records the pending release as skipped so the user is not
+ * offered the same version again for the life of this process.
+ */
+export function DismissUpdate(): $CancellablePromise<void> {
+    return $Call.ByID(733529059);
+}
+
+/**
+ * DownloadUpdate starts the update flow for the pending release. On desktop
+ * it opens the release asset's download link in the system browser; on
+ * Android it downloads the APK into app storage and hands it to the system
+ * package installer. It returns a short description of what was started.
+ */
+export function DownloadUpdate(): $CancellablePromise<string> {
+    return $Call.ByID(1225934127);
 }
 
 export function HarbrrLogs(): $CancellablePromise<string> {
@@ -87,6 +115,15 @@ export function StopHarbrr(): $CancellablePromise<void> {
 
 export function StopServer(): $CancellablePromise<void> {
     return $Call.ByID(1048709617);
+}
+
+/**
+ * UpdateStatus reports whether the auto updater is active on this build and,
+ * when it is, the running version, the updater's current phase, and the
+ * pending release version.
+ */
+export function UpdateStatus(): $CancellablePromise<$models.UpdateStatus> {
+    return $Call.ByID(1471471473);
 }
 
 export function WidgetStatus(): $CancellablePromise<$models.WidgetStatus> {

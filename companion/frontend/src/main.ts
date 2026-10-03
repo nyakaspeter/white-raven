@@ -351,3 +351,210 @@ await refreshWidgetStatus();
 setInterval(refresh, 750);
 setInterval(refreshHarbrr, 750);
 setInterval(refreshWidgetStatus, 750);
+
+// ---------------------------------------------------------------------------
+// Auto updater
+// ---------------------------------------------------------------------------
+//
+// The Go side runs the Wails updater in headless mode (WindowNone): it only
+// checks for releases and emits lifecycle events, and this page renders its
+// own popup. "Download" hands the user to the platform's normal install
+// path: a browser download on desktop, or an in-app APK download plus the
+// system installer on Android. "Remind me later" records the version as
+// skipped. (iOS builds have the updater disabled entirely.)
+
+import { Events } from "@wailsio/runtime";
+
+type UpdateView = "available" | "downloading" | "ready" | "error";
+
+const updateDialog = document.querySelector<HTMLElement>("#update-dialog")!;
+const updateTitle = document.querySelector<HTMLElement>("#update-title")!;
+const updateSummary = document.querySelector<HTMLElement>("#update-summary")!;
+const updateNotes = document.querySelector<HTMLElement>("#update-notes")!;
+const updateProgress = document.querySelector<HTMLElement>("#update-progress")!;
+const updateProgressFill = document.querySelector<HTMLElement>("#update-progress-fill")!;
+const updateProgressLabel = document.querySelector<HTMLElement>("#update-progress-label")!;
+const updateError = document.querySelector<HTMLElement>("#update-error")!;
+const updateActionsAvailable = document.querySelector<HTMLElement>("#update-actions-available")!;
+const updateActionsReady = document.querySelector<HTMLElement>("#update-actions-ready")!;
+const updateActionsError = document.querySelector<HTMLElement>("#update-actions-error")!;
+const updateDownload = document.querySelector<HTMLButtonElement>("#update-download")!;
+const updateDismiss = document.querySelector<HTMLButtonElement>("#update-dismiss")!;
+const updateRetry = document.querySelector<HTMLButtonElement>("#update-retry")!;
+const updateClose = document.querySelector<HTMLButtonElement>("#update-close")!;
+const updateCloseReady = document.querySelector<HTMLButtonElement>("#update-close-ready")!;
+const updatesHeading = document.querySelector<HTMLElement>("#updates-heading")!;
+const updatesGroup = document.querySelector<HTMLElement>("#updates-group")!;
+const appVersionLabel = document.querySelector<HTMLElement>("#app-version")!;
+
+let updateView: UpdateView = "available";
+let updateEnabled = false;
+let updatePlatform = "";
+let currentVersion = "";
+let pendingVersion = "";
+let pendingNotes = "";
+
+function formatUpdateBytes(bytes: number): string {
+  if (bytes <= 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function showUpdateView(view: UpdateView, message = "") {
+  updateView = view;
+  updateDialog.hidden = false;
+  updateError.hidden = true;
+  updateNotes.hidden = true;
+  updateProgress.hidden = true;
+  updateActionsAvailable.hidden = true;
+  updateActionsReady.hidden = true;
+  updateActionsError.hidden = true;
+  if (view === "available") {
+    updateTitle.textContent = "Update available";
+    updateSummary.textContent = `Version ${pendingVersion} is available (you have ${currentVersion}).`;
+    if (pendingNotes) {
+      updateNotes.textContent = pendingNotes;
+      updateNotes.hidden = false;
+    }
+    updateActionsAvailable.hidden = false;
+  } else if (view === "downloading") {
+    updateTitle.textContent = "Downloading update";
+    if (updatePlatform === "android") {
+      updateSummary.textContent = `Downloading the APK for version ${pendingVersion}…`;
+      updateProgress.hidden = false;
+      updateProgressFill.style.width = "0%";
+      updateProgressLabel.textContent = "Downloading…";
+    } else {
+      updateSummary.textContent = `Opening your browser to download version ${pendingVersion}…`;
+    }
+  } else if (view === "ready") {
+    updateTitle.textContent = "Update downloaded";
+    updateSummary.textContent = `The system installer should now be open for version ${pendingVersion}. Install it, then restart the app to finish the update.`;
+    updateActionsReady.hidden = false;
+  } else {
+    updateTitle.textContent = "Update failed";
+    updateSummary.textContent = `The update to version ${pendingVersion} could not be completed.`;
+    updateError.textContent = message || "Unknown error";
+    updateError.hidden = false;
+    updateActionsError.hidden = false;
+  }
+}
+
+const updateDialogButtons = [updateDownload, updateDismiss, updateRetry, updateClose, updateCloseReady];
+
+function startUpdateDownload() {
+  for (const button of updateDialogButtons) {
+    button.disabled = true;
+  }
+  showUpdateView("downloading");
+  if (updatePlatform === "android") {
+    // The APK download happens in Go and streams progress events; when it
+    // resolves the system installer has been opened.
+    ServerService.DownloadUpdate().then(() => {
+      showUpdateView("ready");
+    }).catch((err) => {
+      for (const button of updateDialogButtons) {
+        button.disabled = false;
+      }
+      showUpdateView("error", String(err));
+    });
+  } else {
+    // Desktop: the browser takes over from here.
+    ServerService.DownloadUpdate().then(() => {
+      updateDialog.hidden = true;
+      for (const button of updateDialogButtons) {
+        button.disabled = false;
+      }
+    }).catch((err) => {
+      for (const button of updateDialogButtons) {
+        button.disabled = false;
+      }
+      showUpdateView("error", String(err));
+    });
+  }
+}
+
+async function initUpdates() {
+  try {
+    const status = await ServerService.UpdateStatus();
+    updateEnabled = status.enabled;
+    updatePlatform = status.platform;
+    currentVersion = status.currentVersion;
+    if (!updateEnabled) {
+      // Development builds have no matching release, so hide the section.
+      updatesHeading.hidden = true;
+      updatesGroup.hidden = true;
+      return;
+    }
+    appVersionLabel.textContent = `v${status.currentVersion}`;
+
+    Events.On("wails:updater:update-available", (event) => {
+      const release = event.data as { version?: string; notes?: string } | null;
+      if (!release?.version) return;
+      pendingVersion = release.version;
+      pendingNotes = release.notes ?? "";
+      if (updateDialog.hidden || updateView === "error") {
+        showUpdateView("available");
+      }
+    });
+    Events.On("wails:updater:no-update", () => {
+      if (!updateDialog.hidden && updateView === "available") {
+        updateDialog.hidden = true;
+      }
+    });
+    Events.On("wails:updater:download-progress", (event) => {
+      // Emitted by the in-app Android APK download (the desktop/iOS flow
+      // downloads in the browser and emits nothing).
+      const progress = event.data as { written?: number; total?: number } | null;
+      if (!progress) return;
+      if (updateView !== "downloading") {
+        showUpdateView("downloading");
+      }
+      const { written = 0, total = 0 } = progress;
+      const percent = total > 0 ? Math.min(100, Math.round((written / total) * 100)) : 0;
+      updateProgressFill.style.width = `${percent}%`;
+      updateProgressLabel.textContent = total > 0
+        ? `${percent}% · ${formatUpdateBytes(written)} of ${formatUpdateBytes(total)}`
+        : `Downloading ${formatUpdateBytes(written)}…`;
+    });
+    Events.On("wails:updater:error", (event) => {
+      const info = event.data as { message?: string } | null;
+      // Only surface failures that happen while a download is in flight;
+      // background check failures should not steal the UI.
+      if (updateView === "downloading") {
+        showUpdateView("error", info?.message ?? "Unknown error");
+      }
+    });
+
+    updateDownload.addEventListener("click", startUpdateDownload);
+    updateRetry.addEventListener("click", startUpdateDownload);
+    updateDismiss.addEventListener("click", () => {
+      ServerService.DismissUpdate().catch(() => undefined).finally(() => {
+        updateDialog.hidden = true;
+        for (const button of updateDialogButtons) {
+          button.disabled = false;
+        }
+      });
+    });
+    updateClose.addEventListener("click", () => {
+      updateDialog.hidden = true;
+      for (const button of updateDialogButtons) {
+        button.disabled = false;
+      }
+    });
+    updateCloseReady.addEventListener("click", () => {
+      updateDialog.hidden = true;
+      for (const button of updateDialogButtons) {
+        button.disabled = false;
+      }
+    });
+
+    // Check once on startup, when the UI is ready to receive updater events.
+    ServerService.CheckForUpdates().catch(() => undefined);
+  } catch {
+    updatesHeading.hidden = true;
+    updatesGroup.hidden = true;
+  }
+}
+
+void initUpdates();

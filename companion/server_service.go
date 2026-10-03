@@ -3,17 +3,20 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
 	"path/filepath"
+	goruntime "runtime"
 	"sync"
 
 	"github.com/autobrr/harbrr/pkg/embedded"
 	"github.com/nyakaspeter/white-raven/server/runtime"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 )
 
 type ServerService struct {
@@ -27,6 +30,23 @@ type ServerService struct {
 	harbrrLogs *runtime.LogBuffer
 	harbrrData string
 	harbrrPort int
+
+	app             *application.App
+	updaterInstance *updater.Updater
+	updateMu        sync.Mutex
+	pendingRelease  *updater.Release
+}
+
+// UpdateStatus describes the update flow state for the frontend: whether
+// updates are available on this build, the running version, the platform
+// (so the frontend can pick the right download flow), the updater's current
+// lifecycle phase, and the pending release version (if any).
+type UpdateStatus struct {
+	Enabled        bool   `json:"enabled"`
+	CurrentVersion string `json:"currentVersion"`
+	Platform       string `json:"platform"`
+	State          string `json:"state"`
+	Version        string `json:"version"`
 }
 
 func NewServerService() (*ServerService, error) {
@@ -200,6 +220,125 @@ func (service *ServerService) InstallRooted(request RootedInstallRequest) error 
 }
 func (service *ServerService) StartAppSync() error { return service.installer.StartAppSync() }
 func (service *ServerService) StopAppSync()        { service.installer.StopAppSync() }
+
+func (service *ServerService) setUpdater(app *application.App) {
+	service.updateMu.Lock()
+	service.app = app
+	service.updaterInstance = app.Updater
+	service.updateMu.Unlock()
+}
+
+func (service *ServerService) notePendingRelease(release *updater.Release) {
+	service.updateMu.Lock()
+	service.pendingRelease = release
+	service.updateMu.Unlock()
+}
+
+func (service *ServerService) updateInstance() (*updater.Updater, error) {
+	service.updateMu.Lock()
+	instance := service.updaterInstance
+	service.updateMu.Unlock()
+	if instance == nil {
+		return nil, errors.New("auto updates are not available in this build")
+	}
+	return instance, nil
+}
+
+// UpdateStatus reports whether the auto updater is active on this build and,
+// when it is, the running version, the updater's current phase, and the
+// pending release version.
+func (service *ServerService) UpdateStatus() UpdateStatus {
+	service.updateMu.Lock()
+	instance := service.updaterInstance
+	var pending string
+	if service.pendingRelease != nil {
+		pending = service.pendingRelease.Version
+	}
+	service.updateMu.Unlock()
+	status := UpdateStatus{
+		Enabled:        instance != nil,
+		CurrentVersion: appVersion,
+		Platform:       goruntime.GOOS,
+	}
+	if instance != nil {
+		status.State = string(instance.State())
+	} else {
+		status.State = "disabled"
+	}
+	status.Version = pending
+	return status
+}
+
+// CheckForUpdates asks the update provider for the latest release. It returns
+// the newer version when one is available (the frontend is also notified via
+// the wails:updater:update-available event) and an empty string when the
+// running version is current.
+func (service *ServerService) CheckForUpdates() (string, error) {
+	instance, err := service.updateInstance()
+	if err != nil {
+		return "", err
+	}
+	release, err := instance.Check(context.Background())
+	if err != nil {
+		return "", err
+	}
+	if release == nil {
+		return "", nil
+	}
+	return release.Version, nil
+}
+
+// DownloadUpdate starts the update flow for the pending release. On desktop
+// it opens the release asset's download link in the system browser; on
+// Android it downloads the APK into app storage and hands it to the system
+// package installer. It returns a short description of what was started.
+func (service *ServerService) DownloadUpdate() (string, error) {
+	if _, err := service.updateInstance(); err != nil {
+		return "", err
+	}
+	service.updateMu.Lock()
+	pending := service.pendingRelease
+	service.updateMu.Unlock()
+	if pending == nil {
+		return "", errors.New("there is no pending update to download")
+	}
+	log.Println("Downloading update to", pending.Version)
+	return startUpdateDownload(service, pending)
+}
+
+// releaseDownloadURL returns the browser download URL for a release asset.
+// The GitHub provider stashes the asset's download URL on the release
+// metadata; the tag-based URL is the fallback.
+func releaseDownloadURL(release *updater.Release) string {
+	if url, ok := release.Metadata["github.asset.url"].(string); ok && url != "" {
+		return url
+	}
+	tag, _ := release.Metadata["github.release.tag"].(string)
+	if tag == "" {
+		tag = "v" + release.Version
+	}
+	return fmt.Sprintf("https://github.com/%s/releases/download/%s/%s",
+		releaseRepository, tag, release.Artifact.Filename)
+}
+
+// DismissUpdate records the pending release as skipped so the user is not
+// offered the same version again for the life of this process.
+func (service *ServerService) DismissUpdate() error {
+	instance, err := service.updateInstance()
+	if err != nil {
+		return err
+	}
+	service.updateMu.Lock()
+	pending := service.pendingRelease
+	service.pendingRelease = nil
+	service.updateMu.Unlock()
+	if pending == nil {
+		return errors.New("there is no pending update to dismiss")
+	}
+	instance.SkipVersion(pending.Version)
+	return nil
+}
+
 func (service *ServerService) Shutdown() {
 	service.installer.StopAppSync()
 	service.StopHarbrr()
