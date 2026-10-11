@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/anacrolix/generics"
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/anacrolix/torrent/storage"
 )
@@ -31,7 +32,7 @@ func NewMemoryStorage() storage.ClientImpl {
 		pc: storage.NewMapPieceCompletion(),
 	}
 	setCompletionCallback(func(key metainfo.PieceKey, complete bool) {
-		_ = ret.pc.Set(key, complete)
+		_ = ret.pc.Set(key, generics.Some(complete))
 	})
 
 	return ret
@@ -54,7 +55,7 @@ func (me *memoryClient) OpenTorrent(_ context.Context, info *metainfo.Info, info
 	// completion checks against storage that cannot contain prior data.
 	for index := 0; index < torrent.np; index++ {
 		key := metainfo.PieceKey{InfoHash: infoHash, Index: index}
-		if err := me.pc.Set(key, false); err != nil {
+		if err := me.pc.Set(key, generics.Some(false)); err != nil {
 			return storage.TorrentImpl{}, fmt.Errorf("initialize piece %d completion: %w", index, err)
 		}
 	}
@@ -75,7 +76,7 @@ func (me *memoryTorrent) Piece(p metainfo.Piece) storage.PieceImpl {
 func (me *memoryTorrent) Close() error {
 	// Set all pieces UnComplete
 	for key := 0; key < me.np; key++ {
-		me.cl.pc.Set(metainfo.PieceKey{InfoHash: me.ih, Index: key}, false)
+		me.cl.pc.Set(metainfo.PieceKey{InfoHash: me.ih, Index: key}, generics.Some(false))
 	}
 
 	storageDelete(me.ih)
@@ -89,12 +90,12 @@ func (sp *memoryPiece) Completion() storage.Completion {
 }
 
 func (sp *memoryPiece) MarkComplete() error {
-	sp.trt.cl.pc.Set(sp.pieceKey(), true)
+	sp.trt.cl.pc.Set(sp.pieceKey(), generics.Some(true))
 	return nil
 }
 
 func (sp *memoryPiece) MarkNotComplete() error {
-	sp.trt.cl.pc.Set(sp.pieceKey(), false)
+	sp.trt.cl.pc.Set(sp.pieceKey(), generics.Some(false))
 	return nil
 }
 

@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -331,13 +332,16 @@ func (installer *widgetInstaller) latestAsset(rootless bool) (githubRelease, rel
 	return release, asset, err
 }
 
+var widgetAssetPattern = regexp.MustCompile(`^whiteraven-(?:widget-)?(rootless-)?[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9a-z.-]+)?\.zip$`)
+
 func selectReleaseAsset(assets []releaseAsset, rootless bool) (releaseAsset, error) {
 	for _, asset := range assets {
 		name := strings.ToLower(asset.Name)
-		if !strings.HasPrefix(name, "whiteraven-") || !strings.HasSuffix(name, ".zip") {
+		match := widgetAssetPattern.FindStringSubmatch(name)
+		if match == nil {
 			continue
 		}
-		isRootless := strings.Contains(name, "-rootless-")
+		isRootless := match[1] != ""
 		if isRootless == rootless {
 			return asset, nil
 		}
