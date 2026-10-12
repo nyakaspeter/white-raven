@@ -80,8 +80,8 @@ type MovieInfo struct {
 	ProductionCountries []Country  `json:"production_countries"`
 	SpokenLanguages     []Language `json:"spoken_languages"`
 	RuntimeMinutes      int        `json:"runtime"`
-	Budget              int        `json:"budget"`
-	Revenue             int        `json:"revenue"`
+	Budget              int64      `json:"budget"`
+	Revenue             int64      `json:"revenue"`
 	Status              string     `json:"status"`
 	Homepage            string     `json:"homepage"`
 	Video               bool       `json:"video"`
