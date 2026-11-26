@@ -8,6 +8,7 @@ SceneHostsMenu.prototype.initialize = function () {
     this.notorrent = false;
     this.playurl = '';
     this.filetitle = '';
+    this.fileIndex = null;
     this.imdbid = '';
     this.season = 0;
     this.episode = 0;
@@ -35,6 +36,7 @@ SceneHostsMenu.prototype.handleShow = function () {
             && torrenttitle.indexOf("x265") == -1
             && torrenttitle.indexOf("av1") == -1
             && torrenttitle.indexOf("2160p") == -1
+            && torrenturls[i].resolution != "2160p"
             && torrenttitle.indexOf("bd25") == -1
             && torrenttitle.indexOf("bd50") == -1) {
             filteredlist.push(torrenturls[i]);
@@ -221,7 +223,22 @@ SceneHostsMenu.prototype.StartTorrentDownload = function(titletext, base64uri) {
                     }
                 }
 
-                if (this.videolist.length > 1) {
+                // Preserve Torrentio's file index from the original torrent order.
+                var matchedFile = null;
+                if (typeof this.fileIndex == "number" && this.fileIndex >= 0) {
+                    for (var i = 0; i < dataobject.length; i++) {
+                        if (dataobject[i].index === this.fileIndex) {
+                            matchedFile = dataobject[i];
+                            break;
+                        }
+                    }
+                }
+                if (matchedFile) {
+                    this.playurl = matchedFile.url;
+                    this.filetitle = matchedFile.name;
+                }
+
+                if (!matchedFile && this.videolist.length > 1) {
                     document.getElementById("loaDing").style.visibility = "hidden";
                     document.getElementById("loaDing").className = "loaderoff";
 
@@ -351,6 +368,7 @@ SceneHostsMenu.prototype.handleKeyDown = function (keyCode) {
                                 this.titletext = torrenturls[i].title;
                                 this.magneturl = torrenturls[i].magneturl;
                                 this.torrenturl = torrenturls[i].torrenturl;
+                                this.fileIndex = torrenturls[i].fileIndex;
                                 this.imdbid = torrenturls[i].imdbid;
                                 this.season = torrenturls[i].season;
                                 this.episode = torrenturls[i].episode;

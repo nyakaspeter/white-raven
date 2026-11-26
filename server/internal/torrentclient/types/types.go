@@ -22,6 +22,7 @@ type TorrentLeaf struct {
 }
 
 type TorrentFile struct {
+	Index  int    `json:"index"`
 	Name   string `json:"name"`
 	Url    string `json:"url"`
 	Length string `json:"length"`

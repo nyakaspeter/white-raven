@@ -137,7 +137,7 @@ Example using multiple Torznab feeds:
 ### Install Wails v3 and build the desktop companion:
 
 ```sh
-go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.23
+go install github.com/wailsapp/wails/v3/cmd/wails3@v3.1.0
 cd companion
 wails3 build
 ```

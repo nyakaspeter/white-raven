@@ -55,13 +55,17 @@ func GetMovieTorrents(movie types.MovieParams, sources types.SourceParams) []typ
 		results := <-ch
 		for _, result := range results {
 			duplicate := false
-			for _, outResult := range output {
+			for i := range output {
+				outResult := &output[i]
 				if sameTorrentIdentity(
 					outResult.Hash, result.Hash,
 					outResult.DedupKey, result.DedupKey,
 					outResult.Torrent, result.Torrent,
 				) {
 					duplicate = true
+					if outResult.FileIndex == nil {
+						outResult.FileIndex = result.FileIndex
+					}
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size
 						outResult.Title = result.Title
@@ -129,13 +133,17 @@ func GetShowTorrents(show types.ShowParams, sources types.SourceParams) []types.
 		results := <-ch
 		for _, result := range results {
 			duplicate := false
-			for _, outResult := range output {
+			for i := range output {
+				outResult := &output[i]
 				if sameTorrentIdentity(
 					outResult.Hash, result.Hash,
 					outResult.DedupKey, result.DedupKey,
 					outResult.Torrent, result.Torrent,
 				) {
 					duplicate = true
+					if outResult.FileIndex == nil {
+						outResult.FileIndex = result.FileIndex
+					}
 					if outResult.Size == "0" && result.Size != "0" {
 						outResult.Size = result.Size
 						outResult.Title = result.Title

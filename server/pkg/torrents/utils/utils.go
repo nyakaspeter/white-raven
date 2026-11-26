@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func GetMagnetLinkFromInfoHash(hash string) string {
@@ -23,19 +24,22 @@ func GetInfoHashFromMagnetLink(magnet string) string {
 
 func GuessQualityFromString(value string) string {
 	// Try to decode quality information from string (url, title, filename)
-	lowstr := strings.ToLower(value)
+	tokens := strings.FieldsFunc(strings.ToLower(value), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+	})
+	lowstr := " " + strings.Join(tokens, " ") + " "
 	quality := ""
-	if strings.Contains(lowstr, "3d") == true {
+	if strings.Contains(lowstr, " 3d ") {
 		quality = "3D"
-	} else if strings.Contains(lowstr, "2160p") == true {
+	} else if strings.Contains(lowstr, " 2160p ") || strings.Contains(lowstr, " 4k ") {
 		quality = "2160p"
-	} else if strings.Contains(lowstr, "1080p") == true {
+	} else if strings.Contains(lowstr, " 1080p ") {
 		quality = "1080p"
-	} else if strings.Contains(lowstr, "720p") == true {
+	} else if strings.Contains(lowstr, " 720p ") {
 		quality = "720p"
-	} else if strings.Contains(lowstr, "480p") == true {
+	} else if strings.Contains(lowstr, " 480p ") {
 		quality = "480p"
-	} else if strings.Contains(lowstr, "360p") == true {
+	} else if strings.Contains(lowstr, " 360p ") {
 		quality = "360p"
 	} else {
 		quality = ""

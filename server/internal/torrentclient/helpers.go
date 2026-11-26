@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"sort"
 	"strings"
 	"time"
 
@@ -143,10 +142,4 @@ func fetchTorrent(url string) (*bytes.Reader, error) {
 	}
 
 	return bytes.NewReader(buf.Bytes()), nil
-}
-
-func sortFiles(files []*torrent.File) {
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].DisplayPath() < files[j].DisplayPath()
-	})
 }

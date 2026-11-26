@@ -1,33 +1,35 @@
 package types
 
 type MovieTorrent struct {
-	DedupKey string `json:"-"`
-	Hash     string `json:"hash"`
-	Quality  string `json:"quality"`
-	Size     string `json:"size"`
-	Provider string `json:"provider"`
-	Lang     string `json:"lang"`
-	Title    string `json:"title"`
-	Seeds    string `json:"seeds"`
-	Peers    string `json:"peers"`
-	Magnet   string `json:"magnet"`
-	Torrent  string `json:"torrent"`
+	DedupKey  string `json:"-"`
+	FileIndex *int   `json:"fileIndex,omitempty"`
+	Hash      string `json:"hash"`
+	Quality   string `json:"quality"`
+	Size      string `json:"size"`
+	Provider  string `json:"provider"`
+	Lang      string `json:"lang"`
+	Title     string `json:"title"`
+	Seeds     string `json:"seeds"`
+	Peers     string `json:"peers"`
+	Magnet    string `json:"magnet"`
+	Torrent   string `json:"torrent"`
 }
 
 type ShowTorrent struct {
-	DedupKey string `json:"-"`
-	Hash     string `json:"hash"`
-	Quality  string `json:"quality"`
-	Season   string `json:"season"`
-	Episode  string `json:"episode"`
-	Size     string `json:"size"`
-	Provider string `json:"provider"`
-	Lang     string `json:"lang"`
-	Title    string `json:"title"`
-	Seeds    string `json:"seeds"`
-	Peers    string `json:"peers"`
-	Magnet   string `json:"magnet"`
-	Torrent  string `json:"torrent"`
+	DedupKey  string `json:"-"`
+	FileIndex *int   `json:"fileIndex,omitempty"`
+	Hash      string `json:"hash"`
+	Quality   string `json:"quality"`
+	Season    string `json:"season"`
+	Episode   string `json:"episode"`
+	Size      string `json:"size"`
+	Provider  string `json:"provider"`
+	Lang      string `json:"lang"`
+	Title     string `json:"title"`
+	Seeds     string `json:"seeds"`
+	Peers     string `json:"peers"`
+	Magnet    string `json:"magnet"`
+	Torrent   string `json:"torrent"`
 }
 
 type MovieParams struct {

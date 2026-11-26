@@ -36,6 +36,7 @@ type stream struct {
 	Name          string   `json:"name"`
 	Title         string   `json:"title"`
 	InfoHash      string   `json:"infoHash"`
+	FileIndex     *int     `json:"fileIdx"`
 	Sources       []string `json:"sources"`
 	BehaviorHints struct {
 		Filename string `json:"filename"`
@@ -117,15 +118,16 @@ func movieTorrent(item stream) (types.MovieTorrent, bool) {
 	}
 
 	return types.MovieTorrent{
-		Hash:     common.Hash,
-		Quality:  common.Quality,
-		Size:     common.Size,
-		Provider: common.Provider,
-		Lang:     common.Lang,
-		Title:    common.Title,
-		Seeds:    common.Seeds,
-		Peers:    "0",
-		Magnet:   common.Magnet,
+		Hash:      common.Hash,
+		FileIndex: item.FileIndex,
+		Quality:   common.Quality,
+		Size:      common.Size,
+		Provider:  common.Provider,
+		Lang:      common.Lang,
+		Title:     common.Title,
+		Seeds:     common.Seeds,
+		Peers:     "0",
+		Magnet:    common.Magnet,
 	}, true
 }
 
@@ -136,17 +138,18 @@ func showTorrent(item stream, season string, episode string) (types.ShowTorrent,
 	}
 
 	return types.ShowTorrent{
-		Hash:     common.Hash,
-		Quality:  common.Quality,
-		Season:   season,
-		Episode:  episode,
-		Size:     common.Size,
-		Provider: common.Provider,
-		Lang:     common.Lang,
-		Title:    common.Title,
-		Seeds:    common.Seeds,
-		Peers:    "0",
-		Magnet:   common.Magnet,
+		Hash:      common.Hash,
+		FileIndex: item.FileIndex,
+		Quality:   common.Quality,
+		Season:    season,
+		Episode:   episode,
+		Size:      common.Size,
+		Provider:  common.Provider,
+		Lang:      common.Lang,
+		Title:     common.Title,
+		Seeds:     common.Seeds,
+		Peers:     "0",
+		Magnet:    common.Magnet,
 	}, true
 }
 

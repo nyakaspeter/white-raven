@@ -32,8 +32,8 @@ func main() {
 	check(run("", "git", "-C", source, "checkout", "--quiet", revision))
 
 	webDir := filepath.Join(source, "web")
-	check(run(webDir, "npx", "--yes", "bun@1.4.0", "install", "--frozen-lockfile"))
-	check(run(webDir, "npx", "--yes", "bun@1.4.0", "run", "build"))
+	check(run(webDir, "npx", "--yes", "bun@1.4.4", "install", "--frozen-lockfile"))
+	check(run(webDir, "npx", "--yes", "bun@1.4.4", "run", "build"))
 
 	target, err := filepath.Abs("harbrr-build")
 	check(err)
